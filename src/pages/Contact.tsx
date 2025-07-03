@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { emailService, ContactFormData } from "@/lib/resend";
+import { submitContactForm, validateContactForm } from "@/lib/contact";
 import { env } from "@/lib/env";
 
 export default function Contact() {
@@ -63,21 +63,38 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Validate form data
+    const validation = validateContactForm({
+      name: formData.name,
+      email: formData.email,
+      subject: formData.subject,
+      message: formData.message,
+      phone: formData.phone
+    });
+
+    if (!validation.isValid) {
+      toast({
+        title: "Please fix the following errors:",
+        description: validation.errors.join(', '),
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      const contactData: ContactFormData = {
+      const result = await submitContactForm({
         name: formData.name,
         email: formData.email,
         subject: formData.subject,
         message: formData.message,
         phone: formData.phone || undefined,
-      };
-
-      const result = await emailService.sendContactForm(contactData);
+      });
 
       if (result.success) {
         toast({
           title: "Message Sent Successfully! ✅",
-          description: "We'll get back to you within 24 hours. Check your email for confirmation.",
+          description: result.message,
         });
         
         // Reset form
@@ -92,7 +109,7 @@ export default function Contact() {
       } else {
         toast({
           title: "Failed to Send Message",
-          description: result.error || "Please try again or contact us directly via WhatsApp.",
+          description: result.message,
           variant: "destructive",
         });
       }
