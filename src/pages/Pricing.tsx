@@ -3,12 +3,34 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { PaymentModal } from "@/components/PaymentModal";
+import { useState } from "react";
 
 export default function Pricing() {
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+
+  const handlePaymentSuccess = (paymentData: any) => {
+    console.log('Payment successful:', paymentData);
+    setIsPaymentModalOpen(false);
+    setSelectedPlan(null);
+    // Here you can redirect to success page or update user subscription
+  };
+
+  const handlePlanSelect = (plan: any) => {
+    if (plan.name === "School Partnership") {
+      // Redirect to contact page for enterprise plans
+      return;
+    }
+    
+    setSelectedPlan(plan);
+    setIsPaymentModalOpen(true);
+  };
   const plans = [
     {
       name: "Pay-Per-Use",
       price: "KES 10",
+      originalPrice: 10,
       period: "per question",
       description: "Perfect for occasional homework help",
       badge: "Most Flexible",
@@ -27,6 +49,7 @@ export default function Pricing() {
     {
       name: "Family Plan",
       price: "KES 999",
+      originalPrice: 999,
       period: "per month",
       description: "Best value for regular homework support",
       badge: "Most Popular",
@@ -47,6 +70,7 @@ export default function Pricing() {
     {
       name: "School Partnership",
       price: "Custom",
+      originalPrice: 0,
       period: "contact us",
       description: "For schools and educational institutions",
       badge: "Enterprise",
@@ -155,16 +179,28 @@ export default function Pricing() {
                   ))}
                 </ul>
 
-                <Link to={plan.name === "School Partnership" ? "/contact" : "/chat"}>
+                {plan.name === "School Partnership" ? (
+                  <Link to="/contact">
+                    <Button 
+                      variant={plan.buttonVariant} 
+                      size="lg" 
+                      className="w-full"
+                    >
+                      {plan.buttonText}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
+                ) : (
                   <Button 
                     variant={plan.buttonVariant} 
                     size="lg" 
                     className="w-full"
+                    onClick={() => handlePlanSelect(plan)}
                   >
                     {plan.buttonText}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
-                </Link>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -284,6 +320,21 @@ export default function Pricing() {
           </div>
         </div>
       </section>
+
+      {/* Payment Modal */}
+      {selectedPlan && (
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setSelectedPlan(null);
+          }}
+          planName={selectedPlan.name}
+          amount={selectedPlan.originalPrice}
+          description={selectedPlan.description}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 }

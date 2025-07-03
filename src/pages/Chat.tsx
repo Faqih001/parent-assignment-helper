@@ -1,10 +1,14 @@
-import { useState, useRef } from "react";
-import { Send, Camera, Image, Paperclip, Bot, User, AlertCircle, CheckCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Send, Camera, Image, Paperclip, Bot, User, AlertCircle, CheckCircle, BookOpen, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { geminiService, HomeworkQuestion } from "@/lib/gemini";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -15,18 +19,41 @@ interface Message {
 }
 
 export default function Chat() {
+  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       type: "bot",
-      content: "Hello! I'm your AI homework assistant. Upload a photo of your homework question or type it here, and I'll provide a clear explanation to help you and your child understand the solution together. 📚✨",
+      content: "Hello! I'm your AI homework assistant powered by Google Gemini. Upload a photo of your homework question or type it here, and I'll provide a clear explanation to help you and your child understand the solution together. 📚✨",
       timestamp: new Date()
     }
   ]);
   const [input, setInput] = useState("");
+  const [subject, setSubject] = useState("");
+  const [grade, setGrade] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [freeQuestions, setFreeQuestions] = useState(3);
+  const [isAiInitialized, setIsAiInitialized] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize Gemini AI when component mounts
+  useEffect(() => {
+    const initializeAI = async () => {
+      try {
+        await geminiService.initializeChat();
+        setIsAiInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize AI:', error);
+        toast({
+          title: "AI Initialization Failed",
+          description: "There was an issue starting the AI service. Please refresh the page.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    initializeAI();
+  }, [toast]);
 
   const sampleQuestions = [
     "Help me solve: 2x + 5 = 15",
@@ -35,8 +62,27 @@ export default function Chat() {
     "How do I find the area of a triangle?"
   ];
 
+  const subjects = [
+    "Mathematics", "Science", "English", "Kiswahili", "Social Studies", 
+    "Physics", "Chemistry", "Biology", "Geography", "History", "Other"
+  ];
+
+  const grades = [
+    "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
+    "Grade 7", "Grade 8", "Grade 9", "Form 1", "Form 2", "Form 3", "Form 4"
+  ];
+
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !isAiInitialized) return;
+
+    if (freeQuestions === 0) {
+      toast({
+        title: "No Questions Left",
+        description: "Please subscribe to continue asking questions.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -46,87 +92,128 @@ export default function Chat() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
+    const currentSubject = subject || "General";
+    const currentGrade = grade || "General";
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const homeworkQuestion: HomeworkQuestion = {
+        subject: currentSubject,
+        grade: currentGrade,
+        question: currentInput
+      };
+
+      const response = await geminiService.askHomeworkQuestion(homeworkQuestion);
+
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: "bot",
-        content: `Great question! Let me break this down for you step by step:
-
-📖 **Understanding the Problem:**
-${input.includes("2x") ? "This is a linear equation where we need to find the value of x." : "This appears to be a question about " + input.split(" ").slice(0, 3).join(" ") + "."}
-
-🔍 **Step-by-Step Solution:**
-${input.includes("2x") ? 
-`1. Start with: 2x + 5 = 15
-2. Subtract 5 from both sides: 2x = 10
-3. Divide both sides by 2: x = 5
-4. Check: 2(5) + 5 = 15 ✓` :
-`1. Let me research this topic for you
-2. I'll provide age-appropriate explanations
-3. Include examples your child can relate to
-4. Suggest follow-up questions to ask`}
-
-👨‍👩‍👧‍👦 **For Parents:**
-Encourage your child to explain each step back to you. This helps reinforce their understanding and builds confidence.
-
-💡 **Next Steps:**
-Would you like me to suggest similar practice problems?`,
+        content: response,
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, botResponse]);
       setFreeQuestions(prev => Math.max(0, prev - 1));
+
+      // Show success toast
+      toast({
+        title: "Answer Generated!",
+        description: "I've provided a detailed explanation for your question.",
+      });
+
+    } catch (error) {
+      console.error('Failed to get AI response:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: "bot",
+        content: "I'm sorry, I'm having trouble processing your question right now. Please try again in a moment. If the problem persists, please check your internet connection or contact support.",
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, errorMessage]);
+      
+      toast({
+        title: "Error",
+        description: "Failed to generate response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageUrl = e.target?.result as string;
-        const userMessage: Message = {
-          id: Date.now().toString(),
-          type: "user",
-          content: "I've uploaded an image of my homework question. Please help me understand it.",
-          timestamp: new Date(),
-          image: imageUrl
-        };
-        setMessages(prev => [...prev, userMessage]);
-        
-        // Simulate AI response for image
-        setTimeout(() => {
-          const botResponse: Message = {
-            id: (Date.now() + 1).toString(),
-            type: "bot",
-            content: `I can see the homework question in your image! Let me analyze it and provide a detailed explanation:
+    if (!file || !isAiInitialized) return;
 
-📸 **What I See:**
-This appears to be a [math/science/language] problem that requires [specific skills].
-
-🔍 **Solution Approach:**
-1. First, let's identify what the question is asking
-2. Break down the problem into smaller parts
-3. Apply the relevant concepts step by step
-4. Verify our answer makes sense
-
-👨‍👩‍👧‍👦 **Teaching Tip:**
-When helping your child, start by asking "What do you think this question wants us to find?" This encourages critical thinking.
-
-Would you like me to explain any specific part in more detail?`,
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, botResponse]);
-          setFreeQuestions(prev => Math.max(0, prev - 1));
-        }, 2500);
-      };
-      reader.readAsDataURL(file);
+    if (freeQuestions === 0) {
+      toast({
+        title: "No Questions Left",
+        description: "Please subscribe to continue asking questions.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const imageUrl = e.target?.result as string;
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        type: "user",
+        content: input || "I've uploaded an image of my homework question. Please help me understand it.",
+        timestamp: new Date(),
+        image: imageUrl
+      };
+      
+      setMessages(prev => [...prev, userMessage]);
+      setIsLoading(true);
+      setInput("");
+
+      try {
+        const response = await geminiService.analyzeHomeworkImage(file, input);
+
+        const botResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          type: "bot",
+          content: response,
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, botResponse]);
+        setFreeQuestions(prev => Math.max(0, prev - 1));
+
+        toast({
+          title: "Image Analyzed!",
+          description: "I've analyzed your homework image and provided an explanation.",
+        });
+
+      } catch (error) {
+        console.error('Failed to analyze image:', error);
+        
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: "bot",
+          content: "I'm sorry, I'm having trouble analyzing your image right now. Please try uploading the image again or type out your question instead.",
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, errorMessage]);
+        
+        toast({
+          title: "Image Analysis Failed",
+          description: "Failed to analyze the image. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -149,6 +236,47 @@ Would you like me to explain any specific part in more detail?`,
                 </p>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Subject and Grade Selection */}
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="subject" className="flex items-center text-sm font-medium">
+              <BookOpen className="h-4 w-4 mr-1" />
+              Subject (Optional)
+            </Label>
+            <Select value={subject} onValueChange={setSubject}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select subject..." />
+              </SelectTrigger>
+              <SelectContent>
+                {subjects.map((subj) => (
+                  <SelectItem key={subj} value={subj}>
+                    {subj}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="grade" className="flex items-center text-sm font-medium">
+              <GraduationCap className="h-4 w-4 mr-1" />
+              Grade/Form (Optional)
+            </Label>
+            <Select value={grade} onValueChange={setGrade}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select grade..." />
+              </SelectTrigger>
+              <SelectContent>
+                {grades.map((gr) => (
+                  <SelectItem key={gr} value={gr}>
+                    {gr}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
