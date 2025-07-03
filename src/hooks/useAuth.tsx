@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase, User, AuthError, dbHelpers, UserProfile } from '@/lib/supabase';
+import { env } from '@/lib/env';
 
 interface AuthContextType {
   user: User | null;
@@ -154,7 +155,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         options: {
           data: {
             name: name,
-          }
+          },
+          emailRedirectTo: env.appUrl
         }
       });
 

@@ -21,6 +21,9 @@ interface EnvironmentVariables {
   // Supabase Configuration
   VITE_SUPABASE_URL: string;
   VITE_SUPABASE_ANON_KEY: string;
+  
+  // Application Configuration
+  VITE_APP_URL: string;
 }
 
 class Environment {
@@ -39,6 +42,7 @@ class Environment {
       VITE_WHATSAPP_NUMBER: import.meta.env.VITE_WHATSAPP_NUMBER,
       VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
       VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      VITE_APP_URL: import.meta.env.VITE_APP_URL,
     };
   }
 
@@ -83,6 +87,10 @@ class Environment {
     return this.vars.VITE_SUPABASE_ANON_KEY || '';
   }
 
+  get appUrl(): string {
+    return this.vars.VITE_APP_URL || 'https://parent-assignment-helper.vercel.app';
+  }
+
   /**
    * Validate that all required environment variables are set
    */
@@ -120,6 +128,7 @@ class Environment {
       VITE_WHATSAPP_NUMBER: this.whatsappNumber || 'NOT_SET',
       VITE_SUPABASE_URL: this.supabaseUrl || 'NOT_SET',
       VITE_SUPABASE_ANON_KEY: this.supabaseAnonKey ? '***' + this.supabaseAnonKey.slice(-4) : 'NOT_SET',
+      VITE_APP_URL: this.appUrl || 'NOT_SET',
     };
   }
 }
