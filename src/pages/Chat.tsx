@@ -5,7 +5,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, Select              <div className="flex space-x-2 md:space-x-3">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={(user.questionsRemaining || 0) === 0 || !isAiInitialized}
+                  title="Upload image"
+                  className="h-12 w-12 md:h-14 md:w-14"
+                >
+                  <Camera className="h-5 w-5 md:h-6 md:w-6" />
+                </Button>
+                
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!input.trim() || isLoading || (user.questionsRemaining || 0) === 0 || !isAiInitialized}
+                  className="px-6 md:px-8 h-12 md:h-14"
+                  size="default"
+                >
+                  <Send className="h-5 w-5 md:h-6 md:w-6" />
+                </Button>
+              </div> "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { geminiService, HomeworkQuestion } from "@/lib/gemini";
 import { useToast } from "@/hooks/use-toast";
@@ -454,7 +474,7 @@ export default function Chat() {
         )}
 
         {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto space-y-3 md:space-y-4 mb-4 md:mb-6 min-h-[400px] md:min-h-[500px]">
+        <div className="flex-1 overflow-y-auto space-y-3 md:space-y-4 mb-4 md:mb-6 min-h-[500px] md:min-h-[600px]">
           {messages.map((message) => (
             <div key={message.id} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`flex items-start space-x-2 md:space-x-3 max-w-[85%] md:max-w-[80%] ${message.type === "user" ? "flex-row-reverse space-x-reverse" : ""}`}>
@@ -520,7 +540,7 @@ export default function Chat() {
                       handleSendMessage();
                     }
                   }}
-                  className="min-h-[60px] md:min-h-[80px] max-h-40 resize-none text-sm md:text-base leading-relaxed"
+                  className="min-h-[80px] md:min-h-[100px] max-h-40 resize-none text-sm md:text-base leading-relaxed"
                   disabled={(user.questionsRemaining || 0) === 0 || !isAiInitialized}
                 />
               </div>
