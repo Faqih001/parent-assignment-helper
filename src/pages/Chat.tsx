@@ -367,7 +367,7 @@ export default function Chat() {
                     }
                   }}
                   className="min-h-[40px] max-h-32 resize-none"
-                  disabled={freeQuestions === 0}
+                  disabled={freeQuestions === 0 || !isAiInitialized}
                 />
               </div>
               
@@ -376,7 +376,7 @@ export default function Chat() {
                   variant="outline"
                   size="icon"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={freeQuestions === 0}
+                  disabled={freeQuestions === 0 || !isAiInitialized}
                   title="Upload image"
                 >
                   <Camera className="h-4 w-4" />
@@ -384,7 +384,7 @@ export default function Chat() {
                 
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!input.trim() || isLoading || freeQuestions === 0}
+                  disabled={!input.trim() || isLoading || freeQuestions === 0 || !isAiInitialized}
                   className="px-6"
                 >
                   <Send className="h-4 w-4" />
@@ -404,6 +404,10 @@ export default function Chat() {
               <div className="flex items-center space-x-4">
                 <span className="flex items-center">
                   <CheckCircle className="h-3 w-3 mr-1 text-success" />
+                  Powered by Google Gemini
+                </span>
+                <span className="flex items-center">
+                  <CheckCircle className="h-3 w-3 mr-1 text-success" />
                   All subjects supported
                 </span>
                 <span className="flex items-center">
@@ -415,6 +419,12 @@ export default function Chat() {
                 <span className="flex items-center text-destructive">
                   <AlertCircle className="h-3 w-3 mr-1" />
                   <a href="/pricing" className="hover:underline">Subscribe to continue</a>
+                </span>
+              )}
+              {!isAiInitialized && (
+                <span className="flex items-center text-yellow-600">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  AI initializing...
                 </span>
               )}
             </div>

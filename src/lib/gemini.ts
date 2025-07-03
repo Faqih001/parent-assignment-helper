@@ -1,7 +1,8 @@
 import { GoogleGenAI } from '@google/genai';
+import { env } from './env';
 
 // Initialize Google Gemini AI
-const apiKey = import.meta.env.VITE_GOOGLE_GEMINI_API_KEY;
+const apiKey = env.geminiApiKey;
 
 if (!apiKey) {
   throw new Error('Google Gemini API key not found. Please set VITE_GOOGLE_GEMINI_API_KEY in your .env file.');

@@ -1,11 +1,12 @@
 import IntaSend from 'intasend-node';
+import { env } from './env';
 
 // IntaSend configuration
-const intasend = new IntaSend({
-  publicKey: import.meta.env.VITE_INTASEND_PUBLISHABLE_KEY,
-  secretKey: import.meta.env.INTASEND_SECRET_KEY || '',
-  testMode: import.meta.env.VITE_INTASEND_TEST_MODE === 'true',
-});
+const intasend = new IntaSend(
+  env.intasendPublicKey,
+  env.intasendSecretKey,
+  env.intasendTestMode
+);
 
 export interface PaymentRequest {
   amount: number;
