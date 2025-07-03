@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { paymentService } from '@/lib/intasend';
+import { emailService } from '@/lib/resend';
+import { env } from '@/lib/env';
 
 interface PaymentStatus {
   status: 'loading' | 'success' | 'failed' | 'pending';
@@ -41,6 +43,21 @@ export default function PaymentSuccess() {
             message: 'Payment completed successfully!',
             details: status
           });
+
+          // Send payment confirmation email
+          if (status.customer?.email) {
+            try {
+              await emailService.sendPaymentConfirmation(
+                status.customer.email,
+                'HomeworkHelper Subscription',
+                status.invoice.net_amount || 0,
+                invoiceId
+              );
+            } catch (emailError) {
+              console.error('Failed to send confirmation email:', emailError);
+              // Don't fail the payment success for email issues
+            }
+          }
         } else if (status.invoice?.state === 'FAILED') {
           setPaymentStatus({
             status: 'failed',
@@ -219,8 +236,12 @@ export default function PaymentSuccess() {
             <div className="text-center text-xs text-muted-foreground pt-4 border-t">
               <p>
                 Need help? Contact us at{' '}
-                <a href="mailto:support@homeworkhelper.co.ke" className="text-primary hover:underline">
-                  support@homeworkhelper.co.ke
+                <a href={`mailto:${env.supportEmail}`} className="text-primary hover:underline">
+                  {env.supportEmail}
+                </a>
+                {' '}or WhatsApp{' '}
+                <a href={`https://wa.me/${env.whatsappNumber}`} className="text-primary hover:underline">
+                  +{env.whatsappNumber}
                 </a>
               </p>
               <p className="mt-1">

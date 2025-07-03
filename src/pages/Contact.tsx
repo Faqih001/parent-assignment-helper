@@ -219,6 +219,19 @@ export default function Contact() {
                     </div>
                   </div>
 
+                  {/* Phone Number */}
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="text-sm font-medium">Phone Number (Optional)</label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="0712345678"
+                    />
+                  </div>
+
                   {/* Subject */}
                   <div className="space-y-2">
                     <label htmlFor="subject" className="text-sm font-medium">Subject</label>
@@ -343,9 +356,9 @@ export default function Contact() {
                   Emergency Support
                 </h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  For urgent technical issues affecting homework deadlines, call our emergency line:
+                  For urgent technical issues affecting homework deadlines, contact us via WhatsApp:
                 </p>
-                <p className="font-medium text-primary">+254 700 123 456</p>
+                <p className="font-medium text-primary">+{env.whatsappNumber}</p>
                 <p className="text-xs text-muted-foreground mt-1">Available 24/7 for subscribers</p>
               </CardContent>
             </Card>
