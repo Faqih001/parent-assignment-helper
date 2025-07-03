@@ -1,8 +1,11 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "homework-helper",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "AI-powered homework assistant for Kenyan students",
+  "author": "HomeworkHelper Team",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
