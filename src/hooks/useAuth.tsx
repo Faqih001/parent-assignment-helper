@@ -146,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           toast({
             title: "Welcome back!",
             description: "You've successfully logged in.",
+            variant: "success",
           });
         }
       }
@@ -155,7 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Login failed",
         description: error.message || "Please check your credentials and try again.",
-        variant: "destructive",
+        variant: "error",
       });
       return false;
     } finally {
@@ -187,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           toast({
             title: "Check your email",
             description: "We've sent you a confirmation link to complete your registration.",
+            variant: "success",
           });
         } else {
           // User profile should be created automatically by the trigger
@@ -206,6 +208,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             toast({
               title: "Account created!",
               description: `Welcome to HomeworkHelper, ${profile.name}! You have ${profile.questions_remaining} free questions to get started.`,
+              variant: "success",
             });
           }
         }
@@ -216,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Registration failed",
         description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
+        variant: "error",
       });
       return false;
     } finally {
@@ -239,6 +242,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Logged out",
         description: "You've been successfully logged out.",
+        variant: "success",
       });
     } catch (error) {
       console.error('Logout error:', error);
@@ -259,6 +263,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Reset email sent!",
         description: "Check your email for password reset instructions.",
+        variant: "success",
       });
       return true;
     } catch (error: any) {
@@ -266,7 +271,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Reset failed",
         description: error.message || "Failed to send reset email. Please try again.",
-        variant: "destructive",
+        variant: "error",
       });
       return false;
     } finally {
@@ -309,6 +314,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Password Updated!",
         description: "Your password has been successfully updated.",
+        variant: "success",
       });
       return true;
     } catch (error: any) {
@@ -316,7 +322,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast({
         title: "Update Failed",
         description: error.message || "Failed to update password. Please try again.",
-        variant: "destructive",
+        variant: "error",
       });
       return false;
     } finally {

@@ -21,12 +21,13 @@ export function IntegrationDemo() {
       toast({
         title: "Gemini API Test Successful",
         description: `Response: ${response.substring(0, 100)}...`,
+        variant: "success",
       });
     } catch (error) {
       toast({
         title: "Gemini API Test Failed",
         description: error instanceof Error ? error.message : "Unknown error",
-        variant: "destructive",
+        variant: "error",
       });
     }
   };
@@ -40,7 +41,7 @@ export function IntegrationDemo() {
       description: validation.isValid 
         ? "All required environment variables are set"
         : `Missing: ${validation.missing.join(', ')}`,
-      variant: validation.isValid ? "default" : "destructive",
+      variant: validation.isValid ? "success" : "error",
     });
 
     console.log('Environment Variables:', allVars);

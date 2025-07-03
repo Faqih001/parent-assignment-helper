@@ -40,7 +40,7 @@ export default function Chat() {
       toast({
         title: "Authentication Required",
         description: "Please log in to access the homework assistant.",
-        variant: "destructive",
+        variant: "error",
       });
     }
   }, [user, navigate, toast]);
@@ -92,7 +92,7 @@ export default function Chat() {
         toast({
           title: "Initialization Failed",
           description: "There was an issue starting the chat service. Please refresh the page.",
-          variant: "destructive",
+          variant: "error",
         });
       }
     };

@@ -219,7 +219,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
     toast({
       title: "Image upload not available",
       description: "For homework image analysis, please sign up and use our main chat feature after logging in.",
-      variant: "default",
+      variant: "error",
     });
 
     // Clear the file input
