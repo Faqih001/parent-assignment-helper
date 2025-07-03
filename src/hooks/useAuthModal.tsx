@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useAuth } from './useAuth';
 
 interface AuthModalContextType {
   isAuthModalOpen: boolean;
@@ -13,6 +14,15 @@ const AuthModalContext = createContext<AuthModalContextType | undefined>(undefin
 export function AuthModalProvider({ children }: { children: ReactNode }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [defaultTab, setDefaultTab] = useState<'login' | 'register'>('login');
+  const { user } = useAuth();
+
+  // Auto-close modal when user logs in successfully
+  useEffect(() => {
+    if (user && isAuthModalOpen) {
+      console.log('AuthModal: User authenticated, closing modal');
+      setIsAuthModalOpen(false);
+    }
+  }, [user, isAuthModalOpen]);
 
   const openAuthModal = () => {
     setDefaultTab('login');
@@ -20,6 +30,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   };
 
   const closeAuthModal = () => {
+    console.log('AuthModal: Closing modal');
     setIsAuthModalOpen(false);
   };
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, BookOpen, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,41 +11,47 @@ import logo from "@/assets/logo.png";
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, login, register, logout, forgotPassword, isLoginLoading, isRegisterLoading } = useAuth();
   const { isAuthModalOpen, defaultTab, openAuthModal, closeAuthModal } = useAuthModal();
 
-  // Auto-close modal when user successfully logs in
+  // Auto-close modal when user successfully logs in and redirect to home
   useEffect(() => {
     if (user && isAuthModalOpen) {
-      console.log('Header: User detected, closing modal');
-      setTimeout(() => {
-        closeAuthModal();
-      }, 100);
+      console.log('Header: User authenticated, closing modal and redirecting');
+      closeAuthModal();
+      // Redirect to home page after successful login if not already there
+      if (location.pathname !== '/') {
+        navigate('/');
+      }
     }
-  }, [user, isAuthModalOpen, closeAuthModal]);
+  }, [user, isAuthModalOpen, closeAuthModal, navigate, location.pathname]);
 
   const handleLogin = async (email: string, password: string, rememberMe?: boolean) => {
     console.log('Header: Starting login process');
-    const success = await login(email, password, rememberMe);
-    console.log('Header: Login result received:', success);
-    if (success) {
-      console.log('Header: Closing modal due to successful login');
-      // Add a small delay to ensure auth state has updated
-      setTimeout(() => {
-        closeAuthModal();
-      }, 100);
-    } else {
-      console.log('Header: Keeping modal open due to failed login');
+    try {
+      const success = await login(email, password, rememberMe);
+      console.log('Header: Login result received:', success);
+      if (success) {
+        console.log('Header: Login successful, modal should close automatically');
+        // The useEffect above will handle closing the modal when user state updates
+      } else {
+        console.log('Header: Login failed, keeping modal open');
+      }
+    } catch (error) {
+      console.error('Header: Login error:', error);
     }
   };
 
   const handleRegister = async (name: string, email: string, password: string) => {
-    const success = await register(name, email, password);
-    if (success) {
-      // Add a small delay to ensure auth state has updated
-      setTimeout(() => {
-        closeAuthModal();
-      }, 100);
+    try {
+      const success = await register(name, email, password);
+      if (success) {
+        console.log('Header: Registration successful, modal should close automatically');
+        // The useEffect above will handle closing the modal when user state updates
+      }
+    } catch (error) {
+      console.error('Header: Registration error:', error);
     }
   };
 

@@ -95,29 +95,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               questionsRemaining: profile.questions_remaining,
               role: profile.role || 'user'
             };
-            setUser(userData);            } else {
-              // Create profile if it doesn't exist (fallback)
-              const newProfile: Omit<UserProfile, 'created_at' | 'updated_at'> = {
-                id: session.user.id,
-                email: session.user.email || '',
-                name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-                plan: 'free',
-                questions_remaining: 5,
-                last_free_reset: new Date().toISOString(),
-                role: 'user'
+            setUser(userData);
+          } else {
+            // Create profile if it doesn't exist (fallback)
+            const newProfile: Omit<UserProfile, 'created_at' | 'updated_at'> = {
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+              plan: 'free',
+              questions_remaining: 5,
+              last_free_reset: new Date().toISOString(),
+              role: 'user'
+            };
+            const createdProfile = await dbHelpers.createUserProfile(newProfile);
+            if (createdProfile) {
+              const userData: User = {
+                id: createdProfile.id,
+                name: createdProfile.name,
+                email: createdProfile.email,
+                avatar: createdProfile.avatar_url,
+                plan: createdProfile.plan,
+                questionsRemaining: createdProfile.questions_remaining,
+                role: createdProfile.role || 'user'
               };
-              const createdProfile = await dbHelpers.createUserProfile(newProfile);
-              if (createdProfile) {
-                const userData: User = {
-                  id: createdProfile.id,
-                  name: createdProfile.name,
-                  email: createdProfile.email,
-                  avatar: createdProfile.avatar_url,
-                  plan: createdProfile.plan,
-                  questionsRemaining: createdProfile.questions_remaining,
-                  role: createdProfile.role || 'user'
-                };
-                setUser(userData);
+              setUser(userData);
             }
           }
         } else if (event === 'SIGNED_OUT') {
