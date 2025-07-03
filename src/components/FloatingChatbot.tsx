@@ -237,7 +237,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
+      <div className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-50">
         <Button
           onClick={() => setIsOpen(true)}
           className="rounded-full w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300 p-0 flex items-center justify-center"
@@ -252,10 +252,10 @@ Keep responses friendly, informative, and focused on helping users understand wh
   }
 
   return (
-    <div className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 transition-all duration-300 ${
+    <div className={`fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-50 transition-all duration-300 ${
       isMinimized ? 'w-72 sm:w-80' : 'w-[calc(100vw-2rem)] max-w-sm sm:w-96'
     }`}>
-      <Card className="shadow-2xl border-0 overflow-hidden max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-8rem)] flex flex-col">
+      <Card className="shadow-2xl border-0 overflow-hidden max-h-[calc(100vh-10rem)] sm:max-h-[calc(100vh-12rem)] flex flex-col">
         {/* Header */}
         <CardHeader className="bg-gradient-to-r from-primary to-primary/80 text-white p-3 sm:p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
