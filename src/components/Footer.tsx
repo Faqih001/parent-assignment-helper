@@ -97,11 +97,11 @@ export default function Footer() {
             <div className="space-y-3 text-sm">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-primary-foreground/60" />
-                <span className="text-primary-foreground/80">support@homeworkhelper.com</span>
+                <span className="text-primary-foreground/80">fakiiahmad001@gmail.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-primary-foreground/60" />
-                <span className="text-primary-foreground/80">+254 700 123 456</span>
+                <span className="text-primary-foreground/80">+254 741 140250</span>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-primary-foreground/60" />
@@ -113,7 +113,7 @@ export default function Footer() {
 
         <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center">
           <p className="text-primary-foreground/60 text-sm">
-            © 2024 HomeworkHelper. All rights reserved. Made with ❤️ for Kenyan families.
+            © {new Date().getFullYear()} HomeworkHelper. All rights reserved. Made with ❤️ for Kenyan families.
           </p>
         </div>
       </div>
