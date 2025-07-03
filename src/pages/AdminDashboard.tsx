@@ -25,7 +25,15 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatePlanOpen, setIsCreatePlanOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<CustomPlan | null>(null);
-  const [newPlan, setNewPlan] = useState({
+  const [newPlan, setNewPlan] = useState<{
+    name: string;
+    price: number;
+    questions_limit: number;
+    period: string;
+    description: string;
+    features: string;
+    is_active: boolean;
+  }>({
     name: '',
     price: 0,
     questions_limit: 0,
@@ -89,7 +97,7 @@ export default function AdminDashboard() {
     try {
       const planData = {
         ...newPlan,
-        features: newPlan.features.split('\n').filter(f => f.trim()),
+        features: newPlan.features.split('\n').filter((f: string) => f.trim()),
         created_by: user!.id
       };
 
@@ -128,8 +136,8 @@ export default function AdminDashboard() {
     try {
       const updates = {
         ...editingPlan,
-        features: typeof editingPlan.features === 'string' 
-          ? editingPlan.features.split('\n').filter(f => f.trim())
+        features: typeof editingPlan.features === 'string'
+          ? (editingPlan.features as string).split('\n').filter((f: string) => f.trim())
           : editingPlan.features
       };
 
@@ -583,7 +591,7 @@ export default function AdminDashboard() {
                   <Textarea
                     id="edit-plan-features"
                     value={Array.isArray(editingPlan.features) ? editingPlan.features.join('\n') : editingPlan.features}
-                    onChange={(e) => setEditingPlan({ ...editingPlan, features: e.target.value })}
+                    onChange={(e) => setEditingPlan({ ...editingPlan, features: e.target.value as any })}
                     rows={4}
                   />
                 </div>
