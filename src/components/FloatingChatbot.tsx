@@ -237,25 +237,25 @@ Keep responses friendly, informative, and focused on helping users understand wh
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-20 right-4 md:bottom-24 md:right-6 z-50">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
         <Button
           onClick={() => setIsOpen(true)}
-          className="rounded-full w-14 h-14 md:w-16 md:h-16 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300 p-0 flex items-center justify-center"
+          className="rounded-full w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300 p-0 flex items-center justify-center"
         >
-          <MessageCircle className="h-6 w-6 md:h-7 md:w-7" />
+          <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7" />
         </Button>
-        <div className="absolute -top-1 -left-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center animate-bounce">
-          AI
+        <div className="absolute -top-1 -left-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 flex items-center justify-center animate-bounce">
+          <span className="text-[10px] sm:text-xs font-bold">AI</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`fixed bottom-20 right-4 md:bottom-24 md:right-6 z-50 transition-all duration-300 ${
-      isMinimized ? 'w-80 sm:w-80' : 'w-[95vw] max-w-sm sm:w-96'
+    <div className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 transition-all duration-300 ${
+      isMinimized ? 'w-72 sm:w-80' : 'w-[calc(100vw-2rem)] max-w-sm sm:w-96'
     }`}>
-      <Card className="shadow-2xl border-0 overflow-hidden max-h-[85vh] sm:max-h-none flex flex-col">
+      <Card className="shadow-2xl border-0 overflow-hidden max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-8rem)] flex flex-col">
         {/* Header */}
         <CardHeader className="bg-gradient-to-r from-primary to-primary/80 text-white p-3 sm:p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -264,14 +264,14 @@ Keep responses friendly, informative, and focused on helping users understand wh
                 <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
               </div>
               <div>
-                <CardTitle className="text-sm sm:text-sm font-semibold">AI Homework Helper</CardTitle>
+                <CardTitle className="text-sm font-semibold">AI Homework Helper</CardTitle>
                 <p className="text-xs opacity-90">
                   {isAiInitialized ? 'Online • Ready to help' : 'Initializing...'}
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-1">
-              <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 hidden sm:block">
                 Website Info
               </Badge>
               <Button
@@ -298,10 +298,10 @@ Keep responses friendly, informative, and focused on helping users understand wh
         {!isMinimized && (
           <CardContent className="p-0 flex-1 flex flex-col min-h-0">
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-gray-50 min-h-0" style={{ height: 'min(60vh, 320px)' }}>
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 bg-gray-50 min-h-0" style={{ height: 'min(50vh, 280px)' }}>
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex items-start space-x-2 max-w-[85%] sm:max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                  <div className={`flex items-start space-x-2 max-w-[90%] sm:max-w-[85%] ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                     <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
                       message.type === 'user' 
                         ? 'bg-primary text-white' 
@@ -310,7 +310,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
                       {message.type === 'user' ? <User className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> : <Bot className="h-2.5 w-2.5 sm:h-3 sm:w-3" />}
                     </div>
                     
-                    <div className={`rounded-lg p-2.5 sm:p-3 ${
+                    <div className={`rounded-lg p-2 sm:p-2.5 ${
                       message.type === 'user' 
                         ? 'bg-primary text-white' 
                         : 'bg-white border shadow-sm'
@@ -319,13 +319,13 @@ Keep responses friendly, informative, and focused on helping users understand wh
                         <img 
                           src={message.image} 
                           alt="Uploaded homework" 
-                          className="max-w-full h-auto rounded mb-2 max-h-24 sm:max-h-32 object-cover" 
+                          className="max-w-full h-auto rounded mb-2 max-h-20 sm:max-h-24 object-cover" 
                         />
                       )}
                       <div className="text-xs sm:text-sm leading-relaxed">
                         {message.type === 'bot' ? (
                           <div 
-                            className="space-y-2"
+                            className="space-y-1 sm:space-y-2"
                             dangerouslySetInnerHTML={{
                               __html: formatBotMessage(message.content)
                             }}
@@ -350,7 +350,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
                     <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white flex items-center justify-center">
                       <Bot className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                     </div>
-                    <div className="bg-white border shadow-sm rounded-lg p-2.5 sm:p-3">
+                    <div className="bg-white border shadow-sm rounded-lg p-2 sm:p-2.5">
                       <div className="flex items-center space-x-2">
                         <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                         <span className="text-xs sm:text-sm text-gray-500">Thinking...</span>
@@ -366,8 +366,8 @@ Keep responses friendly, informative, and focused on helping users understand wh
             {/* Input Area */}
             <div className="p-3 sm:p-4 border-t bg-white flex-shrink-0">
               {!user && (
-                <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs sm:text-sm text-blue-800">
-                  � For actual homework help, please <a href="/chat" className="underline font-medium">sign up and log in</a> to access our AI tutor!
+                <div className="mb-2 sm:mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                  💡 For actual homework help, please <a href="/chat" className="underline font-medium">sign up and log in</a> to access our AI tutor!
                 </div>
               )}
               
@@ -379,7 +379,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
                     disabled={!isAiInitialized}
-                    className="resize-none border-gray-300 focus:border-primary text-sm"
+                    className="resize-none border-gray-300 focus:border-primary text-sm h-9"
                   />
                 </div>
                 
@@ -388,7 +388,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={!isAiInitialized}
-                  className="p-1.5 sm:p-2 h-9 w-9"
+                  className="p-1.5 h-9 w-9 hidden sm:flex"
                   title="Image upload available in main chat after login"
                 >
                   <Camera className="h-4 w-4" />
@@ -398,7 +398,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
                   onClick={handleSendMessage}
                   disabled={!input.trim() || isLoading || !isAiInitialized}
                   size="sm"
-                  className="px-2.5 sm:px-3 h-9"
+                  className="px-2 sm:px-3 h-9"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
@@ -415,7 +415,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
               <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
                 <span className="hidden sm:block">Website Assistant • Powered by AI</span>
                 <span className="sm:hidden">Website Assistant</span>
-                <span>Ask about our platform</span>
+                <span className="hidden sm:block">Ask about our platform</span>
               </div>
             </div>
           </CardContent>
