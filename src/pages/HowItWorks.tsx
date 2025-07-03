@@ -2,6 +2,7 @@ import { Camera, MessageCircle, BookOpen, Users, CheckCircle, ArrowRight } from 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import celebration from "@/assets/celebration.jpg";
 
 export default function HowItWorks() {
   const steps = [
@@ -207,8 +208,13 @@ export default function HowItWorks() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-hero">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-20 bg-gradient-hero relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-fixed opacity-30"
+          style={{ backgroundImage: `url(${celebration})` }}
+        ></div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="space-y-6 text-white">
             <h2 className="text-3xl lg:text-4xl font-bold">
               Ready to Try It Yourself?
@@ -224,7 +230,7 @@ export default function HowItWorks() {
                 </Button>
               </Link>
               <Link to="/pricing">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-primary">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto border-white bg-white/10 text-white hover:bg-white hover:text-primary transition-all duration-300">
                   View Pricing Plans
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
