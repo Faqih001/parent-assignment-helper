@@ -197,15 +197,14 @@ Keep responses friendly, informative, and focused on helping users understand wh
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-24 md:bottom-20 right-4 md:right-6 z-50">
+      <div className="fixed bottom-20 right-4 md:bottom-24 md:right-6 z-50">
         <Button
           onClick={() => setIsOpen(true)}
-          size="lg"
-          className="rounded-full w-12 h-12 md:w-14 md:h-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300"
+          className="rounded-full w-14 h-14 md:w-16 md:h-16 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300 p-0 flex items-center justify-center"
         >
-          <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
+          <MessageCircle className="h-6 w-6 md:h-7 md:w-7" />
         </Button>
-        <div className="absolute -top-1 -left-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center animate-bounce">
+        <div className="absolute -top-1 -left-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center animate-bounce">
           AI
         </div>
       </div>
@@ -213,7 +212,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
   }
 
   return (
-    <div className={`fixed bottom-20 sm:bottom-36 right-4 sm:right-6 z-50 transition-all duration-300 ${
+    <div className={`fixed bottom-20 right-4 md:bottom-24 md:right-6 z-50 transition-all duration-300 ${
       isMinimized ? 'w-80 sm:w-80' : 'w-[95vw] max-w-sm sm:w-96'
     }`}>
       <Card className="shadow-2xl border-0 overflow-hidden max-h-[85vh] sm:max-h-none flex flex-col">
