@@ -148,25 +148,32 @@ export default function Contact() {
   };
 
   return (
-    <div className="flex flex-col py-20">
+    <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-20">
-        <div className="text-center space-y-6">
-          <h1 className="text-4xl lg:text-5xl font-bold">
-            Get in <span className="bg-gradient-primary bg-clip-text text-transparent">Touch</span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Have questions about HomeworkHelper? Need technical support? Want to explore school partnerships? 
-            We're here to help and would love to hear from you.
-          </p>
-          <Badge variant="secondary" className="px-4 py-2">
-            💬 Average response time: 2 hours
-          </Badge>
+      <section className="relative py-20 lg:py-32 bg-gradient-hero overflow-hidden min-h-[60vh] flex items-center">
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-fixed opacity-30"
+          style={{ backgroundImage: `url(${support247})` }}
+        ></div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center space-y-6 animate-fade-in">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white animate-slide-up">
+              Get in <span className="text-secondary">Touch</span>
+            </h1>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto animate-fade-in [animation-delay:0.2s]">
+              Have questions about HomeworkHelper? Need technical support? Want to explore school partnerships? 
+              We're here to help and would love to hear from you.
+            </p>
+            <Badge variant="secondary" className="px-4 py-2 bg-white/10 text-white border-white/30 animate-scale-in [animation-delay:0.4s]">
+              💬 Average response time: 2 hours
+            </Badge>
+          </div>
         </div>
       </section>
 
-      {/* Contact Methods */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+            {/* Contact Methods */}
+      <section className="py-20 container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {contactMethods.map((method, index) => (
             <Card key={index} className="border-0 shadow-soft hover:shadow-medium transition-all duration-300 text-center">
