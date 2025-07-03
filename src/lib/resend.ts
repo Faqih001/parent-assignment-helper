@@ -40,7 +40,7 @@ export class ResendEmailService {
         subject: emailData.subject,
         html: emailData.html,
         text: emailData.text,
-        reply_to: formData.email,
+        replyTo: formData.email,
       });
 
       if (response.error) {

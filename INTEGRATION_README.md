@@ -1,27 +1,40 @@
 # HomeworkHelper - AI-Powered Homework Assistant
 
-## New Features Implemented
+## 🚀 New Features Implemented
 
-### 🔄 IntaSend Payment Integration
-- Complete payment system supporting M-Pesa, Airtel Money, and Credit/Debit Cards
-- Real-time payment verification and status checking
-- Secure payment modal with form validation
-- Payment success page with transaction details
-- Test mode support for development
+### 🤖 **Floating AI Chatbot**
+- **Floating chatbot widget** accessible from any page
+- **Minimizable interface** for better user experience
+- **3 free questions** for trial users
+- **Real-time AI responses** powered by Google Gemini
+- **Image upload support** for homework photos
+- **Conversation history** maintained during session
 
-### 🤖 Google Gemini AI Integration
-- Advanced AI homework assistance powered by Google Gemini 2.5 Flash
-- Image analysis for homework questions
-- Subject and grade-specific explanations
-- Real-time chat interface
-- Kenyan curriculum (CBC) alignment
+### 💬 **WhatsApp Integration**
+- **Floating WhatsApp button** for instant support
+- **Pre-filled messages** for better user experience
+- **24/7 availability indicator** 
+- **Direct link to support** with context
 
-### 📱 Enhanced User Experience
-- Subject and grade selection for personalized responses
-- Image upload for homework questions
-- Real-time typing indicators
-- Free question limits with subscription prompts
-- Responsive design for all devices
+### 📧 **Email System with Resend**
+- **Contact form integration** with automatic email sending
+- **Auto-reply system** for customer confirmation
+- **Payment confirmation emails** with detailed receipts
+- **Professional email templates** with branding
+- **Error handling and fallback** support
+
+### 🔄 **Enhanced IntaSend Payment Integration**
+- **Complete payment system** supporting M-Pesa, Airtel Money, and Credit/Debit Cards
+- **Real-time payment verification** and status checking
+- **Email confirmations** sent automatically after successful payments
+- **Payment success page** with transaction details
+
+### 🤖 **Advanced Google Gemini AI Integration**
+- **Multi-modal AI assistance** (text and image analysis)
+- **Kenyan curriculum alignment** (CBC support)
+- **Subject and grade-specific responses**
+- **Conversation context management**
+- **Error handling and retry mechanisms**
 
 ## Environment Variables
 
@@ -35,6 +48,14 @@ VITE_INTASEND_TEST_MODE=true
 
 # Google Gemini AI Configuration
 VITE_GOOGLE_GEMINI_API_KEY=AIzaSyDnbWdDvKxrN4M2GIP9yMFmub9xJPQVMj4
+
+# Resend Email Configuration
+RESEND_API_KEY=re_8JE3rZ3q_2KEXKbhRULcu4eouCFhe8M8d
+VITE_SUPPORT_EMAIL=fakiiahmad0012@gmail.com
+VITE_SUPPORT_PHONE=0741140250
+
+# WhatsApp Configuration
+VITE_WHATSAPP_NUMBER=254741140250
 ```
 
 ## New Dependencies
@@ -44,7 +65,8 @@ The following packages have been added:
 ```json
 {
   "intasend-node": "^1.1.2",
-  "@google/genai": "^1.8.0"
+  "@google/genai": "^1.8.0",
+  "resend": "^1.0.0"
 }
 ```
 
