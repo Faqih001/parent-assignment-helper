@@ -294,8 +294,8 @@ export default function TermsOfService() {
                 If you have any questions about these Terms of Service, please contact us:
               </p>
               <div className="bg-muted/30 p-4 rounded-lg">
-                <p><strong>Email:</strong> legal@homeworkhelper.co.ke</p>
-                <p><strong>Phone:</strong> +254 700 000 000</p>
+                <p><strong>Email:</strong> fakiiahmad001@gmail.com</p>
+                <p><strong>Phone:</strong> +254 741 140 250</p>
                 <p><strong>Address:</strong> Nairobi, Kenya</p>
               </div>
             </CardContent>
