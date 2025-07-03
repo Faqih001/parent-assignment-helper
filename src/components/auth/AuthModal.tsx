@@ -56,11 +56,41 @@ export default function AuthModal({
       setShowForgotPassword(false);
       setForgotPasswordEmail("");
       setShowPassword(false);
+      setValidationErrors({});
     }
   }, [isOpen]);
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    return password.length >= 6;
+  };
+
+  const validateName = (name: string) => {
+    return name.trim().length >= 2;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationErrors({});
+    
+    // Client-side validation
+    const errors: {[key: string]: string} = {};
+    if (!validateEmail(loginForm.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+    if (!validatePassword(loginForm.password)) {
+      errors.password = "Password must be at least 6 characters";
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    
     if (!isLoginLoading && loginForm.email && loginForm.password) {
       try {
         await onLogin(loginForm.email, loginForm.password, loginForm.rememberMe);
@@ -74,6 +104,25 @@ export default function AuthModal({
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationErrors({});
+    
+    // Client-side validation
+    const errors: {[key: string]: string} = {};
+    if (!validateName(registerForm.name)) {
+      errors.name = "Name must be at least 2 characters";
+    }
+    if (!validateEmail(registerForm.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+    if (!validatePassword(registerForm.password)) {
+      errors.password = "Password must be at least 6 characters";
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    
     if (!isRegisterLoading && registerForm.name && registerForm.email && registerForm.password) {
       try {
         await onRegister(registerForm.name, registerForm.email, registerForm.password);
@@ -87,6 +136,13 @@ export default function AuthModal({
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationErrors({});
+    
+    if (!validateEmail(forgotPasswordEmail)) {
+      setValidationErrors({ forgotEmail: "Please enter a valid email address" });
+      return;
+    }
+    
     if (!isLoginLoading && forgotPasswordEmail) {
       try {
         await onForgotPassword(forgotPasswordEmail);
@@ -134,13 +190,16 @@ export default function AuthModal({
                         id="login-email"
                         type="email"
                         placeholder="your@email.com"
-                        className="pl-10 text-sm"
+                        className={`pl-10 text-sm ${validationErrors.email ? 'border-destructive' : ''}`}
                         value={loginForm.email}
                         onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
                         disabled={isLoginLoading}
                         required
                       />
                     </div>
+                    {validationErrors.email && (
+                      <p className="text-sm text-destructive">{validationErrors.email}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="login-password" className="text-sm">Password</Label>
@@ -150,7 +209,7 @@ export default function AuthModal({
                         id="login-password"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        className="pl-10 pr-10 text-sm"
+                        className={`pl-10 pr-10 text-sm ${validationErrors.password ? 'border-destructive' : ''}`}
                         value={loginForm.password}
                         onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                         disabled={isLoginLoading}
@@ -165,6 +224,9 @@ export default function AuthModal({
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    {validationErrors.password && (
+                      <p className="text-sm text-destructive">{validationErrors.password}</p>
+                    )}
                   </div>
                   
                   <div className="flex items-center justify-between space-x-2">
@@ -236,13 +298,16 @@ export default function AuthModal({
                         id="register-name"
                         type="text"
                         placeholder="Your full name"
-                        className="pl-10 text-sm"
+                        className={`pl-10 text-sm ${validationErrors.name ? 'border-destructive' : ''}`}
                         value={registerForm.name}
                         onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
                         disabled={isRegisterLoading}
                         required
                       />
                     </div>
+                    {validationErrors.name && (
+                      <p className="text-sm text-destructive">{validationErrors.name}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-email" className="text-sm">Email</Label>
