@@ -22,9 +22,10 @@ export interface UserProfile {
   email: string;
   name: string;
   avatar_url?: string;
-  plan: 'free' | 'family' | 'premium';
+  plan: 'free' | 'family' | 'premium' | 'enterprise';
   questions_remaining: number;
   last_free_reset: string;
+  role: 'user' | 'admin';
   created_at: string;
   updated_at: string;
 }
@@ -61,6 +62,20 @@ export interface ChatMessage {
   created_at: string;
 }
 
+export interface CustomPlan {
+  id: string;
+  name: string;
+  price: number;
+  questions_limit: number;
+  period: string;
+  description: string;
+  features: string[];
+  is_active: boolean;
+  created_by: string; // admin user id
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ChatSession {
   id: string;
   user_id: string;
@@ -75,8 +90,9 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  plan: "free" | "family" | "premium";
+  plan: "free" | "family" | "premium" | "enterprise";
   questionsRemaining?: number;
+  role?: "user" | "admin";
 }
 
 export interface AuthError {
@@ -270,5 +286,135 @@ export const dbHelpers = {
     }
 
     return data || 0;
+  },
+
+  // Custom Plans operations (Admin only)
+  async createCustomPlan(plan: Omit<CustomPlan, 'id' | 'created_at' | 'updated_at'>): Promise<CustomPlan | null> {
+    const { data, error } = await supabase
+      .from('custom_plans')
+      .insert([plan])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating custom plan:', error);
+      return null;
+    }
+
+    return data;
+  },
+
+  async updateCustomPlan(planId: string, updates: Partial<CustomPlan>): Promise<CustomPlan | null> {
+    const { data, error } = await supabase
+      .from('custom_plans')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', planId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating custom plan:', error);
+      return null;
+    }
+
+    return data;
+  },
+
+  async deleteCustomPlan(planId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('custom_plans')
+      .delete()
+      .eq('id', planId);
+
+    if (error) {
+      console.error('Error deleting custom plan:', error);
+      return false;
+    }
+
+    return true;
+  },
+
+  async getCustomPlans(): Promise<CustomPlan[]> {
+    const { data, error } = await supabase
+      .from('custom_plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching custom plans:', error);
+      return [];
+    }
+
+    return data || [];
+  },
+
+  async getAllCustomPlans(): Promise<CustomPlan[]> {
+    const { data, error } = await supabase
+      .from('custom_plans')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching all custom plans:', error);
+      return [];
+    }
+
+    return data || [];
+  },
+
+  // Admin user operations
+  async getAllUsers(): Promise<UserProfile[]> {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching users:', error);
+      return [];
+    }
+
+    return data || [];
+  },
+
+  async updateUserPlan(userId: string, plan: string, questionsLimit?: number): Promise<boolean> {
+    const updates: any = { 
+      plan, 
+      updated_at: new Date().toISOString() 
+    };
+    
+    if (questionsLimit !== undefined) {
+      updates.questions_remaining = questionsLimit;
+    }
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update(updates)
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Error updating user plan:', error);
+      return false;
+    }
+
+    return true;
+  },
+
+  async makeUserAdmin(userId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ 
+        role: 'admin',
+        updated_at: new Date().toISOString() 
+      })
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Error making user admin:', error);
+      return false;
+    }
+
+    return true;
   }
 };

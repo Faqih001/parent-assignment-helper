@@ -11,15 +11,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { User, Settings, CreditCard, LogOut, Crown, Shield } from "lucide-react";
+import { User, Settings, CreditCard, LogOut, Crown, Shield, UserCog } from "lucide-react";
 
 interface UserMenuProps {
   user: {
     name: string;
     email: string;
     avatar?: string;
-    plan: "free" | "family" | "premium";
+    plan: "free" | "family" | "premium" | "enterprise";
     questionsRemaining?: number;
+    role?: "user" | "admin";
   };
   onLogout: () => void;
 }
@@ -32,6 +33,7 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
       case "free": return "secondary";
       case "family": return "default";
       case "premium": return "outline";
+      case "enterprise": return "destructive";
       default: return "secondary";
     }
   };
@@ -41,6 +43,7 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
       case "free": return <Shield className="h-3 w-3" />;
       case "family": return <User className="h-3 w-3" />;
       case "premium": return <Crown className="h-3 w-3" />;
+      case "enterprise": return <UserCog className="h-3 w-3" />;
       default: return <Shield className="h-3 w-3" />;
     }
   };
@@ -112,6 +115,18 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
+        {user.role === 'admin' && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className="cursor-pointer hover:bg-accent"
+              onClick={() => navigate('/admin')}
+            >
+              <UserCog className="mr-2 h-4 w-4" />
+              <span>Admin Dashboard</span>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"

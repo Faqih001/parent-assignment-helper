@@ -17,6 +17,7 @@ import Contact from "./pages/Contact";
 import Profile from "./pages/Profile";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
+import AdminDashboard from "./pages/AdminDashboard";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/billing" element={<Billing />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/payment/success" element={<PaymentSuccess />} />

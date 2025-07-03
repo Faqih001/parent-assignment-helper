@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { PaymentModal } from "@/components/PaymentModal";
+import { dbHelpers, CustomPlan } from "@/lib/supabase";
 import { CreditCard, Crown, Users, Shield, Check, X, Calendar, DollarSign, TrendingUp, MessageCircle, Building, Star } from "lucide-react";
 
 export default function Billing() {
@@ -15,6 +16,20 @@ export default function Billing() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [customPlans, setCustomPlans] = useState<CustomPlan[]>([]);
+
+  useEffect(() => {
+    loadCustomPlans();
+  }, []);
+
+  const loadCustomPlans = async () => {
+    try {
+      const plans = await dbHelpers.getCustomPlans();
+      setCustomPlans(plans);
+    } catch (error) {
+      console.error('Error loading custom plans:', error);
+    }
+  };
 
   if (!user) {
     return (
@@ -140,6 +155,25 @@ export default function Billing() {
   };
 
   const currentPlan = plans.find(plan => plan.current);
+  const customPlan = customPlans.find(plan => plan.name.toLowerCase().includes(user.plan));
+
+  // Combine default plans with custom plans
+  const allPlans = [
+    ...plans,
+    ...customPlans.map(plan => ({
+      id: `custom-${plan.id}`,
+      name: plan.name,
+      price: plan.price,
+      originalPrice: plan.price,
+      period: plan.period,
+      description: plan.description,
+      icon: <Building className="h-6 w-6" />,
+      color: "outline",
+      current: false,
+      custom: true,
+      features: plan.features.map(feature => ({ name: feature, included: true }))
+    }))
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -234,7 +268,7 @@ export default function Billing() {
         <div>
           <h2 className="text-2xl font-bold mb-6">Available Plans</h2>
           <div className="grid gap-6 md:grid-cols-3">
-            {plans.map((plan) => (
+            {allPlans.map((plan) => (
               <Card 
                 key={plan.id} 
                 className={`relative ${plan.popular ? 'border-primary shadow-lg' : ''} ${plan.current ? 'ring-2 ring-primary' : ''}`}
@@ -297,7 +331,7 @@ export default function Billing() {
                         Downgrade (Contact Support)
                       </Button>
                     ) : null
-                  ) : plan.id === "enterprise" ? (
+                  ) : plan.id === "enterprise" || plan.custom ? (
                     <Button 
                       onClick={() => handleUpgrade(plan)}
                       className="w-full"

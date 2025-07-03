@@ -53,7 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               email: profile.email,
               avatar: profile.avatar_url,
               plan: profile.plan,
-              questionsRemaining: profile.questions_remaining
+              questionsRemaining: profile.questions_remaining,
+              role: profile.role || 'user'
             };
             setUser(userData);
           }
@@ -91,30 +92,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               email: profile.email,
               avatar: profile.avatar_url,
               plan: profile.plan,
-              questionsRemaining: profile.questions_remaining
+              questionsRemaining: profile.questions_remaining,
+              role: profile.role || 'user'
             };
-            setUser(userData);
-          } else {
-            // Create profile if it doesn't exist (fallback)
-            const newProfile: Omit<UserProfile, 'created_at' | 'updated_at'> = {
-              id: session.user.id,
-              email: session.user.email || '',
-              name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-              plan: 'free',
-              questions_remaining: 5,
-              last_free_reset: new Date().toISOString()
-            };
-            const createdProfile = await dbHelpers.createUserProfile(newProfile);
-            if (createdProfile) {
-              const userData: User = {
-                id: createdProfile.id,
-                name: createdProfile.name,
-                email: createdProfile.email,
-                avatar: createdProfile.avatar_url,
-                plan: createdProfile.plan,
-                questionsRemaining: createdProfile.questions_remaining
+            setUser(userData);            } else {
+              // Create profile if it doesn't exist (fallback)
+              const newProfile: Omit<UserProfile, 'created_at' | 'updated_at'> = {
+                id: session.user.id,
+                email: session.user.email || '',
+                name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+                plan: 'free',
+                questions_remaining: 5,
+                last_free_reset: new Date().toISOString(),
+                role: 'user'
               };
-              setUser(userData);
+              const createdProfile = await dbHelpers.createUserProfile(newProfile);
+              if (createdProfile) {
+                const userData: User = {
+                  id: createdProfile.id,
+                  name: createdProfile.name,
+                  email: createdProfile.email,
+                  avatar: createdProfile.avatar_url,
+                  plan: createdProfile.plan,
+                  questionsRemaining: createdProfile.questions_remaining,
+                  role: createdProfile.role || 'user'
+                };
+                setUser(userData);
             }
           }
         } else if (event === 'SIGNED_OUT') {
@@ -171,7 +174,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: profile.email,
           avatar: profile.avatar_url,
           plan: profile.plan,
-          questionsRemaining: profile.questions_remaining
+          questionsRemaining: profile.questions_remaining,
+          role: profile.role || 'user'
         };
         setUser(userData);
         console.log('User state set successfully');
@@ -193,7 +197,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
           plan: 'free' as const,
           questions_remaining: 5,
-          last_free_reset: new Date().toISOString()
+          last_free_reset: new Date().toISOString(),
+          role: 'user' as const
         };
         
         const createdProfile = await dbHelpers.createUserProfile(newProfile);
@@ -206,7 +211,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: createdProfile.email,
             avatar: createdProfile.avatar_url,
             plan: createdProfile.plan,
-            questionsRemaining: createdProfile.questions_remaining
+            questionsRemaining: createdProfile.questions_remaining,
+            role: createdProfile.role || 'user'
           };
           setUser(userData);
           console.log('New user state set successfully');
@@ -278,7 +284,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               email: profile.email,
               avatar: profile.avatar_url,
               plan: profile.plan,
-              questionsRemaining: profile.questions_remaining
+              questionsRemaining: profile.questions_remaining,
+              role: profile.role || 'user'
             };
             setUser(userData);
             
@@ -371,7 +378,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: profile.email,
           avatar: profile.avatar_url,
           plan: profile.plan,
-          questionsRemaining: profile.questions_remaining
+          questionsRemaining: profile.questions_remaining,
+          role: profile.role || 'user'
         };
         setUser(userData);
       }
