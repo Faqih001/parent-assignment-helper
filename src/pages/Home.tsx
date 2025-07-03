@@ -526,7 +526,11 @@ export default function Home() {
                       </li>
                     ))}
                   </ul>
-                  <Button variant={plan.popular ? "hero" : "outline"} className="w-full">
+                  <Button 
+                    variant={plan.popular ? "hero" : "outline"} 
+                    className="w-full"
+                    onClick={plan.name === "Free Trial" ? openRegisterModal : undefined}
+                  >
                     {plan.name === "Free Trial" ? "Start Free" : "Choose Plan"}
                   </Button>
                 </CardContent>
@@ -777,12 +781,23 @@ export default function Home() {
               Join thousands of Kenyan families who've made homework stress-free with AI assistance. Start your free trial today!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-scale-in">
-              <Link to="/chat">
-                <Button size="lg" className="w-full sm:w-auto bg-white text-primary hover:bg-white/90 font-semibold shadow-lg">
+              {user ? (
+                <Link to="/chat">
+                  <Button size="lg" className="w-full sm:w-auto bg-white text-primary hover:bg-white/90 font-semibold shadow-lg">
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Go to Chat
+                  </Button>
+                </Link>
+              ) : (
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto bg-white text-primary hover:bg-white/90 font-semibold shadow-lg"
+                  onClick={openRegisterModal}
+                >
                   <MessageCircle className="mr-2 h-5 w-5" />
                   Start Free Trial
                 </Button>
-              </Link>
+              )}
               <Link to="/pricing">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white/20">
                   View Pricing
