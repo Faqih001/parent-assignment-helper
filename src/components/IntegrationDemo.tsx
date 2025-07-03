@@ -5,6 +5,7 @@ import { geminiService } from '@/lib/gemini';
 import { paymentService } from '@/lib/intasend';
 import { env } from '@/lib/env';
 import { useToast } from '@/hooks/use-toast';
+import { supabase, dbHelpers } from '@/lib/supabase';
 
 export function IntegrationDemo() {
   const { toast } = useToast();
@@ -97,6 +98,48 @@ export function IntegrationDemo() {
     }
   };
 
+  const testUserProfile = async () => {
+    try {
+      // Test current user's profile
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        toast({
+          title: "No User Session",
+          description: "Please log in first to test user profile",
+          variant: "error",
+        });
+        return;
+      }
+
+      const profile = await dbHelpers.getUserProfile(session.user.id);
+      
+      if (profile) {
+        toast({
+          title: "User Profile Found",
+          description: `Profile for ${profile.name} (${profile.email}) exists with ${profile.questions_remaining} questions remaining`,
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "No User Profile",
+          description: "User profile not found in database. This might be causing login issues.",
+          variant: "error",
+        });
+      }
+
+      console.log('Current user:', session.user);
+      console.log('User profile:', profile);
+
+    } catch (error) {
+      toast({
+        title: "Profile Test Failed",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "error",
+      });
+    }
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -113,6 +156,10 @@ export function IntegrationDemo() {
         
         <Button onClick={testPaymentService} variant="secondary" className="w-full">
           Test Payment Service
+        </Button>
+        
+        <Button onClick={testUserProfile} variant="destructive" className="w-full">
+          Test User Profile (Login Required)
         </Button>
         
         <div className="text-xs text-muted-foreground mt-4 p-2 bg-muted rounded">

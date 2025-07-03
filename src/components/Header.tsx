@@ -15,9 +15,14 @@ export default function Header() {
   const { isAuthModalOpen, defaultTab, openAuthModal, closeAuthModal } = useAuthModal();
 
   const handleLogin = async (email: string, password: string, rememberMe?: boolean) => {
+    console.log('Header handleLogin called');
     const success = await login(email, password, rememberMe);
+    console.log('Login result:', success);
     if (success) {
+      console.log('Closing auth modal after successful login');
       closeAuthModal(); // Close modal on successful login
+    } else {
+      console.log('Login failed, modal remains open');
     }
   };
 

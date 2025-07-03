@@ -129,17 +129,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string, rememberMe: boolean = false): Promise<boolean> => {
     setIsLoginLoading(true);
+    console.log('Login attempt started for:', email);
+    
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('Login response:', { user: data.user?.email, error: error?.message });
+
       if (error) {
+        console.error('Supabase auth error:', error);
         throw error;
       }
 
       if (data.user) {
+        console.log('User authenticated, fetching profile...');
+        
         // Handle remember me functionality
         if (rememberMe) {
           localStorage.setItem('rememberMe', 'true');
@@ -151,6 +158,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Fetch user profile from database
         const profile = await dbHelpers.getUserProfile(data.user.id);
+        console.log('User profile fetched:', profile ? 'success' : 'failed');
+        
         if (profile) {
           const userData: User = {
             id: profile.id,
@@ -161,14 +170,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             questionsRemaining: profile.questions_remaining
           };
           setUser(userData);
+          console.log('User state updated successfully');
           
           toast({
             title: "Welcome back!",
             description: "You've successfully logged in.",
             variant: "success",
           });
+        } else {
+          console.warn('No profile found for user, creating one...');
+          // Create profile if it doesn't exist
+          const newProfile = {
+            id: data.user.id,
+            email: data.user.email || '',
+            name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+            plan: 'free' as const,
+            questions_remaining: 5,
+            last_free_reset: new Date().toISOString()
+          };
+          
+          const createdProfile = await dbHelpers.createUserProfile(newProfile);
+          if (createdProfile) {
+            const userData: User = {
+              id: createdProfile.id,
+              name: createdProfile.name,
+              email: createdProfile.email,
+              avatar: createdProfile.avatar_url,
+              plan: createdProfile.plan,
+              questionsRemaining: createdProfile.questions_remaining
+            };
+            setUser(userData);
+            console.log('New profile created and user state updated');
+            
+            toast({
+              title: "Welcome back!",
+              description: "You've successfully logged in.",
+              variant: "success",
+            });
+          }
         }
       }
+      console.log('Login completed successfully');
       return true;
     } catch (error: any) {
       console.error('Login error:', error);
@@ -179,6 +221,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       return false;
     } finally {
+      console.log('Login loading state reset');
       setIsLoginLoading(false);
     }
   };
