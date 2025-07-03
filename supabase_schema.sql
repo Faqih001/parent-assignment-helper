@@ -142,7 +142,7 @@ RETURNS VOID AS $$
 DECLARE
     new_questions INTEGER;
 BEGIN
-    -- Set questions based on plan
+    -- Set questions based on plan (all plans now renewable)
     CASE new_plan
         WHEN 'family' THEN new_questions := 50;
         WHEN 'premium' THEN new_questions := 50;
@@ -152,6 +152,7 @@ BEGIN
     UPDATE user_profiles 
     SET plan = new_plan,
         questions_remaining = new_questions,
+        last_free_reset = NOW(),
         updated_at = NOW()
     WHERE id = user_id;
 END;

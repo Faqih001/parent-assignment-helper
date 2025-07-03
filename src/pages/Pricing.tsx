@@ -92,8 +92,8 @@ export default function Pricing() {
 
   const faqs = [
     {
-      question: "How does the free trial work?",
-      answer: "Get 5 free questions to try our service. No credit card required. Your free questions automatically renew every 24 hours after you use them all, giving you continuous access to try our AI homework assistant."
+      question: "How does the renewable question system work?",
+      answer: "All plans have renewable questions! Free plan gets 5 questions, Family plan gets 50 questions. When you use all your questions, they automatically renew after 24 hours. No need to wait for monthly billing cycles!"
     },
     {
       question: "What if my child's question isn't answered correctly?",
@@ -238,7 +238,7 @@ export default function Pricing() {
                 </div>
                 <h3 className="text-xl font-semibold">HomeworkHelper</h3>
                 <p className="text-3xl font-bold text-primary">KES 999</p>
-                <p className="text-sm text-muted-foreground">Per month • Unlimited questions</p>
+                <p className="text-sm text-muted-foreground">Per month • 50 questions daily</p>
                 <Badge variant="default" className="bg-gradient-primary">Best Value</Badge>
               </CardContent>
             </Card>
