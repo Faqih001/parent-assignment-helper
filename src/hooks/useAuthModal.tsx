@@ -20,7 +20,11 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user && isAuthModalOpen) {
       console.log('AuthModal: User authenticated, closing modal');
-      setIsAuthModalOpen(false);
+      const timer = setTimeout(() => {
+        setIsAuthModalOpen(false);
+      }, 100); // Small delay to let the user see any success message
+      
+      return () => clearTimeout(timer);
     }
   }, [user, isAuthModalOpen]);
 

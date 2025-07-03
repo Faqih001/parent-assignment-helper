@@ -74,12 +74,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Auth state change:', event, session?.user?.email);
         
         if (event === 'SIGNED_IN' && session?.user) {
-          // Show welcome message for email confirmations
+          // Only show welcome message for email confirmations when there's no existing user
           if (session.user.email_confirmed_at && !user) {
             toast({
-              title: "Logged In!",
-              description: "You have been successfully Signed In. Welcome to HomeworkHelper!",
-              variant: "success",
+              title: "Email Confirmed!",
+              description: "Your email has been verified successfully. Welcome to HomeworkHelper!",
+              variant: "default",
             });
           }
           
@@ -123,6 +123,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refreshed successfully');
+        } else if (event === 'USER_UPDATED') {
+          console.log('User updated');
         }
         setIsLoading(false);
       }
@@ -343,6 +347,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Logout error:', error);
+        throw error;
       }
       
       // Clear remember me data on logout
@@ -352,11 +357,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       toast({
         title: "Logged out",
-        description: "You've been successfully logged out.",
-        variant: "success",
+        description: "You've been successfully logged out. See you again soon!",
+        variant: "default",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Logout error:', error);
+      toast({
+        title: "Logout error",
+        description: "There was an issue logging you out. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -376,16 +386,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       toast({
         title: "Reset email sent!",
-        description: "Check your email for password reset instructions.",
-        variant: "success",
+        description: "Check your email for password reset instructions. The link will expire in 1 hour.",
+        variant: "default",
       });
       return true;
     } catch (error: any) {
       console.error('Forgot password error:', error);
+      let errorMessage = "Failed to send reset email. Please try again.";
+      
+      if (error.message?.includes('For security purposes')) {
+        errorMessage = "For security purposes, you can only request a password reset every 60 seconds.";
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = "Please enter a valid email address.";
+      }
+      
       toast({
         title: "Reset failed",
-        description: error.message || "Failed to send reset email. Please try again.",
-        variant: "error",
+        description: errorMessage,
+        variant: "destructive",
       });
       return false;
     } finally {

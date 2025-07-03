@@ -34,6 +34,7 @@ export default function AuthModal({
   const [registerForm, setRegisterForm] = useState({ name: "", email: "", password: "" });
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
 
   // Load remembered email on component mount and reset forms when modal opens
   useEffect(() => {
