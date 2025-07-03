@@ -32,6 +32,12 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(false);
   const [isAiInitialized, setIsAiInitialized] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -337,7 +343,7 @@ export default function Chat() {
   // Show login prompt if not authenticated
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-accent flex items-center justify-center">
+      <div className="min-h-screen-safe bg-gradient-to-br from-background to-accent flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center space-x-2">
@@ -359,17 +365,17 @@ export default function Chat() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-accent">
-      <div className="container mx-auto px-4 py-8 h-screen flex flex-col max-w-4xl">
+    <div className="min-h-screen-mobile bg-gradient-to-br from-background to-accent">
+      <div className="container mx-auto px-4 py-4 md:py-8 min-h-screen-safe flex flex-col max-w-4xl">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
+        <div className="mb-4 md:mb-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-2xl font-bold">AI Homework Assistant</h1>
-              <p className="text-muted-foreground">Get instant help with any homework question</p>
+              <h1 className="text-xl md:text-2xl font-bold">AI Homework Assistant</h1>
+              <p className="text-sm md:text-base text-muted-foreground">Get instant help with any homework question</p>
             </div>
             <div className="text-right">
-              <Badge variant={(user.questionsRemaining || 0) > 0 ? "default" : "destructive"} className="mb-2">
+              <Badge variant={(user.questionsRemaining || 0) > 0 ? "default" : "destructive"} className="mb-2 text-xs">
                 {(user.questionsRemaining || 0) > 0 
                   ? `${user.questionsRemaining} Questions Left (${user.plan.charAt(0).toUpperCase() + user.plan.slice(1)} Plan)` 
                   : "No Questions Remaining"
@@ -385,7 +391,7 @@ export default function Chat() {
         </div>
 
         {/* Subject and Grade Selection */}
-        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="mb-4 md:mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
           <div className="space-y-2">
             <Label htmlFor="subject" className="flex items-center text-sm font-medium">
               <BookOpen className="h-4 w-4 mr-1" />
@@ -427,15 +433,15 @@ export default function Chat() {
 
         {/* Sample Questions */}
         {messages.length <= 1 && (
-          <div className="mb-6">
+          <div className="mb-4 md:mb-6">
             <h3 className="text-sm font-medium text-muted-foreground mb-3">Try these sample questions:</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               {sampleQuestions.map((question, index) => (
                 <Button
                   key={index}
                   variant="outline"
                   size="sm"
-                  className="text-left justify-start h-auto py-2 px-3"
+                  className="text-left justify-start h-auto py-2 px-3 text-xs md:text-sm"
                   onClick={() => setInput(question)}
                   disabled={(user.questionsRemaining || 0) === 0}
                 >
@@ -447,25 +453,25 @@ export default function Chat() {
         )}
 
         {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto space-y-4 mb-6">
+        <div className="flex-1 overflow-y-auto space-y-3 md:space-y-4 mb-4 md:mb-6 min-h-0">
           {messages.map((message) => (
             <div key={message.id} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`flex items-start space-x-3 max-w-[80%] ${message.type === "user" ? "flex-row-reverse space-x-reverse" : ""}`}>
-                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
+              <div className={`flex items-start space-x-2 md:space-x-3 max-w-[85%] md:max-w-[80%] ${message.type === "user" ? "flex-row-reverse space-x-reverse" : ""}`}>
+                <div className={`h-6 w-6 md:h-8 md:w-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                   message.type === "user" 
                     ? "bg-primary text-primary-foreground" 
                     : "bg-gradient-primary text-white"
                 }`}>
-                  {message.type === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                  {message.type === "user" ? <User className="h-3 w-3 md:h-4 md:w-4" /> : <Bot className="h-3 w-3 md:h-4 md:w-4" />}
                 </div>
                 
                 <Card className={`shadow-soft ${message.type === "user" ? "bg-primary text-primary-foreground" : "bg-card"}`}>
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 md:p-4">
                     {message.image && (
-                      <img src={message.image} alt="Uploaded homework" className="max-w-full h-auto rounded-lg mb-3" />
+                      <img src={message.image} alt="Uploaded homework" className="max-w-full h-auto rounded-lg mb-2 md:mb-3" />
                     )}
-                    <div className="whitespace-pre-line text-sm">{message.content}</div>
-                    <div className={`text-xs mt-2 ${message.type === "user" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                    <div className="whitespace-pre-line text-xs md:text-sm">{message.content}</div>
+                    <div className={`text-xs mt-1 md:mt-2 ${message.type === "user" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                       {message.timestamp.toLocaleTimeString()}
                     </div>
                   </CardContent>
@@ -476,31 +482,32 @@ export default function Chat() {
           
           {isLoading && (
             <div className="flex justify-start">
-              <div className="flex items-start space-x-3">
-                <div className="h-8 w-8 rounded-full bg-gradient-primary text-white flex items-center justify-center">
-                  <Bot className="h-4 w-4" />
+              <div className="flex items-start space-x-2 md:space-x-3">
+                <div className="h-6 w-6 md:h-8 md:w-8 rounded-full bg-gradient-primary text-white flex items-center justify-center">
+                  <Bot className="h-3 w-3 md:h-4 md:w-4" />
                 </div>
                 <Card className="shadow-soft">
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 md:p-4">
                     <div className="flex items-center space-x-2">
                       <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
                       </div>
-                      <span className="text-sm text-muted-foreground">AI is thinking...</span>
+                      <span className="text-xs md:text-sm text-muted-foreground">AI is thinking...</span>
                     </div>
                   </CardContent>
                 </Card>
               </div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
-        <Card className="shadow-medium">
-          <CardContent className="p-4">
-            <div className="flex items-end space-x-3">
+        <Card className="shadow-medium flex-shrink-0">
+          <CardContent className="p-3 md:p-4">
+            <div className="flex items-end space-x-2 md:space-x-3">
               <div className="flex-1 space-y-2">
                 <Textarea
                   placeholder="Type your homework question here... (e.g., 'How do I solve 2x + 5 = 15?')"
@@ -512,18 +519,19 @@ export default function Chat() {
                       handleSendMessage();
                     }
                   }}
-                  className="min-h-[40px] max-h-32 resize-none"
+                  className="min-h-[40px] max-h-32 resize-none text-sm"
                   disabled={(user.questionsRemaining || 0) === 0 || !isAiInitialized}
                 />
               </div>
               
-              <div className="flex space-x-2">
+              <div className="flex space-x-1 md:space-x-2">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={(user.questionsRemaining || 0) === 0 || !isAiInitialized}
                   title="Upload image"
+                  className="h-10 w-10"
                 >
                   <Camera className="h-4 w-4" />
                 </Button>
@@ -531,7 +539,8 @@ export default function Chat() {
                 <Button
                   onClick={handleSendMessage}
                   disabled={!input.trim() || isLoading || (user.questionsRemaining || 0) === 0 || !isAiInitialized}
-                  className="px-6"
+                  className="px-4 md:px-6 h-10"
+                  size="default"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
@@ -546,8 +555,8 @@ export default function Chat() {
               className="hidden"
             />
             
-            <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-              <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground flex-wrap gap-2">
+              <div className="flex items-center space-x-2 md:space-x-4 flex-wrap">
                 <span className="flex items-center">
                   <CheckCircle className="h-3 w-3 mr-1 text-success" />
                   Powered by Google Gemini
@@ -561,18 +570,20 @@ export default function Chat() {
                   Step-by-step explanations
                 </span>
               </div>
-              {(user.questionsRemaining || 0) === 0 && (
-                <span className="flex items-center text-destructive">
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  <a href="/pricing" className="hover:underline">Upgrade to continue</a>
-                </span>
-              )}
-              {!isAiInitialized && (
-                <span className="flex items-center text-yellow-600">
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  AI initializing...
-                </span>
-              )}
+              <div className="flex items-center space-x-2">
+                {(user.questionsRemaining || 0) === 0 && (
+                  <span className="flex items-center text-destructive">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    <a href="/pricing" className="hover:underline">Upgrade to continue</a>
+                  </span>
+                )}
+                {!isAiInitialized && (
+                  <span className="flex items-center text-yellow-600">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    AI initializing...
+                  </span>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

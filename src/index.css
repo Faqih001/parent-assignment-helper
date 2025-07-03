@@ -132,3 +132,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile viewport handling utilities */
+@layer utilities {
+  .min-h-screen-mobile {
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  }
+  
+  .h-screen-mobile {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  }
+  
+  .min-h-screen-safe {
+    min-height: calc(100vh - 4rem);
+    min-height: calc(100dvh - 4rem); /* Account for header height */
+  }
+}
