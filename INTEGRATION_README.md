@@ -51,7 +51,7 @@ VITE_GOOGLE_GEMINI_API_KEY=AIzaSyDnbWdDvKxrN4M2GIP9yMFmub9xJPQVMj4
 
 # Resend Email Configuration
 RESEND_API_KEY=re_8JE3rZ3q_2KEXKbhRULcu4eouCFhe8M8d
-VITE_SUPPORT_EMAIL=fakiiahmad0012@gmail.com
+VITE_SUPPORT_EMAIL=fakiiahmad001@gmail.com
 VITE_SUPPORT_PHONE=0741140250
 
 # WhatsApp Configuration

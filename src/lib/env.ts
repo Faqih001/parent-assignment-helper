@@ -10,6 +10,7 @@ interface EnvironmentVariables {
   VITE_GOOGLE_GEMINI_API_KEY: string;
   
   // Resend Configuration
+  VITE_RESEND_API_KEY: string;
   RESEND_API_KEY: string;
   VITE_SUPPORT_EMAIL: string;
   VITE_SUPPORT_PHONE: string;
@@ -27,6 +28,7 @@ class Environment {
       INTASEND_SECRET_KEY: import.meta.env.INTASEND_SECRET_KEY,
       VITE_INTASEND_TEST_MODE: import.meta.env.VITE_INTASEND_TEST_MODE,
       VITE_GOOGLE_GEMINI_API_KEY: import.meta.env.VITE_GOOGLE_GEMINI_API_KEY,
+      VITE_RESEND_API_KEY: import.meta.env.VITE_RESEND_API_KEY,
       RESEND_API_KEY: import.meta.env.RESEND_API_KEY,
       VITE_SUPPORT_EMAIL: import.meta.env.VITE_SUPPORT_EMAIL,
       VITE_SUPPORT_PHONE: import.meta.env.VITE_SUPPORT_PHONE,
