@@ -103,14 +103,17 @@ export default function Header() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          {/* Mobile Menu Button and User Avatar */}
+          <div className="md:hidden flex items-center space-x-3">
+            {user && <UserMenu user={user} onLogout={logout} />}
+            <button
+              className="p-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -134,15 +137,15 @@ export default function Header() {
               <div className="pt-4 space-y-2">
                 {user ? (
                   <>
+                    <div className="px-3 py-2 text-sm text-muted-foreground border-b">
+                      Signed in as {user.name}
+                    </div>
                     <Link to="/chat" onClick={() => setIsMenuOpen(false)}>
                       <Button variant="outline" size="sm" className="w-full">
                         <MessageCircle className="mr-2 h-4 w-4" />
                         Chat
                       </Button>
                     </Link>
-                    <Button variant="destructive" size="sm" className="w-full" onClick={() => { logout(); setIsMenuOpen(false); }}>
-                      Logout
-                    </Button>
                   </>
                 ) : (
                   <>

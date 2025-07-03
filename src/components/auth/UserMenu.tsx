@@ -58,7 +58,7 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64 animate-scale-in" align="end" forceMount>
+      <DropdownMenuContent className="w-64 animate-scale-in" align="end" forceMount sideOffset={4}>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-2">
             <div className="flex items-center justify-between">
