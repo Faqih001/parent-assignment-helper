@@ -799,7 +799,7 @@ export default function Home() {
                 </Button>
               )}
               <Link to="/pricing">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white/20">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto border-white bg-white/10 text-white hover:bg-white hover:text-primary transition-all duration-300">
                   View Pricing
                 </Button>
               </Link>
