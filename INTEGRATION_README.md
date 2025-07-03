@@ -42,20 +42,20 @@ Create a `.env` file in the root directory with the following variables:
 
 ```env
 # IntaSend Payment Configuration
-VITE_INTASEND_PUBLISHABLE_KEY=ISPubKey_test_5afdffbb-18ee-4df2-b997-5e630557bca4
-INTASEND_SECRET_KEY=ISSecretKey_test_ffbc65bd-d597-4902-9d7e-a3e04c95a73b
+VITE_INTASEND_PUBLISHABLE_KEY=your_intasend_publishable_key_here
+INTASEND_SECRET_KEY=your_intasend_secret_key_here
 VITE_INTASEND_TEST_MODE=true
 
 # Google Gemini AI Configuration
-VITE_GOOGLE_GEMINI_API_KEY=AIzaSyDnbWdDvKxrN4M2GIP9yMFmub9xJPQVMj4
+VITE_GOOGLE_GEMINI_API_KEY=your_google_gemini_api_key_here
 
 # Resend Email Configuration
 RESEND_API_KEY=your_resend_api_key_here
-VITE_SUPPORT_EMAIL=fakiiahmad001@gmail.com
-VITE_SUPPORT_PHONE=0741140250
+VITE_SUPPORT_EMAIL=your_support_email@domain.com
+VITE_SUPPORT_PHONE=your_support_phone_number
 
 # WhatsApp Configuration
-VITE_WHATSAPP_NUMBER=254741140250
+VITE_WHATSAPP_NUMBER=your_whatsapp_number
 ```
 
 ## New Dependencies
