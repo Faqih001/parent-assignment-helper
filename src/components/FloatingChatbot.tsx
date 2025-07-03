@@ -36,6 +36,46 @@ export function FloatingChatbot() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Function to format bot messages with proper HTML
+  const formatBotMessage = (content: string): string => {
+    let formatted = content
+      // Convert **bold** to <strong>
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
+      // Convert *italic* to <em>
+      .replace(/\*(?!\*)(.*?)\*/g, '<em class="italic">$1</em>')
+      // Convert numbered lists (1. 2. 3.)
+      .replace(/^(\d+\.)\s+(.*$)/gm, '<div class="flex items-start space-x-2 mb-1"><span class="font-medium text-primary min-w-0 flex-shrink-0">$1</span><span>$2</span></div>')
+      // Convert bullet points (- or • or *)
+      .replace(/^[-•*]\s+(.*$)/gm, '<div class="flex items-start space-x-2 mb-1"><span class="text-primary min-w-0 flex-shrink-0">•</span><span>$1</span></div>')
+      // Convert headers (### or ##)
+      .replace(/^###\s+(.*$)/gm, '<h4 class="font-semibold text-gray-900 mt-3 mb-2 text-sm">$1</h4>')
+      .replace(/^##\s+(.*$)/gm, '<h3 class="font-bold text-gray-900 mt-4 mb-2">$1</h3>')
+      // Convert sections separated by double line breaks
+      .split('\n\n')
+      .map(section => {
+        // If section already has formatting, wrap in div
+        if (section.includes('<div class="flex') || section.includes('<h')) {
+          return `<div class="mb-3">${section}</div>`;
+        }
+        // Otherwise wrap in paragraph
+        return `<p class="mb-2">${section}</p>`;
+      })
+      .join('');
+
+    // Group consecutive list items
+    formatted = formatted.replace(
+      /(<div class="flex items-start space-x-2 mb-1">.*?<\/div>\s*)+/gs, 
+      (match) => `<div class="space-y-1 mb-3">${match}</div>`
+    );
+
+    // Clean up
+    formatted = formatted
+      .replace(/<p class="mb-2"><\/p>/g, '')
+      .replace(/<div class="mb-3"><\/div>/g, '');
+
+    return formatted;
+  };
+
   // Website-specific context for the AI
   const websiteContext = `
 You are a helpful assistant for HomeworkHelper, an AI-powered homework assistance platform. Here's what you should know about our platform:
@@ -282,7 +322,18 @@ Keep responses friendly, informative, and focused on helping users understand wh
                           className="max-w-full h-auto rounded mb-2 max-h-24 sm:max-h-32 object-cover" 
                         />
                       )}
-                      <div className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed">{message.content}</div>
+                      <div className="text-xs sm:text-sm leading-relaxed">
+                        {message.type === 'bot' ? (
+                          <div 
+                            className="space-y-2"
+                            dangerouslySetInnerHTML={{
+                              __html: formatBotMessage(message.content)
+                            }}
+                          />
+                        ) : (
+                          <div className="whitespace-pre-wrap">{message.content}</div>
+                        )}
+                      </div>
                       <div className={`text-xs mt-1 ${
                         message.type === 'user' ? 'text-white/70' : 'text-gray-500'
                       }`}>
