@@ -35,40 +35,65 @@ export default function AuthModal({
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 
-  // Load remembered email on component mount
+  // Load remembered email on component mount and reset forms when modal opens
   useEffect(() => {
-    const rememberMe = localStorage.getItem('rememberMe') === 'true';
-    const rememberedEmail = localStorage.getItem('rememberedEmail') || '';
-    
-    if (rememberMe && rememberedEmail) {
-      setLoginForm(prev => ({
-        ...prev,
-        email: rememberedEmail,
-        rememberMe: true
-      }));
+    if (isOpen) {
+      const rememberMe = localStorage.getItem('rememberMe') === 'true';
+      const rememberedEmail = localStorage.getItem('rememberedEmail') || '';
+      
+      if (rememberMe && rememberedEmail) {
+        setLoginForm(prev => ({
+          ...prev,
+          email: rememberedEmail,
+          rememberMe: true
+        }));
+      } else {
+        // Reset forms when modal opens
+        setLoginForm({ email: "", password: "", rememberMe: false });
+      }
+      setRegisterForm({ name: "", email: "", password: "" });
+      setShowForgotPassword(false);
+      setForgotPasswordEmail("");
+      setShowPassword(false);
     }
   }, [isOpen]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoginLoading && loginForm.email && loginForm.password) {
-      await onLogin(loginForm.email, loginForm.password, loginForm.rememberMe);
+      try {
+        await onLogin(loginForm.email, loginForm.password, loginForm.rememberMe);
+        // Clear form on successful login
+        setLoginForm({ email: "", password: "", rememberMe: false });
+      } catch (error) {
+        console.error('Login form error:', error);
+      }
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isRegisterLoading && registerForm.name && registerForm.email && registerForm.password) {
-      await onRegister(registerForm.name, registerForm.email, registerForm.password);
+      try {
+        await onRegister(registerForm.name, registerForm.email, registerForm.password);
+        // Clear form on successful registration
+        setRegisterForm({ name: "", email: "", password: "" });
+      } catch (error) {
+        console.error('Register form error:', error);
+      }
     }
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoginLoading && forgotPasswordEmail) {
-      await onForgotPassword(forgotPasswordEmail);
-      setShowForgotPassword(false);
-      setForgotPasswordEmail("");
+      try {
+        await onForgotPassword(forgotPasswordEmail);
+        setShowForgotPassword(false);
+        setForgotPasswordEmail("");
+      } catch (error) {
+        console.error('Forgot password error:', error);
+      }
     }
   };
 

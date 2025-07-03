@@ -183,8 +183,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         toast({
           title: "Welcome back!",
-          description: "You've successfully logged in.",
-          variant: "success",
+          description: `Welcome back, ${profile.name}! Ready to tackle some homework?`,
+          variant: "default",
         });
         console.log('Success toast shown');
         
@@ -220,8 +220,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           toast({
             title: "Welcome back!",
-            description: "You've successfully logged in.",
-            variant: "success",
+            description: `Welcome back, ${createdProfile.name}! Ready to tackle some homework?`,
+            variant: "default",
           });
           console.log('Success toast shown for new profile');
           
@@ -232,9 +232,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error: any) {
       console.error('Login error:', error);
+      let errorMessage = "Please check your credentials and try again.";
+      
+      // Provide specific error messages for common issues
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Invalid email or password. Please check your credentials.";
+      } else if (error.message?.includes('Too many requests')) {
+        errorMessage = "Too many login attempts. Please wait a moment and try again.";
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "Please check your email and confirm your account before logging in.";
+      }
+      
       toast({
         title: "Login failed",
-        description: error.message || "Please check your credentials and try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       console.log('Error toast shown');
@@ -271,9 +282,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!data.session) {
           toast({
             title: "Check your email",
-            description: "We've sent you a confirmation link to complete your registration.",
-            variant: "success",
+            description: "We've sent you a confirmation link to complete your registration. Please check your email and click the link to verify your account.",
+            variant: "default",
           });
+          return true; // Return true because registration was initiated successfully
         } else {
           // User profile should be created automatically by the trigger
           // Fetch the created profile
@@ -293,18 +305,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             toast({
               title: "Account created!",
               description: `Welcome to HomeworkHelper, ${profile.name}! You have ${profile.questions_remaining} free questions to get started.`,
-              variant: "success",
+              variant: "default",
             });
+            return true;
           }
         }
       }
       return true;
     } catch (error: any) {
       console.error('Registration error:', error);
+      let errorMessage = "Something went wrong. Please try again.";
+      
+      // Provide specific error messages for common registration issues
+      if (error.message?.includes('User already registered')) {
+        errorMessage = "An account with this email already exists. Please try logging in instead.";
+      } else if (error.message?.includes('Password should be at least 6 characters')) {
+        errorMessage = "Password must be at least 6 characters long.";
+      } else if (error.message?.includes('Invalid email')) {
+        errorMessage = "Please enter a valid email address.";
+      } else if (error.message?.includes('too many requests')) {
+        errorMessage = "Too many registration attempts. Please wait a moment and try again.";
+      }
+      
       toast({
         title: "Registration failed",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "error",
+        description: errorMessage,
+        variant: "destructive",
       });
       return false;
     } finally {

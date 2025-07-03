@@ -33,8 +33,10 @@ export default function Header() {
       const success = await login(email, password, rememberMe);
       console.log('Header: Login result received:', success);
       if (success) {
-        console.log('Header: Login successful, modal should close automatically');
-        // The useEffect above will handle closing the modal when user state updates
+        console.log('Header: Login successful, closing modal and redirecting');
+        closeAuthModal();
+        // Navigate to chat page after successful login
+        navigate('/chat');
       } else {
         console.log('Header: Login failed, keeping modal open');
       }
@@ -47,8 +49,10 @@ export default function Header() {
     try {
       const success = await register(name, email, password);
       if (success) {
-        console.log('Header: Registration successful, modal should close automatically');
-        // The useEffect above will handle closing the modal when user state updates
+        console.log('Header: Registration successful, closing modal and redirecting');
+        closeAuthModal();
+        // Navigate to chat page after successful registration
+        navigate('/chat');
       }
     } catch (error) {
       console.error('Header: Registration error:', error);
@@ -58,7 +62,8 @@ export default function Header() {
   const handleForgotPassword = async (email: string) => {
     const success = await forgotPassword(email);
     if (success) {
-      // Modal will close automatically after success toast or show success state
+      // Keep the modal open but close the forgot password sub-modal
+      // The success toast will provide feedback
     }
   };
 
