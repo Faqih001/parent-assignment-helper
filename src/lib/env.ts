@@ -8,6 +8,14 @@ interface EnvironmentVariables {
   
   // Google Gemini Configuration
   VITE_GOOGLE_GEMINI_API_KEY: string;
+  
+  // Resend Configuration
+  RESEND_API_KEY: string;
+  VITE_SUPPORT_EMAIL: string;
+  VITE_SUPPORT_PHONE: string;
+  
+  // WhatsApp Configuration
+  VITE_WHATSAPP_NUMBER: string;
 }
 
 class Environment {
@@ -19,6 +27,10 @@ class Environment {
       INTASEND_SECRET_KEY: import.meta.env.INTASEND_SECRET_KEY,
       VITE_INTASEND_TEST_MODE: import.meta.env.VITE_INTASEND_TEST_MODE,
       VITE_GOOGLE_GEMINI_API_KEY: import.meta.env.VITE_GOOGLE_GEMINI_API_KEY,
+      RESEND_API_KEY: import.meta.env.RESEND_API_KEY,
+      VITE_SUPPORT_EMAIL: import.meta.env.VITE_SUPPORT_EMAIL,
+      VITE_SUPPORT_PHONE: import.meta.env.VITE_SUPPORT_PHONE,
+      VITE_WHATSAPP_NUMBER: import.meta.env.VITE_WHATSAPP_NUMBER,
     };
   }
 
@@ -38,13 +50,31 @@ class Environment {
     return this.vars.VITE_GOOGLE_GEMINI_API_KEY || '';
   }
 
+  get resendApiKey(): string {
+    return this.vars.RESEND_API_KEY || '';
+  }
+
+  get supportEmail(): string {
+    return this.vars.VITE_SUPPORT_EMAIL || '';
+  }
+
+  get supportPhone(): string {
+    return this.vars.VITE_SUPPORT_PHONE || '';
+  }
+
+  get whatsappNumber(): string {
+    return this.vars.VITE_WHATSAPP_NUMBER || '';
+  }
+
   /**
    * Validate that all required environment variables are set
    */
   validate(): { isValid: boolean; missing: string[] } {
     const required: (keyof EnvironmentVariables)[] = [
       'VITE_INTASEND_PUBLISHABLE_KEY',
-      'VITE_GOOGLE_GEMINI_API_KEY'
+      'VITE_GOOGLE_GEMINI_API_KEY',
+      'VITE_SUPPORT_EMAIL',
+      'VITE_WHATSAPP_NUMBER'
     ];
 
     const missing = required.filter(key => !this.vars[key]);
