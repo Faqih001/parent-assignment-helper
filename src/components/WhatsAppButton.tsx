@@ -23,7 +23,7 @@ export function WhatsAppButton() {
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           size="lg"
-          className="rounded-full w-14 h-14 bg-green-500 hover:bg-green-600 shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse hover:animate-none"
+          className="rounded-full w-14 h-14 bg-green-500 hover:bg-green-600 shadow-lg hover:shadow-xl transition-all duration-300"
         >
           <svg
             viewBox="0 0 24 24"
@@ -36,14 +36,14 @@ export function WhatsAppButton() {
 
         {/* Tooltip */}
         {isHovered && (
-          <div className="absolute bottom-full left-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap animate-in fade-in-0 slide-in-from-bottom-2">
+          <div className="absolute bottom-full left-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap transition-opacity duration-200">
             Chat with us on WhatsApp
             <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
           </div>
         )}
 
         {/* Online indicator */}
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full animate-pulse"></div>
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
       </div>
     </div>
   );

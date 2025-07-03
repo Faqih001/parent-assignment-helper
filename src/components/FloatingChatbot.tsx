@@ -191,11 +191,11 @@ export function FloatingChatbot() {
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
-          className="rounded-full w-16 h-16 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse"
+          className="rounded-full w-16 h-16 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300"
         >
           <MessageCircle className="h-6 w-6" />
         </Button>
-        <div className="absolute -top-2 -left-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center animate-bounce">
+        <div className="absolute -top-2 -left-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
           AI
         </div>
       </div>
