@@ -55,6 +55,8 @@ export default function Billing() {
       icon: <Shield className="h-6 w-6" />,
       color: "secondary",
       current: user.plan === "free",
+      popular: false,
+      custom: false,
       features: [
         { name: "5 questions (renewable daily)", included: true },
         { name: "Instant AI explanations", included: true },
@@ -77,6 +79,7 @@ export default function Billing() {
       color: "default",
       current: user.plan === "family",
       popular: true,
+      custom: false,
       features: [
         { name: "50 questions (renewable daily)", included: true },
         { name: "All Free Plan features", included: true },
@@ -98,6 +101,8 @@ export default function Billing() {
       icon: <Building className="h-6 w-6" />,
       color: "outline",
       current: user.plan === "enterprise",
+      popular: false,
+      custom: false,
       features: [
         { name: "All Family Plan features", included: true },
         { name: "Bulk student accounts", included: true },
@@ -170,6 +175,7 @@ export default function Billing() {
       icon: <Building className="h-6 w-6" />,
       color: "outline",
       current: false,
+      popular: false,
       custom: true,
       features: plan.features.map(feature => ({ name: feature, included: true }))
     }))

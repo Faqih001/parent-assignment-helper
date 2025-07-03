@@ -77,8 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Show welcome message for email confirmations
           if (session.user.email_confirmed_at && !user) {
             toast({
-              title: "Email Verified!",
-              description: "Your email has been successfully verified. Welcome to HomeworkHelper!",
+              title: "Logged In!",
+              description: "You have been successfully Signed In. Welcome to HomeworkHelper!",
               variant: "success",
             });
           }
