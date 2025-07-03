@@ -194,7 +194,7 @@ export default function Contact() {
       </section>
 
       {/* Contact Form & FAQ */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Form */}
           <div>
