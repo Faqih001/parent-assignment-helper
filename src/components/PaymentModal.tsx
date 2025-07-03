@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, CreditCard, Smartphone, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { paymentService, PaymentRequest, PaymentResponse } from '@/lib/intasend';
+import { env } from '@/lib/env';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -118,7 +119,7 @@ export function PaymentModal({
         last_name: paymentData.lastName,
         method: paymentMethod,
         api_ref: `HH-${planName.replace(/\s+/g, '-')}-${Date.now()}`,
-        redirect_url: `${window.location.origin}/payment/success`,
+        redirect_url: `${env.appUrl || 'https://parent-assignment-helper.vercel.app'}/payment/success`,
       };
 
       if (paymentMethod === 'M-PESA' || paymentMethod === 'AIRTEL-MONEY') {

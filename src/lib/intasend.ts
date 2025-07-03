@@ -8,6 +8,11 @@ const intasend = new IntaSend(
   env.intasendTestMode
 );
 
+// Helper function to get the app URL
+const getAppUrl = () => {
+  return env.appUrl || 'https://parent-assignment-helper.vercel.app';
+};
+
 export interface PaymentRequest {
   amount: number;
   currency: string;
@@ -110,7 +115,7 @@ export class IntaSendPaymentService {
         currency: paymentData.currency,
         first_name: paymentData.first_name,
         last_name: paymentData.last_name,
-        redirect_url: paymentData.redirect_url || `${window.location.origin}/payment/success`,
+        redirect_url: paymentData.redirect_url || `${getAppUrl()}/payment/success`,
         api_ref: paymentData.api_ref || `HH-${Date.now()}`,
       });
 

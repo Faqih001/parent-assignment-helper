@@ -167,10 +167,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (name: string, email: string, password: string): Promise<boolean> => {
     setIsRegisterLoading(true);
     try {
-      // Use production URL for email confirmations, fallback to current environment
-      const redirectUrl = window.location.hostname === 'localhost' 
-        ? 'https://parent-assignment-helper.vercel.app'
-        : `${window.location.protocol}//${window.location.host}`;
+      // Always use production URL for email confirmations
+      const redirectUrl = 'https://parent-assignment-helper.vercel.app';
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -257,10 +255,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const forgotPassword = async (email: string): Promise<boolean> => {
     setIsLoginLoading(true);
     try {
-      // Use production URL for email confirmations, fallback to current environment
-      const redirectUrl = window.location.hostname === 'localhost' 
-        ? 'https://parent-assignment-helper.vercel.app/?reset=true'
-        : `${window.location.protocol}//${window.location.host}/?reset=true`;
+      // Always use production URL for email confirmations
+      const redirectUrl = 'https://parent-assignment-helper.vercel.app/?reset=true';
         
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,
