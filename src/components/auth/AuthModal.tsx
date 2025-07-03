@@ -13,9 +13,10 @@ interface AuthModalProps {
   onLogin: (email: string, password: string) => void;
   onRegister: (name: string, email: string, password: string) => void;
   isLoading?: boolean;
+  defaultTab?: 'login' | 'register';
 }
 
-export default function AuthModal({ isOpen, onClose, onLogin, onRegister, isLoading = false }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, onLogin, onRegister, isLoading = false, defaultTab = 'login' }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [registerForm, setRegisterForm] = useState({ name: "", email: "", password: "" });
@@ -46,7 +47,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, isLoad
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="login" className="text-xs sm:text-sm">Login</TabsTrigger>
             <TabsTrigger value="register" className="text-xs sm:text-sm">Sign Up</TabsTrigger>

@@ -3,6 +3,8 @@ import { ArrowRight, BookOpen, MessageCircle, Clock, Shield, Star, Users, Target
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
+import { useAuthModal } from "@/hooks/useAuthModal";
 import heroImage from "@/assets/hero-image.jpg";
 import familyStudy from "@/assets/family-study.jpg";
 import aiTeacher from "@/assets/ai-teacher.jpg";
@@ -14,6 +16,8 @@ import safety from "@/assets/safety.jpg";
 import progress from "@/assets/progress.jpg";
 
 export default function Home() {
+  const { user } = useAuth();
+  const { openRegisterModal } = useAuthModal();
   const features = [
     {
       icon: MessageCircle,
@@ -185,12 +189,23 @@ export default function Home() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 animate-scale-in [animation-delay:0.4s]">
-                <Link to="/chat">
-                  <Button size="lg" className="w-full sm:w-auto bg-white text-primary hover:bg-white/90 font-semibold shadow-lg">
+                {user ? (
+                  <Link to="/chat">
+                    <Button size="lg" className="w-full sm:w-auto bg-white text-primary hover:bg-white/90 font-semibold shadow-lg">
+                      Go to Chat
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button 
+                    size="lg" 
+                    className="w-full sm:w-auto bg-white text-primary hover:bg-white/90 font-semibold shadow-lg"
+                    onClick={openRegisterModal}
+                  >
                     Try Free Now
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
-                </Link>
+                )}
                 <Link to="/how-it-works">
                   <Button variant="outline" size="lg" className="w-full sm:w-auto border-white bg-white/10 text-white hover:bg-white hover:text-primary transition-all duration-300">
                     See How It Works

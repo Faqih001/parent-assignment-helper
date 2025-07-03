@@ -3,15 +3,16 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, BookOpen, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuthModal } from "@/hooks/useAuthModal";
 import AuthModal from "@/components/auth/AuthModal";
 import UserMenu from "@/components/auth/UserMenu";
 import logo from "@/assets/logo.png";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const location = useLocation();
   const { user, login, register, logout, isLoading } = useAuth();
+  const { isAuthModalOpen, defaultTab, openAuthModal, closeAuthModal } = useAuthModal();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -66,10 +67,10 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Button variant="outline" size="sm" onClick={() => setIsAuthModalOpen(true)}>
+                <Button variant="outline" size="sm" onClick={openAuthModal}>
                   Login
                 </Button>
-                <Button variant="hero" size="sm" onClick={() => setIsAuthModalOpen(true)}>
+                <Button variant="hero" size="sm" onClick={openAuthModal}>
                   Get Started
                 </Button>
               </>
@@ -119,10 +120,10 @@ export default function Header() {
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => { setIsAuthModalOpen(true); setIsMenuOpen(false); }}>
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => { openAuthModal(); setIsMenuOpen(false); }}>
                       Login
                     </Button>
-                    <Button variant="hero" size="sm" className="w-full" onClick={() => { setIsAuthModalOpen(true); setIsMenuOpen(false); }}>
+                    <Button variant="hero" size="sm" className="w-full" onClick={() => { openAuthModal(); setIsMenuOpen(false); }}>
                       Get Started
                     </Button>
                   </>
@@ -135,10 +136,11 @@ export default function Header() {
       
       <AuthModal 
         isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)}
+        onClose={closeAuthModal}
         onLogin={login}
         onRegister={register}
         isLoading={isLoading}
+        defaultTab={defaultTab}
       />
     </header>
   );
