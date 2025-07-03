@@ -11,9 +11,9 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (email: string, password: string, rememberMe?: boolean) => void;
-  onRegister: (name: string, email: string, password: string) => void;
-  onForgotPassword: (email: string) => void;
+  onLogin: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  onRegister: (name: string, email: string, password: string) => Promise<void>;
+  onForgotPassword: (email: string) => Promise<void>;
   isLoginLoading?: boolean;
   isRegisterLoading?: boolean;
   defaultTab?: 'login' | 'register';
@@ -49,24 +49,24 @@ export default function AuthModal({
     }
   }, [isOpen]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoginLoading && loginForm.email && loginForm.password) {
-      onLogin(loginForm.email, loginForm.password, loginForm.rememberMe);
+      await onLogin(loginForm.email, loginForm.password, loginForm.rememberMe);
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isRegisterLoading && registerForm.name && registerForm.email && registerForm.password) {
-      onRegister(registerForm.name, registerForm.email, registerForm.password);
+      await onRegister(registerForm.name, registerForm.email, registerForm.password);
     }
   };
 
-  const handleForgotPassword = (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoginLoading && forgotPasswordEmail) {
-      onForgotPassword(forgotPasswordEmail);
+      await onForgotPassword(forgotPasswordEmail);
       setShowForgotPassword(false);
       setForgotPasswordEmail("");
     }

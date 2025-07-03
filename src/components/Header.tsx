@@ -14,6 +14,27 @@ export default function Header() {
   const { user, login, register, logout, forgotPassword, isLoginLoading, isRegisterLoading } = useAuth();
   const { isAuthModalOpen, defaultTab, openAuthModal, closeAuthModal } = useAuthModal();
 
+  const handleLogin = async (email: string, password: string, rememberMe?: boolean) => {
+    const success = await login(email, password, rememberMe);
+    if (success) {
+      closeAuthModal(); // Close modal on successful login
+    }
+  };
+
+  const handleRegister = async (name: string, email: string, password: string) => {
+    const success = await register(name, email, password);
+    if (success) {
+      closeAuthModal(); // Close modal on successful registration
+    }
+  };
+
+  const handleForgotPassword = async (email: string) => {
+    const success = await forgotPassword(email);
+    if (success) {
+      // Modal will close automatically after success toast or show success state
+    }
+  };
+
   const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
@@ -137,9 +158,9 @@ export default function Header() {
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={closeAuthModal}
-        onLogin={login}
-        onRegister={register}
-        onForgotPassword={forgotPassword}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        onForgotPassword={handleForgotPassword}
         isLoginLoading={isLoginLoading}
         isRegisterLoading={isRegisterLoading}
         defaultTab={defaultTab}

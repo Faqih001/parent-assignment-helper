@@ -8,12 +8,12 @@ interface AuthContextType {
   isLoading: boolean;
   isLoginLoading: boolean;
   isRegisterLoading: boolean;
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
+  register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
   refreshUser: () => Promise<void>;
-  forgotPassword: (email: string) => Promise<void>;
-  updatePassword: (newPassword: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<boolean>;
+  updatePassword: (newPassword: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string, rememberMe: boolean = false) => {
+  const login = async (email: string, password: string, rememberMe: boolean = false): Promise<boolean> => {
     setIsLoginLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -149,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         }
       }
+      return true;
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
@@ -156,12 +157,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
+      return false;
     } finally {
       setIsLoginLoading(false);
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, password: string): Promise<boolean> => {
     setIsRegisterLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -208,6 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       }
+      return true;
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
@@ -215,6 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
+      return false;
     } finally {
       setIsRegisterLoading(false);
     }
@@ -241,7 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const forgotPassword = async (email: string) => {
+  const forgotPassword = async (email: string): Promise<boolean> => {
     setIsLoginLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -256,6 +260,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Reset email sent!",
         description: "Check your email for password reset instructions.",
       });
+      return true;
     } catch (error: any) {
       console.error('Forgot password error:', error);
       toast({
@@ -263,6 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: error.message || "Failed to send reset email. Please try again.",
         variant: "destructive",
       });
+      return false;
     } finally {
       setIsLoginLoading(false);
     }
@@ -289,7 +295,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updatePassword = async (newPassword: string) => {
+  const updatePassword = async (newPassword: string): Promise<boolean> => {
     setIsLoginLoading(true);
     try {
       const { error } = await supabase.auth.updateUser({
@@ -304,6 +310,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Password Updated!",
         description: "Your password has been successfully updated.",
       });
+      return true;
     } catch (error: any) {
       console.error('Password update error:', error);
       toast({
@@ -311,7 +318,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: error.message || "Failed to update password. Please try again.",
         variant: "destructive",
       });
-      throw error;
+      return false;
     } finally {
       setIsLoginLoading(false);
     }
