@@ -366,7 +366,8 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen-mobile bg-gradient-to-br from-background to-accent">
-      <div className="container mx-auto px-4 py-4 md:py-8 min-h-screen-safe flex flex-col max-w-4xl">
+      <div className="container mx-auto px-4 py-4 md:py-8 min-h-screen-safe flex flex-col max-w-4xl"
+           style={{ minHeight: 'calc(100vh - 4rem)' }}>
         {/* Header */}
         <div className="mb-4 md:mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -453,25 +454,25 @@ export default function Chat() {
         )}
 
         {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto space-y-3 md:space-y-4 mb-4 md:mb-6 min-h-0">
+        <div className="flex-1 overflow-y-auto space-y-3 md:space-y-4 mb-4 md:mb-6 min-h-[400px] md:min-h-[500px]">
           {messages.map((message) => (
             <div key={message.id} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`flex items-start space-x-2 md:space-x-3 max-w-[85%] md:max-w-[80%] ${message.type === "user" ? "flex-row-reverse space-x-reverse" : ""}`}>
-                <div className={`h-6 w-6 md:h-8 md:w-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                <div className={`h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                   message.type === "user" 
                     ? "bg-primary text-primary-foreground" 
                     : "bg-gradient-primary text-white"
                 }`}>
-                  {message.type === "user" ? <User className="h-3 w-3 md:h-4 md:w-4" /> : <Bot className="h-3 w-3 md:h-4 md:w-4" />}
+                  {message.type === "user" ? <User className="h-4 w-4 md:h-5 md:w-5" /> : <Bot className="h-4 w-4 md:h-5 md:w-5" />}
                 </div>
                 
                 <Card className={`shadow-soft ${message.type === "user" ? "bg-primary text-primary-foreground" : "bg-card"}`}>
-                  <CardContent className="p-3 md:p-4">
+                  <CardContent className="p-4 md:p-5">
                     {message.image && (
-                      <img src={message.image} alt="Uploaded homework" className="max-w-full h-auto rounded-lg mb-2 md:mb-3" />
+                      <img src={message.image} alt="Uploaded homework" className="max-w-full h-auto rounded-lg mb-3 md:mb-4" />
                     )}
-                    <div className="whitespace-pre-line text-xs md:text-sm">{message.content}</div>
-                    <div className={`text-xs mt-1 md:mt-2 ${message.type === "user" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                    <div className="whitespace-pre-line text-sm md:text-base leading-relaxed">{message.content}</div>
+                    <div className={`text-xs mt-2 md:mt-3 ${message.type === "user" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                       {message.timestamp.toLocaleTimeString()}
                     </div>
                   </CardContent>
@@ -483,18 +484,18 @@ export default function Chat() {
           {isLoading && (
             <div className="flex justify-start">
               <div className="flex items-start space-x-2 md:space-x-3">
-                <div className="h-6 w-6 md:h-8 md:w-8 rounded-full bg-gradient-primary text-white flex items-center justify-center">
-                  <Bot className="h-3 w-3 md:h-4 md:w-4" />
+                <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-gradient-primary text-white flex items-center justify-center">
+                  <Bot className="h-4 w-4 md:h-5 md:w-5" />
                 </div>
                 <Card className="shadow-soft">
-                  <CardContent className="p-3 md:p-4">
+                  <CardContent className="p-4 md:p-5">
                     <div className="flex items-center space-x-2">
                       <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
                       </div>
-                      <span className="text-xs md:text-sm text-muted-foreground">AI is thinking...</span>
+                      <span className="text-sm md:text-base text-muted-foreground">AI is thinking...</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -506,8 +507,8 @@ export default function Chat() {
 
         {/* Input Area */}
         <Card className="shadow-medium flex-shrink-0">
-          <CardContent className="p-3 md:p-4">
-            <div className="flex items-end space-x-2 md:space-x-3">
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-end space-x-3 md:space-x-4">
               <div className="flex-1 space-y-2">
                 <Textarea
                   placeholder="Type your homework question here... (e.g., 'How do I solve 2x + 5 = 15?')"
@@ -519,30 +520,30 @@ export default function Chat() {
                       handleSendMessage();
                     }
                   }}
-                  className="min-h-[40px] max-h-32 resize-none text-sm"
+                  className="min-h-[60px] md:min-h-[80px] max-h-40 resize-none text-sm md:text-base leading-relaxed"
                   disabled={(user.questionsRemaining || 0) === 0 || !isAiInitialized}
                 />
               </div>
               
-              <div className="flex space-x-1 md:space-x-2">
+              <div className="flex space-x-2 md:space-x-3">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={(user.questionsRemaining || 0) === 0 || !isAiInitialized}
                   title="Upload image"
-                  className="h-10 w-10"
+                  className="h-12 w-12 md:h-14 md:w-14"
                 >
-                  <Camera className="h-4 w-4" />
+                  <Camera className="h-5 w-5 md:h-6 md:w-6" />
                 </Button>
                 
                 <Button
                   onClick={handleSendMessage}
                   disabled={!input.trim() || isLoading || (user.questionsRemaining || 0) === 0 || !isAiInitialized}
-                  className="px-4 md:px-6 h-10"
+                  className="px-6 md:px-8 h-12 md:h-14"
                   size="default"
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5 md:h-6 md:w-6" />
                 </Button>
               </div>
             </div>
