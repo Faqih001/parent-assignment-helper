@@ -13,6 +13,7 @@ interface AuthContextType {
   logout: () => void;
   refreshUser: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -244,7 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoginLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${env.appUrl}/reset-password`,
+        redirectTo: `${env.appUrl}/?reset=true`,
       });
 
       if (error) {
@@ -288,8 +289,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updatePassword = async (newPassword: string) => {
+    setIsLoginLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Password Updated!",
+        description: "Your password has been successfully updated.",
+      });
+    } catch (error: any) {
+      console.error('Password update error:', error);
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update password. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsLoginLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, isLoginLoading, isRegisterLoading, login, register, logout, refreshUser, forgotPassword }}>
+    <AuthContext.Provider value={{ user, isLoading, isLoginLoading, isRegisterLoading, login, register, logout, refreshUser, forgotPassword, updatePassword }}>
       {children}
     </AuthContext.Provider>
   );

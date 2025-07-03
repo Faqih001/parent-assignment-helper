@@ -1,10 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight, BookOpen, MessageCircle, Clock, Shield, Star, Users, Target, Award, Zap, Heart, Globe, Smartphone, CheckCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthModal } from "@/hooks/useAuthModal";
+import PasswordResetModal from "@/components/auth/PasswordResetModal";
+import { useState, useEffect } from "react";
 import heroImage from "@/assets/hero-image.jpg";
 import familyStudy from "@/assets/family-study.jpg";
 import aiTeacher from "@/assets/ai-teacher.jpg";
@@ -16,8 +18,27 @@ import safety from "@/assets/safety.jpg";
 import progress from "@/assets/progress.jpg";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, updatePassword, isLoginLoading } = useAuth();
   const { openRegisterModal } = useAuthModal();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showPasswordResetModal, setShowPasswordResetModal] = useState(false);
+
+  // Check if user came from password reset link
+  useEffect(() => {
+    const isReset = searchParams.get('reset');
+    if (isReset === 'true') {
+      setShowPasswordResetModal(true);
+      // Remove the reset parameter from the URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('reset');
+      setSearchParams(newSearchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  const handlePasswordUpdate = async (newPassword: string) => {
+    await updatePassword(newPassword);
+    setShowPasswordResetModal(false);
+  };
   const features = [
     {
       icon: MessageCircle,
@@ -821,6 +842,14 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Password Reset Modal */}
+      <PasswordResetModal
+        isOpen={showPasswordResetModal}
+        onClose={() => setShowPasswordResetModal(false)}
+        onUpdatePassword={handlePasswordUpdate}
+        isLoading={isLoginLoading}
+      />
     </div>
   );
 }
