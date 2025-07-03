@@ -343,7 +343,7 @@ export default function Pricing() {
                 </Button>
               </Link>
               <Link to="/contact">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-black">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto border-white bg-white/10 text-white hover:bg-white hover:text-primary transition-all duration-300">
                   Have Questions?
                 </Button>
               </Link>
