@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import celebration from "@/assets/celebration.jpg";
+import aiTeacher from "@/assets/ai-teacher.jpg";
 
 export default function HowItWorks() {
   const steps = [
@@ -61,17 +62,24 @@ export default function HowItWorks() {
   ];
 
   return (
-    <div className="flex flex-col py-20">
+    <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-20">
-        <div className="text-center space-y-6 mb-16">
-          <h1 className="text-4xl lg:text-5xl font-bold">
-            How <span className="bg-gradient-primary bg-clip-text text-transparent">HomeworkHelper</span> Works
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Our AI-powered homework assistant makes it easy for parents to help their children 
-            learn and understand, creating confident learners and stress-free homework time.
-          </p>
+      <section className="relative py-20 lg:py-32 bg-gradient-hero overflow-hidden min-h-[60vh] flex items-center">
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-fixed opacity-30"
+          style={{ backgroundImage: `url(${aiTeacher})` }}
+        ></div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center space-y-6 mb-16 animate-fade-in">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white animate-slide-up">
+              How <span className="text-secondary">HomeworkHelper</span> Works
+            </h1>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto animate-fade-in [animation-delay:0.2s]">
+              Our AI-powered homework assistant makes it easy for parents to help their children 
+              learn and understand, creating confident learners and stress-free homework time.
+            </p>
+          </div>
         </div>
       </section>
 

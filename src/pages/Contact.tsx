@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { submitContactForm, validateContactForm } from "@/lib/contact";
 import { dbHelpers } from "@/lib/supabase";
 import { env } from "@/lib/env";
+import support247 from "@/assets/support-247.jpg";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
