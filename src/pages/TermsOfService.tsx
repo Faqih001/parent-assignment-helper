@@ -131,8 +131,17 @@ export default function TermsOfService() {
               <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                 <li>Free plan includes 5 questions renewable every 24 hours</li>
                 <li>Family plan includes 50 questions renewable every 24 hours</li>
-                <li>Pay-per-use option available at KES 10 per question</li>
+                <li>Pay-per-use option available at KES 10 per question (available when plan questions are exhausted)</li>
                 <li>Prices are subject to change with reasonable notice</li>
+              </ul>
+              
+              <h3 className="text-lg font-semibold mt-6">Pay-Per-Use System</h3>
+              <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                <li>When your plan questions are exhausted, you can purchase individual questions at KES 10 each</li>
+                <li>Pay-per-use questions are available immediately after payment</li>
+                <li>No minimum purchase required - buy as many or as few questions as you need</li>
+                <li>Pay-per-use questions do not expire and can be used anytime</li>
+                <li>Payment processing through M-Pesa, Airtel Money, or credit cards</li>
               </ul>
               
               <h3 className="text-lg font-semibold mt-6">Payment Terms</h3>
