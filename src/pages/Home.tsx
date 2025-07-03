@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, MessageCircle, Clock, Shield, Star, Users, Target
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { IntegrationDemo } from "@/components/IntegrationDemo";
 import heroImage from "@/assets/hero-image.jpg";
 import familyStudy from "@/assets/family-study.jpg";
 import aiTeacher from "@/assets/ai-teacher.jpg";
@@ -787,6 +788,17 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Integration Demo Section (for testing) */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Integration Testing</h2>
+            <p className="text-muted-foreground">Test the IntaSend payment system and Google Gemini AI integration</p>
+          </div>
+          <IntegrationDemo />
         </div>
       </section>
     </div>
