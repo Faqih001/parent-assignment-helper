@@ -15,14 +15,14 @@ export default function Header() {
   const { isAuthModalOpen, defaultTab, openAuthModal, closeAuthModal } = useAuthModal();
 
   const handleLogin = async (email: string, password: string, rememberMe?: boolean) => {
-    console.log('Header handleLogin called');
+    console.log('Header: Starting login process');
     const success = await login(email, password, rememberMe);
-    console.log('Login result:', success);
+    console.log('Header: Login result received:', success);
     if (success) {
-      console.log('Closing auth modal after successful login');
+      console.log('Header: Closing modal due to successful login');
       closeAuthModal(); // Close modal on successful login
     } else {
-      console.log('Login failed, modal remains open');
+      console.log('Header: Keeping modal open due to failed login');
     }
   };
 
@@ -103,9 +103,19 @@ export default function Header() {
             )}
           </div>
 
-          {/* Mobile Menu Button and User Avatar */}
+          {/* Mobile Menu Button and User Controls */}
           <div className="md:hidden flex items-center space-x-3">
-            {user && <UserMenu user={user} onLogout={logout} />}
+            {user && (
+              <>
+                <Link to="/chat">
+                  <Button variant="outline" size="sm">
+                    <MessageCircle className="h-4 w-4" />
+                    <span className="sr-only">Chat</span>
+                  </Button>
+                </Link>
+                <UserMenu user={user} onLogout={logout} />
+              </>
+            )}
             <button
               className="p-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -136,17 +146,9 @@ export default function Header() {
               ))}
               <div className="pt-4 space-y-2">
                 {user ? (
-                  <>
-                    <div className="px-3 py-2 text-sm text-muted-foreground border-b">
-                      Signed in as {user.name}
-                    </div>
-                    <Link to="/chat" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="outline" size="sm" className="w-full">
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        Chat
-                      </Button>
-                    </Link>
-                  </>
+                  <div className="px-3 py-2 text-sm text-muted-foreground border-b">
+                    Signed in as {user.name}
+                  </div>
                 ) : (
                   <>
                     <Button variant="outline" size="sm" className="w-full" onClick={() => { openAuthModal(); setIsMenuOpen(false); }}>

@@ -129,99 +129,111 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string, rememberMe: boolean = false): Promise<boolean> => {
     setIsLoginLoading(true);
-    console.log('Login attempt started for:', email);
     
     try {
+      console.log('Starting login for:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      console.log('Login response:', { user: data.user?.email, error: error?.message });
+      console.log('Auth response:', { hasUser: !!data.user, error: error?.message });
 
       if (error) {
-        console.error('Supabase auth error:', error);
+        console.error('Auth error:', error);
         throw error;
       }
 
-      if (data.user) {
-        console.log('User authenticated, fetching profile...');
-        
-        // Handle remember me functionality
-        if (rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
-          localStorage.setItem('rememberedEmail', email);
-        } else {
-          localStorage.removeItem('rememberMe');
-          localStorage.removeItem('rememberedEmail');
-        }
+      if (!data.user) {
+        throw new Error("No user returned from authentication");
+      }
 
-        // Fetch user profile from database
-        const profile = await dbHelpers.getUserProfile(data.user.id);
-        console.log('User profile fetched:', profile ? 'success' : 'failed');
+      console.log('User authenticated, fetching profile...');
+
+      // Handle remember me functionality
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+        localStorage.setItem('rememberedEmail', email);
+      } else {
+        localStorage.removeItem('rememberMe');
+        localStorage.removeItem('rememberedEmail');
+      }
+
+      // Fetch user profile from database
+      const profile = await dbHelpers.getUserProfile(data.user.id);
+      console.log('Profile fetch result:', !!profile);
+      
+      if (profile) {
+        const userData: User = {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          avatar: profile.avatar_url,
+          plan: profile.plan,
+          questionsRemaining: profile.questions_remaining
+        };
+        setUser(userData);
+        console.log('User state set successfully');
         
-        if (profile) {
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully logged in.",
+          variant: "success",
+        });
+        console.log('Success toast shown');
+        
+        return true;
+      } else {
+        console.log('No profile found, creating new one...');
+        // Create profile if it doesn't exist
+        const newProfile = {
+          id: data.user.id,
+          email: data.user.email || '',
+          name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+          plan: 'free' as const,
+          questions_remaining: 5,
+          last_free_reset: new Date().toISOString()
+        };
+        
+        const createdProfile = await dbHelpers.createUserProfile(newProfile);
+        console.log('Profile creation result:', !!createdProfile);
+        
+        if (createdProfile) {
           const userData: User = {
-            id: profile.id,
-            name: profile.name,
-            email: profile.email,
-            avatar: profile.avatar_url,
-            plan: profile.plan,
-            questionsRemaining: profile.questions_remaining
+            id: createdProfile.id,
+            name: createdProfile.name,
+            email: createdProfile.email,
+            avatar: createdProfile.avatar_url,
+            plan: createdProfile.plan,
+            questionsRemaining: createdProfile.questions_remaining
           };
           setUser(userData);
-          console.log('User state updated successfully');
+          console.log('New user state set successfully');
           
           toast({
             title: "Welcome back!",
             description: "You've successfully logged in.",
             variant: "success",
           });
-        } else {
-          console.warn('No profile found for user, creating one...');
-          // Create profile if it doesn't exist
-          const newProfile = {
-            id: data.user.id,
-            email: data.user.email || '',
-            name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
-            plan: 'free' as const,
-            questions_remaining: 5,
-            last_free_reset: new Date().toISOString()
-          };
+          console.log('Success toast shown for new profile');
           
-          const createdProfile = await dbHelpers.createUserProfile(newProfile);
-          if (createdProfile) {
-            const userData: User = {
-              id: createdProfile.id,
-              name: createdProfile.name,
-              email: createdProfile.email,
-              avatar: createdProfile.avatar_url,
-              plan: createdProfile.plan,
-              questionsRemaining: createdProfile.questions_remaining
-            };
-            setUser(userData);
-            console.log('New profile created and user state updated');
-            
-            toast({
-              title: "Welcome back!",
-              description: "You've successfully logged in.",
-              variant: "success",
-            });
-          }
+          return true;
+        } else {
+          throw new Error("Failed to create user profile");
         }
       }
-      console.log('Login completed successfully');
-      return true;
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
         title: "Login failed",
         description: error.message || "Please check your credentials and try again.",
-        variant: "error",
+        variant: "destructive",
       });
+      console.log('Error toast shown');
       return false;
     } finally {
-      console.log('Login loading state reset');
+      console.log('Setting loading to false');
       setIsLoginLoading(false);
     }
   };
