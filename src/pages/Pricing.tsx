@@ -123,27 +123,42 @@ export default function Pricing() {
   ];
 
   return (
-    <div className="flex flex-col py-20">
+    <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-20">
-        <div className="text-center space-y-6">
-          <h1 className="text-4xl lg:text-5xl font-bold">
-            Simple, <span className="bg-gradient-primary bg-clip-text text-transparent">Transparent</span> Pricing
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Choose the plan that works best for your family. From occasional help to daily support, 
-            we have options for every need and budget.
-          </p>
-          <div className="flex justify-center">
-            <Badge variant="secondary" className="px-4 py-2">
-              💝 All Plans Renewable Every 24 Hours • Start with 5 Free Questions
-            </Badge>
+      <section 
+        className="relative py-20 bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 overflow-hidden"
+        style={{
+          backgroundImage: `linear-gradient(rgba(30, 58, 138, 0.85), rgba(67, 56, 202, 0.85)), url('/src/assets/progress.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Decorative elements */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+        <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+        <div className="absolute bottom-10 right-10 w-32 h-32 bg-indigo-300/20 rounded-full blur-2xl"></div>
+        
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center space-y-6">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white">
+              Simple, <span className="text-yellow-300">Transparent</span> Pricing
+            </h1>
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+              Choose the plan that works best for your family. From occasional help to daily support, 
+              we have options for every need and budget.
+            </p>
+            <div className="flex justify-center">
+              <Badge variant="secondary" className="px-4 py-2 bg-white/90 text-blue-900 border-0">
+                💝 All Plans Renewable Every 24 Hours • Start with 5 Free Questions
+              </Badge>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Pricing Cards */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid lg:grid-cols-3 gap-8">
           {plans.map((plan, index) => (
             <Card 
