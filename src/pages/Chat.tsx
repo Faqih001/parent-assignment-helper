@@ -55,6 +55,14 @@ export default function Chat() {
         await geminiService.initializeChat();
         setIsAiInitialized(true);
 
+        // Check and potentially reset questions for all plan users
+        let currentQuestions = user.questionsRemaining || 0;
+        const updatedQuestions = await dbHelpers.checkAndResetFreeQuestions(user.id);
+        if (updatedQuestions > currentQuestions) {
+          currentQuestions = updatedQuestions;
+          user.questionsRemaining = updatedQuestions;
+        }
+
         // Load previous chat messages
         const chatHistory = await dbHelpers.getChatMessages(user.id);
         if (chatHistory.length > 0) {
@@ -67,11 +75,15 @@ export default function Chat() {
           }));
           setMessages(formattedMessages);
         } else {
-          // Set welcome message
+          // Set welcome message with plan-specific info
+          const planInfo = user.plan === 'free' 
+            ? `${currentQuestions} questions remaining on your ${user.plan} plan (renewable every 24 hours)`
+            : `${currentQuestions} questions remaining on your ${user.plan} plan (renewable every 24 hours)`;
+            
           setMessages([{
             id: "welcome",
             type: "bot",
-            content: `Hello ${user.name}! I'm your AI homework assistant powered by Google Gemini. Upload a photo of your homework question or type it here, and I'll provide a clear explanation to help you understand the solution. You have ${user.questionsRemaining || 0} questions remaining on your ${user.plan} plan. 📚✨`,
+            content: `Hello ${user.name}! I'm your AI homework assistant powered by Google Gemini. Upload a photo of your homework question or type it here, and I'll provide a clear explanation to help you understand the solution. You have ${planInfo}. 📚✨`,
             timestamp: new Date()
           }]);
         }
@@ -108,10 +120,25 @@ export default function Chat() {
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading || !isAiInitialized || !user) return;
 
+    // Check and potentially reset questions for all plan users after 24 hours
+    const updatedQuestions = await dbHelpers.checkAndResetFreeQuestions(user.id);
+    if (updatedQuestions > (user.questionsRemaining || 0)) {
+      user.questionsRemaining = updatedQuestions;
+      const planQuestions = user.plan === 'free' ? '5' : '50';
+      toast({
+        title: "Questions Renewed!",
+        description: `Your ${planQuestions} questions have been renewed after 24 hours. Happy learning!`,
+      });
+    }
+
     if ((user.questionsRemaining || 0) <= 0) {
+      const planMessage = user.plan === 'free' 
+        ? "You've used all your free questions. They'll renew in 24 hours, or upgrade for more questions."
+        : `You've used all questions on your ${user.plan} plan. They'll renew in 24 hours.`;
+      
       toast({
         title: "No Questions Left",
-        description: `You've used all questions on your ${user.plan} plan. Please upgrade to continue.`,
+        description: planMessage,
         variant: "destructive",
       });
       return;
@@ -202,10 +229,25 @@ export default function Chat() {
     const file = event.target.files?.[0];
     if (!file || !isAiInitialized || !user) return;
 
+    // Check and potentially reset questions for all plan users after 24 hours
+    const updatedQuestions = await dbHelpers.checkAndResetFreeQuestions(user.id);
+    if (updatedQuestions > (user.questionsRemaining || 0)) {
+      user.questionsRemaining = updatedQuestions;
+      const planQuestions = user.plan === 'free' ? '5' : '50';
+      toast({
+        title: "Questions Renewed!",
+        description: `Your ${planQuestions} questions have been renewed after 24 hours. Happy learning!`,
+      });
+    }
+
     if ((user.questionsRemaining || 0) <= 0) {
+      const planMessage = user.plan === 'free' 
+        ? "You've used all your free questions. They'll renew in 24 hours, or upgrade for more questions."
+        : `You've used all questions on your ${user.plan} plan. They'll renew in 24 hours.`;
+        
       toast({
         title: "No Questions Left",
-        description: `You've used all questions on your ${user.plan} plan. Please upgrade to continue.`,
+        description: planMessage,
         variant: "destructive",
       });
       return;

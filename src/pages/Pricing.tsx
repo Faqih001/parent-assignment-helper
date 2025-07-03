@@ -51,10 +51,10 @@ export default function Pricing() {
       price: "KES 999",
       originalPrice: 999,
       period: "per month",
-      description: "Best value for regular homework support",
+      description: "50 questions renewable every 24 hours",
       badge: "Most Popular",
       features: [
-        "Unlimited questions",
+        "50 questions (renewable daily)",
         "All pay-per-use features",
         "Priority support",
         "Progress tracking",
@@ -93,7 +93,7 @@ export default function Pricing() {
   const faqs = [
     {
       question: "How does the free trial work?",
-      answer: "Get 3 free questions to try our service. No credit card required. Experience the full power of our AI homework assistant before committing to a plan."
+      answer: "Get 5 free questions to try our service. No credit card required. Your free questions automatically renew every 24 hours after you use them all, giving you continuous access to try our AI homework assistant."
     },
     {
       question: "What if my child's question isn't answered correctly?",
@@ -131,7 +131,7 @@ export default function Pricing() {
           </p>
           <div className="flex justify-center">
             <Badge variant="secondary" className="px-4 py-2">
-              💝 3 Free Questions to Start • No Credit Card Required
+              💝 All Plans Renewable Every 24 Hours • Start with 5 Free Questions
             </Badge>
           </div>
         </div>

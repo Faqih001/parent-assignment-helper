@@ -18,6 +18,7 @@ export interface UserProfile {
   avatar_url?: string;
   plan: 'free' | 'family' | 'premium';
   questions_remaining: number;
+  last_free_reset: string;
   created_at: string;
   updated_at: string;
 }
@@ -236,5 +237,18 @@ export const dbHelpers = {
     }
 
     return true;
+  },
+
+  async checkAndResetFreeQuestions(userId: string): Promise<number> {
+    const { data, error } = await supabase.rpc('check_and_reset_free_questions', {
+      user_id: userId
+    });
+
+    if (error) {
+      console.error('Error checking/resetting free questions:', error);
+      return 0;
+    }
+
+    return data || 0;
   }
 };

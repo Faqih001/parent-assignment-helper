@@ -54,16 +54,16 @@ FEATURES:
 - Mobile-responsive design
 
 PRICING PLANS:
-- Free Trial: 3 homework questions to get started (no credit card required)
+- Free Trial: 5 homework questions to get started (renewable every 24 hours, no credit card required)
 - Pay-Per-Use: KES 10 per question - perfect for occasional homework help
-- Family Plan: KES 999/month - unlimited questions with priority support and progress tracking
+- Family Plan: KES 999/month - 50 questions (renewable every 24 hours) with priority support and progress tracking
 
 ADDITIONAL CREDITS:
 - Single questions: KES 10 each (pay-per-use)
 - For schools and institutions: Custom pricing available - contact us for volume discounts
 
 HOW IT WORKS:
-1. Create a free account to get 3 trial questions
+1. Create a free account to get 5 trial questions (renewable every 24 hours)
 2. Students can type or upload photos of homework questions
 3. Our AI analyzes and provides detailed, educational explanations
 4. Students learn step-by-step problem-solving methods
@@ -80,7 +80,7 @@ HomeworkHelper was founded by a passionate team of educators and technology expe
 
 GETTING STARTED:
 1. Click "Sign Up" to create your free account
-2. Get 3 free trial questions immediately
+2. Get 5 free trial questions immediately (renewable every 24 hours)
 3. Access the full homework assistant in the Chat section
 4. Upgrade to a paid plan for more questions when needed
 
