@@ -1,14 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  plan: "free" | "family" | "premium";
-  questionsRemaining?: number;
-}
+import { supabase, User, AuthError, dbHelpers, UserProfile } from '@/lib/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -22,33 +14,128 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  // Check for existing session on component mount
+  useEffect(() => {
+    const getSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+          return;
+        }
+        
+        if (session?.user) {
+          // Fetch user profile from database
+          const profile = await dbHelpers.getUserProfile(session.user.id);
+          if (profile) {
+            const userData: User = {
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              avatar: profile.avatar_url,
+              plan: profile.plan,
+              questionsRemaining: profile.questions_remaining
+            };
+            setUser(userData);
+          }
+        }
+      } catch (error) {
+        console.error('Session error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Fetch user profile from database
+          const profile = await dbHelpers.getUserProfile(session.user.id);
+          if (profile) {
+            const userData: User = {
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              avatar: profile.avatar_url,
+              plan: profile.plan,
+              questionsRemaining: profile.questions_remaining
+            };
+            setUser(userData);
+          } else {
+            // Create profile if it doesn't exist (fallback)
+            const newProfile: Omit<UserProfile, 'created_at' | 'updated_at'> = {
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+              plan: 'free',
+              questions_remaining: 5
+            };
+            const createdProfile = await dbHelpers.createUserProfile(newProfile);
+            if (createdProfile) {
+              const userData: User = {
+                id: createdProfile.id,
+                name: createdProfile.name,
+                email: createdProfile.email,
+                avatar: createdProfile.avatar_url,
+                plan: createdProfile.plan,
+                questionsRemaining: createdProfile.questions_remaining
+              };
+              setUser(userData);
+            }
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful login
-      const mockUser: User = {
-        id: '1',
-        name: 'Demo User',
-        email: email,
-        plan: 'free',
-        questionsRemaining: 5
-      };
-      
-      setUser(mockUser);
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in.",
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-    } catch (error) {
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.user) {
+        // Fetch user profile from database
+        const profile = await dbHelpers.getUserProfile(data.user.id);
+        if (profile) {
+          const userData: User = {
+            id: profile.id,
+            name: profile.name,
+            email: profile.email,
+            avatar: profile.avatar_url,
+            plan: profile.plan,
+            questionsRemaining: profile.questions_remaining
+          };
+          setUser(userData);
+          
+          toast({
+            title: "Welcome back!",
+            description: "You've successfully logged in.",
+          });
+        }
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Login failed",
-        description: "Please check your credentials and try again.",
+        description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
     } finally {
@@ -59,27 +146,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful registration
-      const mockUser: User = {
-        id: '1',
-        name: name,
-        email: email,
-        plan: 'free',
-        questionsRemaining: 5
-      };
-      
-      setUser(mockUser);
-      toast({
-        title: "Account created!",
-        description: "Welcome to HomeworkHelper. You have 5 free questions to get started.",
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          }
+        }
       });
-    } catch (error) {
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.user) {
+        // Check if user needs email confirmation
+        if (!data.session) {
+          toast({
+            title: "Check your email",
+            description: "We've sent you a confirmation link to complete your registration.",
+          });
+        } else {
+          // User profile should be created automatically by the trigger
+          // Fetch the created profile
+          const profile = await dbHelpers.getUserProfile(data.user.id);
+          if (profile) {
+            const userData: User = {
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              avatar: profile.avatar_url,
+              plan: profile.plan,
+              questionsRemaining: profile.questions_remaining
+            };
+            setUser(userData);
+            
+            toast({
+              title: "Account created!",
+              description: `Welcome to HomeworkHelper, ${profile.name}! You have ${profile.questions_remaining} free questions to get started.`,
+            });
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Registration error:', error);
       toast({
         title: "Registration failed",
-        description: "Something went wrong. Please try again.",
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -87,12 +201,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    toast({
-      title: "Logged out",
-      description: "You've been successfully logged out.",
-    });
+  const logout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error);
+      }
+      
+      setUser(null);
+      toast({
+        title: "Logged out",
+        description: "You've been successfully logged out.",
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Camera, Image, Paperclip, Bot, User, AlertCircle, CheckCircle, BookOpen, GraduationCap } from "lucide-react";
+import { Send, Camera, Image, Paperclip, Bot, User, AlertCircle, CheckCircle, BookOpen, GraduationCap, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { geminiService, HomeworkQuestion } from "@/lib/gemini";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { dbHelpers } from "@/lib/supabase";
+import { useNavigate } from "react-router-dom";
 
 interface Message {
   id: string;
@@ -20,40 +23,70 @@ interface Message {
 
 export default function Chat() {
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      type: "bot",
-      content: "Hello! I'm your AI homework assistant powered by Google Gemini. Upload a photo of your homework question or type it here, and I'll provide a clear explanation to help you and your child understand the solution together. 📚✨",
-      timestamp: new Date()
-    }
-  ]);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [subject, setSubject] = useState("");
   const [grade, setGrade] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [freeQuestions, setFreeQuestions] = useState(3);
   const [isAiInitialized, setIsAiInitialized] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize Gemini AI when component mounts
+  // Redirect to home if not authenticated
   useEffect(() => {
-    const initializeAI = async () => {
+    if (!user) {
+      navigate('/');
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to access the homework assistant.",
+        variant: "destructive",
+      });
+    }
+  }, [user, navigate, toast]);
+
+  // Load chat history and initialize AI
+  useEffect(() => {
+    if (!user) return;
+
+    const initializeChat = async () => {
       try {
+        // Initialize AI
         await geminiService.initializeChat();
         setIsAiInitialized(true);
+
+        // Load previous chat messages
+        const chatHistory = await dbHelpers.getChatMessages(user.id);
+        if (chatHistory.length > 0) {
+          const formattedMessages: Message[] = chatHistory.map((msg) => ({
+            id: msg.id,
+            type: msg.type as 'user' | 'bot',
+            content: msg.content,
+            timestamp: new Date(msg.created_at),
+            image: msg.image_url
+          }));
+          setMessages(formattedMessages);
+        } else {
+          // Set welcome message
+          setMessages([{
+            id: "welcome",
+            type: "bot",
+            content: `Hello ${user.name}! I'm your AI homework assistant powered by Google Gemini. Upload a photo of your homework question or type it here, and I'll provide a clear explanation to help you understand the solution. You have ${user.questionsRemaining || 0} questions remaining on your ${user.plan} plan. 📚✨`,
+            timestamp: new Date()
+          }]);
+        }
       } catch (error) {
-        console.error('Failed to initialize AI:', error);
+        console.error('Failed to initialize chat:', error);
         toast({
-          title: "AI Initialization Failed",
-          description: "There was an issue starting the AI service. Please refresh the page.",
+          title: "Initialization Failed",
+          description: "There was an issue starting the chat service. Please refresh the page.",
           variant: "destructive",
         });
       }
     };
 
-    initializeAI();
-  }, [toast]);
+    initializeChat();
+  }, [user, toast]);
 
   const sampleQuestions = [
     "Help me solve: 2x + 5 = 15",
@@ -73,12 +106,12 @@ export default function Chat() {
   ];
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading || !isAiInitialized) return;
+    if (!input.trim() || isLoading || !isAiInitialized || !user) return;
 
-    if (freeQuestions === 0) {
+    if ((user.questionsRemaining || 0) <= 0) {
       toast({
         title: "No Questions Left",
-        description: "Please subscribe to continue asking questions.",
+        description: `You've used all questions on your ${user.plan} plan. Please upgrade to continue.`,
         variant: "destructive",
       });
       return;
@@ -99,6 +132,13 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
+      // Save user message to database
+      await dbHelpers.saveChatMessage({
+        user_id: user.id,
+        type: 'user',
+        content: currentInput
+      });
+
       const homeworkQuestion: HomeworkQuestion = {
         subject: currentSubject,
         grade: currentGrade,
@@ -115,12 +155,25 @@ export default function Chat() {
       };
 
       setMessages(prev => [...prev, botResponse]);
-      setFreeQuestions(prev => Math.max(0, prev - 1));
 
-      // Show success toast
+      // Save bot response to database
+      await dbHelpers.saveChatMessage({
+        user_id: user.id,
+        type: 'bot',
+        content: response
+      });
+
+      // Decrement user questions
+      await dbHelpers.decrementUserQuestions(user.id);
+
+      // Update local user state
+      if (user.questionsRemaining) {
+        user.questionsRemaining = Math.max(0, user.questionsRemaining - 1);
+      }
+
       toast({
         title: "Answer Generated!",
-        description: "I've provided a detailed explanation for your question.",
+        description: `Question answered! You have ${(user.questionsRemaining || 0) - 1} questions remaining.`,
       });
 
     } catch (error) {
@@ -147,12 +200,12 @@ export default function Chat() {
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !isAiInitialized) return;
+    if (!file || !isAiInitialized || !user) return;
 
-    if (freeQuestions === 0) {
+    if ((user.questionsRemaining || 0) <= 0) {
       toast({
         title: "No Questions Left",
-        description: "Please subscribe to continue asking questions.",
+        description: `You've used all questions on your ${user.plan} plan. Please upgrade to continue.`,
         variant: "destructive",
       });
       return;
@@ -171,10 +224,19 @@ export default function Chat() {
       
       setMessages(prev => [...prev, userMessage]);
       setIsLoading(true);
+      const currentInput = input;
       setInput("");
 
       try {
-        const response = await geminiService.analyzeHomeworkImage(file, input);
+        // Save user message with image to database
+        await dbHelpers.saveChatMessage({
+          user_id: user.id,
+          type: 'user',
+          content: currentInput || "I've uploaded an image of my homework question. Please help me understand it.",
+          image_url: imageUrl
+        });
+
+        const response = await geminiService.analyzeHomeworkImage(file, currentInput);
 
         const botResponse: Message = {
           id: (Date.now() + 1).toString(),
@@ -184,11 +246,25 @@ export default function Chat() {
         };
 
         setMessages(prev => [...prev, botResponse]);
-        setFreeQuestions(prev => Math.max(0, prev - 1));
+
+        // Save bot response to database
+        await dbHelpers.saveChatMessage({
+          user_id: user.id,
+          type: 'bot',
+          content: response
+        });
+
+        // Decrement user questions
+        await dbHelpers.decrementUserQuestions(user.id);
+
+        // Update local user state
+        if (user.questionsRemaining) {
+          user.questionsRemaining = Math.max(0, user.questionsRemaining - 1);
+        }
 
         toast({
           title: "Image Analyzed!",
-          description: "I've analyzed your homework image and provided an explanation.",
+          description: `Image processed successfully! You have ${(user.questionsRemaining || 0) - 1} questions remaining.`,
         });
 
       } catch (error) {
@@ -216,6 +292,30 @@ export default function Chat() {
     reader.readAsDataURL(file);
   };
 
+  // Show login prompt if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-accent flex items-center justify-center">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="flex items-center justify-center space-x-2">
+              <LogIn className="h-6 w-6" />
+              <span>Login Required</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground">
+              Please log in to access the AI homework assistant.
+            </p>
+            <Button onClick={() => navigate('/')} className="w-full">
+              Go to Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent">
       <div className="container mx-auto px-4 py-8 h-screen flex flex-col max-w-4xl">
@@ -227,12 +327,15 @@ export default function Chat() {
               <p className="text-muted-foreground">Get instant help with any homework question</p>
             </div>
             <div className="text-right">
-              <Badge variant={freeQuestions > 0 ? "default" : "destructive"} className="mb-2">
-                {freeQuestions > 0 ? `${freeQuestions} Free Questions Left` : "Subscribe for More"}
+              <Badge variant={(user.questionsRemaining || 0) > 0 ? "default" : "destructive"} className="mb-2">
+                {(user.questionsRemaining || 0) > 0 
+                  ? `${user.questionsRemaining} Questions Left (${user.plan.charAt(0).toUpperCase() + user.plan.slice(1)} Plan)` 
+                  : "No Questions Remaining"
+                }
               </Badge>
-              {freeQuestions === 0 && (
+              {(user.questionsRemaining || 0) === 0 && (
                 <p className="text-xs text-muted-foreground">
-                  <a href="/pricing" className="text-primary hover:underline">View Pricing Plans</a>
+                  <a href="/pricing" className="text-primary hover:underline">Upgrade Your Plan</a>
                 </p>
               )}
             </div>
@@ -281,7 +384,7 @@ export default function Chat() {
         </div>
 
         {/* Sample Questions */}
-        {messages.length === 1 && (
+        {messages.length <= 1 && (
           <div className="mb-6">
             <h3 className="text-sm font-medium text-muted-foreground mb-3">Try these sample questions:</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -292,6 +395,7 @@ export default function Chat() {
                   size="sm"
                   className="text-left justify-start h-auto py-2 px-3"
                   onClick={() => setInput(question)}
+                  disabled={(user.questionsRemaining || 0) === 0}
                 >
                   {question}
                 </Button>
@@ -367,7 +471,7 @@ export default function Chat() {
                     }
                   }}
                   className="min-h-[40px] max-h-32 resize-none"
-                  disabled={freeQuestions === 0 || !isAiInitialized}
+                  disabled={(user.questionsRemaining || 0) === 0 || !isAiInitialized}
                 />
               </div>
               
@@ -376,7 +480,7 @@ export default function Chat() {
                   variant="outline"
                   size="icon"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={freeQuestions === 0 || !isAiInitialized}
+                  disabled={(user.questionsRemaining || 0) === 0 || !isAiInitialized}
                   title="Upload image"
                 >
                   <Camera className="h-4 w-4" />
@@ -384,7 +488,7 @@ export default function Chat() {
                 
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!input.trim() || isLoading || freeQuestions === 0 || !isAiInitialized}
+                  disabled={!input.trim() || isLoading || (user.questionsRemaining || 0) === 0 || !isAiInitialized}
                   className="px-6"
                 >
                   <Send className="h-4 w-4" />
@@ -415,10 +519,10 @@ export default function Chat() {
                   Step-by-step explanations
                 </span>
               </div>
-              {freeQuestions === 0 && (
+              {(user.questionsRemaining || 0) === 0 && (
                 <span className="flex items-center text-destructive">
                   <AlertCircle className="h-3 w-3 mr-1" />
-                  <a href="/pricing" className="hover:underline">Subscribe to continue</a>
+                  <a href="/pricing" className="hover:underline">Upgrade to continue</a>
                 </span>
               )}
               {!isAiInitialized && (

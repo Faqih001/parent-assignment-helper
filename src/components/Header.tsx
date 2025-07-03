@@ -11,7 +11,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const location = useLocation();
-  const { user, login, register, logout } = useAuth();
+  const { user, login, register, logout, isLoading } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -138,6 +138,7 @@ export default function Header() {
         onClose={() => setIsAuthModalOpen(false)}
         onLogin={login}
         onRegister={register}
+        isLoading={isLoading}
       />
     </header>
   );

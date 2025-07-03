@@ -17,6 +17,10 @@ interface EnvironmentVariables {
   
   // WhatsApp Configuration
   VITE_WHATSAPP_NUMBER: string;
+  
+  // Supabase Configuration
+  VITE_SUPABASE_URL: string;
+  VITE_SUPABASE_ANON_KEY: string;
 }
 
 class Environment {
@@ -33,6 +37,8 @@ class Environment {
       VITE_SUPPORT_EMAIL: import.meta.env.VITE_SUPPORT_EMAIL,
       VITE_SUPPORT_PHONE: import.meta.env.VITE_SUPPORT_PHONE,
       VITE_WHATSAPP_NUMBER: import.meta.env.VITE_WHATSAPP_NUMBER,
+      VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+      VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
     };
   }
 
@@ -69,6 +75,14 @@ class Environment {
     return this.vars.VITE_WHATSAPP_NUMBER || '';
   }
 
+  get supabaseUrl(): string {
+    return this.vars.VITE_SUPABASE_URL || '';
+  }
+
+  get supabaseAnonKey(): string {
+    return this.vars.VITE_SUPABASE_ANON_KEY || '';
+  }
+
   /**
    * Validate that all required environment variables are set
    */
@@ -77,7 +91,9 @@ class Environment {
       'VITE_INTASEND_PUBLISHABLE_KEY',
       'VITE_GOOGLE_GEMINI_API_KEY',
       'VITE_SUPPORT_EMAIL',
-      'VITE_WHATSAPP_NUMBER'
+      'VITE_WHATSAPP_NUMBER',
+      'VITE_SUPABASE_URL',
+      'VITE_SUPABASE_ANON_KEY'
     ];
 
     const missing = required.filter(key => !this.vars[key]);
@@ -102,6 +118,8 @@ class Environment {
       VITE_SUPPORT_EMAIL: this.supportEmail || 'NOT_SET',
       VITE_SUPPORT_PHONE: this.supportPhone || 'NOT_SET',
       VITE_WHATSAPP_NUMBER: this.whatsappNumber || 'NOT_SET',
+      VITE_SUPABASE_URL: this.supabaseUrl || 'NOT_SET',
+      VITE_SUPABASE_ANON_KEY: this.supabaseAnonKey ? '***' + this.supabaseAnonKey.slice(-4) : 'NOT_SET',
     };
   }
 }

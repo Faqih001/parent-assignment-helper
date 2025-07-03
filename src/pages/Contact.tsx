@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { submitContactForm, validateContactForm } from "@/lib/contact";
+import { dbHelpers } from "@/lib/supabase";
 import { env } from "@/lib/env";
 
 export default function Contact() {
@@ -83,41 +84,54 @@ export default function Contact() {
     }
 
     try {
-      const result = await submitContactForm({
+      // Save to database first
+      const contactData = {
         name: formData.name,
         email: formData.email,
-        subject: formData.subject,
-        message: formData.message,
         phone: formData.phone || undefined,
-      });
+        message: `Subject: ${formData.subject}\n\nType: ${formData.type}\n\nMessage: ${formData.message}`,
+        status: 'pending' as const
+      };
 
-      if (result.success) {
-        toast({
-          title: "Message Sent Successfully! ✅",
-          description: result.message,
-        });
-        
-        // Reset form
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          subject: "",
-          message: "",
-          type: "general"
-        });
-      } else {
-        toast({
-          title: "Failed to Send Message",
-          description: result.message,
-          variant: "destructive",
-        });
+      const savedContact = await dbHelpers.saveContactForm(contactData);
+      
+      if (!savedContact) {
+        throw new Error('Failed to save contact form to database');
       }
+
+      // Also send email notification (optional, for admin notification)
+      try {
+        await submitContactForm({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          phone: formData.phone || undefined,
+        });
+      } catch (emailError) {
+        console.warn('Email notification failed, but form was saved:', emailError);
+      }
+
+      toast({
+        title: "Message Sent Successfully! ✅",
+        description: "Thank you for contacting us. We'll get back to you within 24 hours.",
+      });
+      
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: "",
+        type: "general"
+      });
+      
     } catch (error) {
       console.error('Contact form error:', error);
       toast({
         title: "Failed to Send Message",
-        description: "Please try again or contact us directly via WhatsApp.",
+        description: "There was an error submitting your message. Please try again or contact us directly.",
         variant: "destructive",
       });
     } finally {
