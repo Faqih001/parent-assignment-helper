@@ -197,7 +197,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-4 sm:bottom-24 right-4 sm:right-6 z-50">
+      <div className="fixed bottom-20 sm:bottom-36 right-4 sm:right-6 z-50">
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
@@ -213,7 +213,7 @@ Keep responses friendly, informative, and focused on helping users understand wh
   }
 
   return (
-    <div className={`fixed bottom-4 sm:bottom-24 right-4 sm:right-6 z-50 transition-all duration-300 ${
+    <div className={`fixed bottom-20 sm:bottom-36 right-4 sm:right-6 z-50 transition-all duration-300 ${
       isMinimized ? 'w-80 sm:w-80' : 'w-[95vw] max-w-sm sm:w-96'
     }`}>
       <Card className="shadow-2xl border-0 overflow-hidden max-h-[85vh] sm:max-h-none flex flex-col">

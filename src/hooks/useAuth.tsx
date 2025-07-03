@@ -75,7 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               email: session.user.email || '',
               name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
               plan: 'free',
-              questions_remaining: 5
+              questions_remaining: 5,
+              last_free_reset: new Date().toISOString()
             };
             const createdProfile = await dbHelpers.createUserProfile(newProfile);
             if (createdProfile) {
