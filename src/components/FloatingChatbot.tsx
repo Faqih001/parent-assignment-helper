@@ -187,7 +187,7 @@ export function FloatingChatbot() {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-24 right-6 z-50">
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
@@ -203,7 +203,7 @@ export function FloatingChatbot() {
   }
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${
+    <div className={`fixed bottom-24 right-6 z-50 transition-all duration-300 ${
       isMinimized ? 'w-80' : 'w-96'
     }`}>
       <Card className="shadow-2xl border-0 overflow-hidden">
