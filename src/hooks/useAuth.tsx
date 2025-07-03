@@ -29,6 +29,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const getSession = async () => {
       try {
+        // Handle URL hash for authentication tokens
+        if (window.location.hash.includes('access_token') || window.location.hash.includes('error')) {
+          // Let Supabase handle the session from URL
+          await supabase.auth.getSession();
+          // Clean up the URL hash
+          window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+        }
+        
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('Error getting session:', error);
@@ -62,7 +70,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
+        
         if (event === 'SIGNED_IN' && session?.user) {
+          // Show welcome message for email confirmations
+          if (session.user.email_confirmed_at && !user) {
+            toast({
+              title: "Email Verified!",
+              description: "Your email has been successfully verified. Welcome to HomeworkHelper!",
+              variant: "success",
+            });
+          }
+          
           // Fetch user profile from database
           const profile = await dbHelpers.getUserProfile(session.user.id);
           if (profile) {

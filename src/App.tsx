@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AuthModalProvider } from "@/hooks/useAuthModal";
+import { AuthRedirectHandler } from "@/components/AuthRedirectHandler";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import HowItWorks from "./pages/HowItWorks";
@@ -28,6 +29,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <AuthRedirectHandler />
             <Layout>
             <Routes>
               <Route path="/" element={<Home />} />
