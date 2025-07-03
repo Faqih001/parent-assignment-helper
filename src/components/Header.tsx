@@ -11,7 +11,7 @@ import logo from "@/assets/logo.png";
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const { user, login, register, logout, forgotPassword, isLoading } = useAuth();
+  const { user, login, register, logout, forgotPassword, isLoginLoading, isRegisterLoading } = useAuth();
   const { isAuthModalOpen, defaultTab, openAuthModal, closeAuthModal } = useAuthModal();
 
   const isActive = (path: string) => location.pathname === path;
@@ -140,7 +140,8 @@ export default function Header() {
         onLogin={login}
         onRegister={register}
         onForgotPassword={forgotPassword}
-        isLoading={isLoading}
+        isLoginLoading={isLoginLoading}
+        isRegisterLoading={isRegisterLoading}
         defaultTab={defaultTab}
       />
     </header>

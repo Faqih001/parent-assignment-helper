@@ -14,11 +14,21 @@ interface AuthModalProps {
   onLogin: (email: string, password: string, rememberMe?: boolean) => void;
   onRegister: (name: string, email: string, password: string) => void;
   onForgotPassword: (email: string) => void;
-  isLoading?: boolean;
+  isLoginLoading?: boolean;
+  isRegisterLoading?: boolean;
   defaultTab?: 'login' | 'register';
 }
 
-export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForgotPassword, isLoading = false, defaultTab = 'login' }: AuthModalProps) {
+export default function AuthModal({ 
+  isOpen, 
+  onClose, 
+  onLogin, 
+  onRegister, 
+  onForgotPassword, 
+  isLoginLoading = false, 
+  isRegisterLoading = false, 
+  defaultTab = 'login' 
+}: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: "", password: "", rememberMe: false });
   const [registerForm, setRegisterForm] = useState({ name: "", email: "", password: "" });
@@ -41,21 +51,21 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoading && loginForm.email && loginForm.password) {
+    if (!isLoginLoading && loginForm.email && loginForm.password) {
       onLogin(loginForm.email, loginForm.password, loginForm.rememberMe);
     }
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoading && registerForm.name && registerForm.email && registerForm.password) {
+    if (!isRegisterLoading && registerForm.name && registerForm.email && registerForm.password) {
       onRegister(registerForm.name, registerForm.email, registerForm.password);
     }
   };
 
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoading && forgotPasswordEmail) {
+    if (!isLoginLoading && forgotPasswordEmail) {
       onForgotPassword(forgotPasswordEmail);
       setShowForgotPassword(false);
       setForgotPasswordEmail("");
@@ -101,7 +111,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                         className="pl-10 text-sm"
                         value={loginForm.email}
                         onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                        disabled={isLoading}
+                        disabled={isLoginLoading}
                         required
                       />
                     </div>
@@ -117,14 +127,14 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                         className="pl-10 pr-10 text-sm"
                         value={loginForm.password}
                         onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                        disabled={isLoading}
+                        disabled={isLoginLoading}
                         required
                       />
                       <button
                         type="button"
                         className="absolute right-3 top-3"
                         onClick={() => setShowPassword(!showPassword)}
-                        disabled={isLoading}
+                        disabled={isLoginLoading}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -139,7 +149,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                         onCheckedChange={(checked) => 
                           setLoginForm({ ...loginForm, rememberMe: checked === true })
                         }
-                        disabled={isLoading}
+                        disabled={isLoginLoading}
                       />
                       <Label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
                         Remember me
@@ -153,7 +163,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                         setShowForgotPassword(true);
                         setForgotPasswordEmail(loginForm.email);
                       }}
-                      disabled={isLoading}
+                      disabled={isLoginLoading}
                     >
                       Forgot password?
                     </Button>
@@ -163,9 +173,9 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                     type="submit" 
                     className="w-full text-sm" 
                     variant="hero"
-                    disabled={isLoading || !loginForm.email || !loginForm.password}
+                    disabled={isLoginLoading || !loginForm.email || !loginForm.password}
                   >
-                    {isLoading ? (
+                    {isLoginLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Signing In...
@@ -203,7 +213,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                         className="pl-10 text-sm"
                         value={registerForm.name}
                         onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                        disabled={isLoading}
+                        disabled={isRegisterLoading}
                         required
                       />
                     </div>
@@ -219,7 +229,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                         className="pl-10 text-sm"
                         value={registerForm.email}
                         onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                        disabled={isLoading}
+                        disabled={isRegisterLoading}
                         required
                       />
                     </div>
@@ -235,14 +245,14 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                         className="pl-10 pr-10 text-sm"
                         value={registerForm.password}
                         onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                        disabled={isLoading}
+                        disabled={isRegisterLoading}
                         required
                       />
                       <button
                         type="button"
                         className="absolute right-3 top-3"
                         onClick={() => setShowPassword(!showPassword)}
-                        disabled={isLoading}
+                        disabled={isRegisterLoading}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -252,9 +262,9 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                     type="submit" 
                     className="w-full text-sm" 
                     variant="hero"
-                    disabled={isLoading || !registerForm.name || !registerForm.email || !registerForm.password}
+                    disabled={isRegisterLoading || !registerForm.name || !registerForm.email || !registerForm.password}
                   >
-                    {isLoading ? (
+                    {isRegisterLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Creating Account...
@@ -296,7 +306,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                     className="pl-10 text-sm"
                     value={forgotPasswordEmail}
                     onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                    disabled={isLoading}
+                    disabled={isLoginLoading}
                     required
                   />
                 </div>
@@ -311,7 +321,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                     setShowForgotPassword(false);
                     setForgotPasswordEmail("");
                   }}
-                  disabled={isLoading}
+                  disabled={isLoginLoading}
                 >
                   Cancel
                 </Button>
@@ -319,9 +329,9 @@ export default function AuthModal({ isOpen, onClose, onLogin, onRegister, onForg
                   type="submit" 
                   className="flex-1 text-sm" 
                   variant="hero"
-                  disabled={isLoading || !forgotPasswordEmail}
+                  disabled={isLoginLoading || !forgotPasswordEmail}
                 >
-                  {isLoading ? (
+                  {isLoginLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Sending...

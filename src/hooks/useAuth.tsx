@@ -6,6 +6,8 @@ import { env } from '@/lib/env';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isLoginLoading: boolean;
+  isRegisterLoading: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -18,6 +20,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isRegisterLoading, setIsRegisterLoading] = useState(false);
   const { toast } = useToast();
 
   // Check for existing session on component mount
@@ -104,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
-    setIsLoading(true);
+    setIsLoginLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -152,12 +156,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsLoginLoading(false);
     }
   };
 
   const register = async (name: string, email: string, password: string) => {
-    setIsLoading(true);
+    setIsRegisterLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -211,7 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsRegisterLoading(false);
     }
   };
 
@@ -237,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const forgotPassword = async (email: string) => {
-    setIsLoading(true);
+    setIsLoginLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${env.appUrl}/reset-password`,
@@ -259,7 +263,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsLoginLoading(false);
     }
   };
 
@@ -285,7 +289,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, refreshUser, forgotPassword }}>
+    <AuthContext.Provider value={{ user, isLoading, isLoginLoading, isRegisterLoading, login, register, logout, refreshUser, forgotPassword }}>
       {children}
     </AuthContext.Provider>
   );
