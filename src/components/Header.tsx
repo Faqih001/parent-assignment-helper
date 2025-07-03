@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, BookOpen, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,13 +14,26 @@ export default function Header() {
   const { user, login, register, logout, forgotPassword, isLoginLoading, isRegisterLoading } = useAuth();
   const { isAuthModalOpen, defaultTab, openAuthModal, closeAuthModal } = useAuthModal();
 
+  // Auto-close modal when user successfully logs in
+  useEffect(() => {
+    if (user && isAuthModalOpen) {
+      console.log('Header: User detected, closing modal');
+      setTimeout(() => {
+        closeAuthModal();
+      }, 100);
+    }
+  }, [user, isAuthModalOpen, closeAuthModal]);
+
   const handleLogin = async (email: string, password: string, rememberMe?: boolean) => {
     console.log('Header: Starting login process');
     const success = await login(email, password, rememberMe);
     console.log('Header: Login result received:', success);
     if (success) {
       console.log('Header: Closing modal due to successful login');
-      closeAuthModal(); // Close modal on successful login
+      // Add a small delay to ensure auth state has updated
+      setTimeout(() => {
+        closeAuthModal();
+      }, 100);
     } else {
       console.log('Header: Keeping modal open due to failed login');
     }
@@ -29,7 +42,10 @@ export default function Header() {
   const handleRegister = async (name: string, email: string, password: string) => {
     const success = await register(name, email, password);
     if (success) {
-      closeAuthModal(); // Close modal on successful registration
+      // Add a small delay to ensure auth state has updated
+      setTimeout(() => {
+        closeAuthModal();
+      }, 100);
     }
   };
 

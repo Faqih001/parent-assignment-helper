@@ -5,27 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, Select              <div className="flex space-x-2 md:space-x-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={(user.questionsRemaining || 0) === 0 || !isAiInitialized}
-                  title="Upload image"
-                  className="h-12 w-12 md:h-14 md:w-14"
-                >
-                  <Camera className="h-5 w-5 md:h-6 md:w-6" />
-                </Button>
-                
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!input.trim() || isLoading || (user.questionsRemaining || 0) === 0 || !isAiInitialized}
-                  className="px-6 md:px-8 h-12 md:h-14"
-                  size="default"
-                >
-                  <Send className="h-5 w-5 md:h-6 md:w-6" />
-                </Button>
-              </div> "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { geminiService, HomeworkQuestion } from "@/lib/gemini";
 import { useToast } from "@/hooks/use-toast";
@@ -478,16 +458,16 @@ export default function Chat() {
           {messages.map((message) => (
             <div key={message.id} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`flex items-start space-x-2 md:space-x-3 max-w-[85%] md:max-w-[80%] ${message.type === "user" ? "flex-row-reverse space-x-reverse" : ""}`}>
-                <div className={`h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center flex-shrink-0 ${
                   message.type === "user" 
                     ? "bg-primary text-primary-foreground" 
                     : "bg-gradient-primary text-white"
                 }`}>
-                  {message.type === "user" ? <User className="h-4 w-4 md:h-5 md:w-5" /> : <Bot className="h-4 w-4 md:h-5 md:w-5" />}
+                  {message.type === "user" ? <User className="h-5 w-5 md:h-6 md:w-6" /> : <Bot className="h-5 w-5 md:h-6 md:w-6" />}
                 </div>
                 
                 <Card className={`shadow-soft ${message.type === "user" ? "bg-primary text-primary-foreground" : "bg-card"}`}>
-                  <CardContent className="p-4 md:p-5">
+                  <CardContent className="p-5 md:p-6">
                     {message.image && (
                       <img src={message.image} alt="Uploaded homework" className="max-w-full h-auto rounded-lg mb-3 md:mb-4" />
                     )}
@@ -504,8 +484,8 @@ export default function Chat() {
           {isLoading && (
             <div className="flex justify-start">
               <div className="flex items-start space-x-2 md:space-x-3">
-                <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-gradient-primary text-white flex items-center justify-center">
-                  <Bot className="h-4 w-4 md:h-5 md:w-5" />
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-gradient-primary text-white flex items-center justify-center">
+                  <Bot className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
                 <Card className="shadow-soft">
                   <CardContent className="p-4 md:p-5">
