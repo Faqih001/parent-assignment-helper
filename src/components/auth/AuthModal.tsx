@@ -317,13 +317,16 @@ export default function AuthModal({
                         id="register-email"
                         type="email"
                         placeholder="your@email.com"
-                        className="pl-10 text-sm"
+                        className={`pl-10 text-sm ${validationErrors.email ? 'border-destructive' : ''}`}
                         value={registerForm.email}
                         onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                         disabled={isRegisterLoading}
                         required
                       />
                     </div>
+                    {validationErrors.email && (
+                      <p className="text-sm text-destructive">{validationErrors.email}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-password" className="text-sm">Password</Label>
@@ -333,7 +336,7 @@ export default function AuthModal({
                         id="register-password"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        className="pl-10 pr-10 text-sm"
+                        className={`pl-10 pr-10 text-sm ${validationErrors.password ? 'border-destructive' : ''}`}
                         value={registerForm.password}
                         onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
                         disabled={isRegisterLoading}
@@ -348,6 +351,9 @@ export default function AuthModal({
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    {validationErrors.password && (
+                      <p className="text-sm text-destructive">{validationErrors.password}</p>
+                    )}
                   </div>
                   <Button 
                     type="submit" 
@@ -394,13 +400,16 @@ export default function AuthModal({
                     id="forgot-email"
                     type="email"
                     placeholder="your@email.com"
-                    className="pl-10 text-sm"
+                    className={`pl-10 text-sm ${validationErrors.forgotEmail ? 'border-destructive' : ''}`}
                     value={forgotPasswordEmail}
                     onChange={(e) => setForgotPasswordEmail(e.target.value)}
                     disabled={isLoginLoading}
                     required
                   />
                 </div>
+                {validationErrors.forgotEmail && (
+                  <p className="text-sm text-destructive">{validationErrors.forgotEmail}</p>
+                )}
               </div>
               
               <div className="flex gap-2 pt-2">
