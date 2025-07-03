@@ -43,7 +43,7 @@ export function WhatsAppButton() {
         )}
 
         {/* Online indicator */}
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full animate-pulse"></div>
       </div>
     </div>
   );

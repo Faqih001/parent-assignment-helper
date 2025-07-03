@@ -195,7 +195,7 @@ export function FloatingChatbot() {
         >
           <MessageCircle className="h-6 w-6" />
         </Button>
-        <div className="absolute -top-2 -left-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+        <div className="absolute -top-2 -left-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center animate-bounce">
           AI
         </div>
       </div>
