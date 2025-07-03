@@ -14,6 +14,9 @@ import Pricing from "./pages/Pricing";
 import Chat from "./pages/Chat";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Profile from "./pages/Profile";
+import Billing from "./pages/Billing";
+import Settings from "./pages/Settings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -39,6 +42,9 @@ const App = () => (
               <Route path="/chat" element={<Chat />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/billing" element={<Billing />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/payment/success" element={<PaymentSuccess />} />

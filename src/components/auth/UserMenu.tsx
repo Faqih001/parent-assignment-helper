@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +25,8 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ user, onLogout }: UserMenuProps) {
+  const navigate = useNavigate();
+  
   const getPlanColor = (plan: string) => {
     switch (plan) {
       case "free": return "secondary";
@@ -88,15 +91,24 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer hover:bg-accent">
+        <DropdownMenuItem 
+          className="cursor-pointer hover:bg-accent"
+          onClick={() => navigate('/profile')}
+        >
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer hover:bg-accent">
+        <DropdownMenuItem 
+          className="cursor-pointer hover:bg-accent"
+          onClick={() => navigate('/billing')}
+        >
           <CreditCard className="mr-2 h-4 w-4" />
           <span>Billing</span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer hover:bg-accent">
+        <DropdownMenuItem 
+          className="cursor-pointer hover:bg-accent"
+          onClick={() => navigate('/settings')}
+        >
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>

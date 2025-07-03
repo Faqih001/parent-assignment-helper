@@ -133,6 +133,20 @@ export const dbHelpers = {
     return data;
   },
 
+  async deleteUserProfile(userId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('user_profiles')
+      .delete()
+      .eq('id', userId);
+    
+    if (error) {
+      console.error('Error deleting user profile:', error);
+      return false;
+    }
+    
+    return true;
+  },
+
   // Contact Form operations
   async saveContactForm(contact: Omit<ContactForm, 'id' | 'created_at'>): Promise<ContactForm | null> {
     const { data, error } = await supabase
