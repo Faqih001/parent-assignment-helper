@@ -1,4 +1,4 @@
-import { Check, Star, MessageCircle, Users, Building, ArrowRight } from "lucide-react";
+import { Check, Star, MessageCircle, Users, Building, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { useState } from "react";
 export default function Pricing() {
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
   const handlePaymentSuccess = (paymentData: any) => {
     console.log('Payment successful:', paymentData);
@@ -25,6 +26,10 @@ export default function Pricing() {
     
     setSelectedPlan(plan);
     setIsPaymentModalOpen(true);
+  };
+
+  const toggleFAQ = (index: number) => {
+    setOpenFAQ(openFAQ === index ? null : index);
   };
   const plans = [
     {
@@ -281,12 +286,38 @@ export default function Pricing() {
             </p>
           </div>
 
-          <div className="max-w-3xl mx-auto space-y-6">
+          <div className="max-w-3xl mx-auto space-y-4">
             {faqs.map((faq, index) => (
-              <Card key={index} className="border-0 shadow-soft">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-3">{faq.question}</h3>
-                  <p className="text-muted-foreground">{faq.answer}</p>
+              <Card 
+                key={index} 
+                className="border-0 shadow-soft hover:shadow-medium transition-all duration-300 cursor-pointer overflow-hidden"
+                onClick={() => toggleFAQ(index)}
+              >
+                <CardContent className="p-0">
+                  <div className="p-6 flex items-center justify-between hover:bg-muted/30 transition-colors duration-200">
+                    <h3 className="text-lg font-semibold pr-4 flex-1">{faq.question}</h3>
+                    <div className="flex-shrink-0 transition-transform duration-300 ease-in-out">
+                      {openFAQ === index ? (
+                        <ChevronUp className="h-5 w-5 text-primary" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                      openFAQ === index 
+                        ? 'max-h-96 opacity-100' 
+                        : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="px-6 pb-6 pt-0">
+                      <div className="border-t border-muted pt-4 animate-in slide-in-from-top-2 duration-300">
+                        <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ))}
