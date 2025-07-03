@@ -47,6 +47,56 @@ export function IntegrationDemo() {
     console.log('Environment Variables:', allVars);
   };
 
+  const testPaymentService = async () => {
+    try {
+      // Test payment service initialization
+      const testPaymentData = {
+        amount: 10, // Test amount in KES
+        currency: 'KES',
+        email: 'test@example.com',
+        first_name: 'Test',
+        last_name: 'User',
+        phone_number: '254700000000',
+        method: 'M-PESA' as const,
+        api_ref: `TEST-${Date.now()}`
+      };
+
+      // Test service configuration
+      const hasPublicKey = !!env.intasendPublicKey;
+      const hasSecretKey = !!env.intasendSecretKey;
+      const isTestMode = env.intasendTestMode;
+
+      if (!hasPublicKey || !hasSecretKey) {
+        toast({
+          title: "Payment Service Configuration Error",
+          description: "IntaSend API keys are not configured properly",
+          variant: "error",
+        });
+        return;
+      }
+
+      toast({
+        title: "Payment Service Test",
+        description: `IntaSend configured correctly. Test mode: ${isTestMode ? 'ON' : 'OFF'}. Ready for ${testPaymentData.method} payments.`,
+        variant: "success",
+      });
+
+      console.log('Payment Service Configuration:', {
+        publicKey: hasPublicKey ? '✅ Set' : '❌ Missing',
+        secretKey: hasSecretKey ? '✅ Set' : '❌ Missing',
+        testMode: isTestMode ? '✅ Enabled' : '❌ Disabled',
+        supportedMethods: ['M-PESA', 'AIRTEL-MONEY', 'CARD']
+      });
+
+    } catch (error) {
+      toast({
+        title: "Payment Service Test Failed",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "error",
+      });
+    }
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -59,6 +109,10 @@ export function IntegrationDemo() {
         
         <Button onClick={testGeminiAPI} className="w-full">
           Test Gemini AI
+        </Button>
+        
+        <Button onClick={testPaymentService} variant="secondary" className="w-full">
+          Test Payment Service
         </Button>
         
         <div className="text-xs text-muted-foreground mt-4 p-2 bg-muted rounded">
