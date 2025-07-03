@@ -6,11 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { emailService, ContactFormData } from "@/lib/resend";
+import { env } from "@/lib/env";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: "",
     type: "general"
@@ -23,21 +26,21 @@ export default function Contact() {
       icon: Mail,
       title: "Email Support",
       description: "Get help via email",
-      contact: "support@homeworkhelper.com",
+      contact: env.supportEmail,
       availability: "24/7 response within 4 hours"
     },
     {
       icon: Phone,
       title: "Phone Support",
       description: "Speak with our team",
-      contact: "+254 700 123 456",
+      contact: env.supportPhone,
       availability: "Mon-Fri: 8 AM - 6 PM EAT"
     },
     {
       icon: MessageCircle,
-      title: "Live Chat",
-      description: "Instant messaging support",
-      contact: "Available in app",
+      title: "WhatsApp Support",
+      description: "Chat on WhatsApp",
+      contact: `+${env.whatsappNumber}`,
       availability: "Mon-Fri: 8 AM - 8 PM EAT"
     },
     {
@@ -60,21 +63,49 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      const contactData: ContactFormData = {
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+        phone: formData.phone || undefined,
+      };
+
+      const result = await emailService.sendContactForm(contactData);
+
+      if (result.success) {
+        toast({
+          title: "Message Sent Successfully! ✅",
+          description: "We'll get back to you within 24 hours. Check your email for confirmation.",
+        });
+        
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          subject: "",
+          message: "",
+          type: "general"
+        });
+      } else {
+        toast({
+          title: "Failed to Send Message",
+          description: result.error || "Please try again or contact us directly via WhatsApp.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
       toast({
-        title: "Message Sent Successfully!",
-        description: "We'll get back to you within 24 hours.",
+        title: "Failed to Send Message",
+        description: "Please try again or contact us directly via WhatsApp.",
+        variant: "destructive",
       });
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-        type: "general"
-      });
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

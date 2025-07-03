@@ -94,6 +94,10 @@ class Environment {
       INTASEND_SECRET_KEY: this.intasendSecretKey ? '***' + this.intasendSecretKey.slice(-4) : 'NOT_SET',
       VITE_INTASEND_TEST_MODE: this.vars.VITE_INTASEND_TEST_MODE || 'NOT_SET',
       VITE_GOOGLE_GEMINI_API_KEY: this.geminiApiKey ? '***' + this.geminiApiKey.slice(-4) : 'NOT_SET',
+      RESEND_API_KEY: this.resendApiKey ? '***' + this.resendApiKey.slice(-4) : 'NOT_SET',
+      VITE_SUPPORT_EMAIL: this.supportEmail || 'NOT_SET',
+      VITE_SUPPORT_PHONE: this.supportPhone || 'NOT_SET',
+      VITE_WHATSAPP_NUMBER: this.whatsappNumber || 'NOT_SET',
     };
   }
 }
