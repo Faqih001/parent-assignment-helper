@@ -192,7 +192,7 @@ export default function Home() {
                   </Button>
                 </Link>
                 <Link to="/how-it-works">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white/20">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto border-white bg-white/10 text-white hover:bg-white hover:text-primary transition-all duration-300">
                     See How It Works
                   </Button>
                 </Link>
@@ -554,10 +554,12 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <Button variant="hero" size="lg">
-                Learn More About Our AI
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <Link to="/about">
+                <Button variant="hero" size="lg">
+                  Learn More About Our AI
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
             </div>
             <div className="relative animate-float">
               <img 
