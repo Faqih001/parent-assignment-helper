@@ -6,10 +6,11 @@ import { env } from '@/lib/env';
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -115,6 +116,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data.user) {
+        // Handle remember me functionality
+        if (rememberMe) {
+          localStorage.setItem('rememberMe', 'true');
+          localStorage.setItem('rememberedEmail', email);
+        } else {
+          localStorage.removeItem('rememberMe');
+          localStorage.removeItem('rememberedEmail');
+        }
+
         // Fetch user profile from database
         const profile = await dbHelpers.getUserProfile(data.user.id);
         if (profile) {
@@ -212,6 +222,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Logout error:', error);
       }
       
+      // Clear remember me data on logout
+      localStorage.removeItem('rememberMe');
+      localStorage.removeItem('rememberedEmail');
+      
       setUser(null);
       toast({
         title: "Logged out",
@@ -219,6 +233,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const forgotPassword = async (email: string) => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${env.appUrl}/reset-password`,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Reset email sent!",
+        description: "Check your email for password reset instructions.",
+      });
+    } catch (error: any) {
+      console.error('Forgot password error:', error);
+      toast({
+        title: "Reset failed",
+        description: error.message || "Failed to send reset email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -244,7 +285,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, refreshUser, forgotPassword }}>
       {children}
     </AuthContext.Provider>
   );
