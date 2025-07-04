@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { dbHelpers } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import FormattedMessage from "@/components/FormattedMessage";
 
 interface Message {
   id: string;
@@ -89,7 +90,17 @@ export default function Chat() {
           setMessages([{
             id: "welcome",
             type: "bot",
-            content: `Hello ${user.name}! I'm your AI homework assistant powered by Google Gemini. Upload a photo of your homework question or type it here, and I'll provide a clear explanation to help you understand the solution. You have ${planInfo}. 📚✨`,
+            content: `Hello **${user.name}**! I'm your AI homework assistant powered by Google Gemini. 
+
+**How I can help you:**
+- Upload a photo of your homework question or type it here
+- Get clear, step-by-step explanations
+- Understand concepts with real-world examples
+- Practice with additional questions
+
+**Your Plan:** You have **${planInfo}**
+
+Let's start learning together! 📚✨`,
             timestamp: new Date()
           }]);
         }
@@ -471,7 +482,14 @@ export default function Chat() {
                     {message.image && (
                       <img src={message.image} alt="Uploaded homework" className="max-w-full h-auto rounded-lg mb-3 md:mb-4" />
                     )}
-                    <div className="whitespace-pre-line text-sm md:text-base leading-relaxed">{message.content}</div>
+                    {message.type === "user" ? (
+                      <div className="whitespace-pre-line text-sm md:text-base leading-relaxed">{message.content}</div>
+                    ) : (
+                      <FormattedMessage 
+                        content={message.content} 
+                        className="text-card-foreground"
+                      />
+                    )}
                     <div className={`text-xs mt-2 md:mt-3 ${message.type === "user" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                       {message.timestamp.toLocaleTimeString()}
                     </div>

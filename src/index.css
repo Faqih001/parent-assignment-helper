@@ -150,3 +150,76 @@
     min-height: calc(100dvh - 4rem); /* Account for header height */
   }
 }
+
+/* Enhanced chat message formatting */
+@layer components {
+  .formatted-message {
+    @apply text-sm md:text-base;
+  }
+  
+  .formatted-message h1,
+  .formatted-message h2,
+  .formatted-message h3,
+  .formatted-message h4 {
+    @apply font-semibold mb-2 text-foreground;
+  }
+  
+  .formatted-message h1 { @apply text-xl; }
+  .formatted-message h2 { @apply text-lg; }
+  .formatted-message h3 { @apply text-base; }
+  .formatted-message h4 { @apply text-sm; }
+  
+  .formatted-message p {
+    @apply mb-3 leading-relaxed;
+  }
+  
+  .formatted-message ul,
+  .formatted-message ol {
+    @apply mb-3 space-y-1;
+  }
+  
+  .formatted-message li {
+    @apply leading-relaxed;
+  }
+  
+  .formatted-message strong {
+    @apply font-semibold text-primary;
+  }
+  
+  .formatted-message em {
+    @apply italic text-muted-foreground;
+  }
+  
+  .formatted-message code {
+    @apply bg-muted px-1 py-0.5 rounded text-sm font-mono;
+  }
+  
+  .formatted-message pre {
+    @apply bg-muted p-3 rounded-lg overflow-x-auto font-mono text-sm;
+  }
+  
+  /* Educational content boxes */
+  .content-box {
+    @apply rounded-lg p-4 border;
+  }
+  
+  .content-box-blue {
+    @apply bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800;
+  }
+  
+  .content-box-green {
+    @apply bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800;
+  }
+  
+  .content-box-yellow {
+    @apply bg-yellow-50 border-yellow-200 dark:bg-yellow-950/20 dark:border-yellow-800;
+  }
+  
+  .content-box-orange {
+    @apply bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800;
+  }
+  
+  .content-box-emerald {
+    @apply bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800;
+  }
+}

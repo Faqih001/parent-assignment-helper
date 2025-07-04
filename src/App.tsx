@@ -8,6 +8,7 @@ import { AuthModalProvider } from "@/hooks/useAuthModal";
 import { AuthRedirectHandler } from "@/components/AuthRedirectHandler";
 import Layout from "./components/Layout";
 import { IntegrationDemo } from "./components/IntegrationDemo";
+import { FormattingDemo } from "./components/FormattingDemo";
 import Home from "./pages/Home";
 import HowItWorks from "./pages/HowItWorks";
 import Pricing from "./pages/Pricing";
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/payment/success" element={<PaymentSuccess />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/integration-demo" element={<IntegrationDemo />} />
+              <Route path="/formatting-demo" element={<FormattingDemo />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

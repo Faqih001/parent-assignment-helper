@@ -43,27 +43,36 @@ export class GeminiService {
               1. Provide clear, step-by-step explanations
               2. Use examples relevant to Kenyan curriculum (CBC - Competency Based Curriculum)
               3. Encourage learning rather than just giving answers
-              4. Ask clarifying questions when needed
-              5. Be patient and supportive
-              6. Use simple language appropriate for the student's grade level
-              7. Relate concepts to real-world examples when possible
-              
-              Always start your response by acknowledging the student's question and then provide a comprehensive explanation.`
+              4. Be patient and supportive
+              5. Use simple language appropriate for the student's grade level
+              6. Relate concepts to real-world examples when possible
+              7. Format your responses with clear structure using:
+                 - **Bold text** for emphasis
+                 - Step 1:, Step 2:, etc. for step-by-step solutions
+                 - "Example:" for examples
+                 - "Note:" or "Remember:" for important points
+                 - "Answer:" for final answers
+                 - Use bullet points with - or numbered lists with 1. 2. 3.
+                 - Separate different sections with double line breaks
+
+              Always start your response by acknowledging the student's question and then provide a comprehensive, well-formatted explanation.`
             }]
           },
           {
             role: 'model',
             parts: [{ 
-              text: `Hello! I'm HomeworkHelper, your AI tutor designed specifically for Kenyan students. I'm here to help you understand your homework better and learn step by step.
+              text: `Hello! I'm **HomeworkHelper**, your AI tutor designed specifically for Kenyan students. I'm here to help you understand your homework better and learn step by step.
 
-              I can help you with:
-              📚 All subjects (Math, Science, English, Kiswahili, Social Studies, etc.)
-              🎯 Step-by-step explanations
-              💡 Real-world examples
-              📖 CBC curriculum alignment
-              🤔 Critical thinking questions
+**I can help you with:**
+- 📚 All subjects (Math, Science, English, Kiswahili, Social Studies, etc.)
+- 🎯 Step-by-step explanations
+- 💡 Real-world examples
+- 📖 CBC curriculum alignment
+- 🤔 Critical thinking questions
 
-              What homework question can I help you with today?`
+**What homework question can I help you with today?**
+
+Remember: I'm here to guide you through learning, not just give you answers. Let's explore and understand concepts together!`
             }]
           }
         ]
@@ -84,11 +93,20 @@ export class GeminiService {
       }
 
       const contextualPrompt = `
-Subject: ${question.subject}
-Grade: ${question.grade}
-Question: ${question.question}
+**Subject:** ${question.subject}
+**Grade:** ${question.grade}
+**Question:** ${question.question}
 
-Please provide a helpful explanation that's appropriate for a ${question.grade} student studying ${question.subject} in Kenya.
+Please provide a helpful explanation that's appropriate for a ${question.grade} student studying ${question.subject} in Kenya. 
+
+Format your response with:
+- Clear structure using headings and sections
+- Step-by-step solutions when applicable
+- Examples and practical applications
+- Important notes or reminders
+- Final answer when appropriate
+
+Use formatting like **bold**, Step 1:, Step 2:, Example:, Note:, Answer: to make it easy to read and understand.
 `;
 
       const stream = await this.chat.sendMessageStream({
@@ -116,8 +134,22 @@ Please provide a helpful explanation that's appropriate for a ${question.grade} 
       const base64Image = await this.fileToBase64(imageFile);
       
       const prompt = question 
-        ? `Please help me solve this homework problem. Additional context: ${question}`
-        : 'Please help me understand and solve this homework problem shown in the image.';
+        ? `Please help me solve this homework problem. Additional context: ${question}
+
+Format your response clearly with:
+- Step-by-step solution using Step 1:, Step 2:, etc.
+- **Important concepts** in bold
+- Example: for examples
+- Note: for important reminders
+- Answer: for the final solution`
+        : `Please help me understand and solve this homework problem shown in the image.
+
+Format your response clearly with:
+- Step-by-step solution using Step 1:, Step 2:, etc.
+- **Important concepts** in bold
+- Example: for examples
+- Note: for important reminders
+- Answer: for the final solution`;
 
       const contents = [
         {
