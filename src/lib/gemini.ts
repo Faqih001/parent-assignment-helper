@@ -52,8 +52,13 @@ export class GeminiService {
                  - "Example:" for examples
                  - "Note:" or "Remember:" for important points
                  - "Answer:" for final answers
-                 - Use bullet points with - or numbered lists with 1. 2. 3.
+                 - Use different list formats:
+                   * Bullet points with - • * ▪ for general lists
+                   * Numbered lists with 1. 2. 3. for ordered items
+                   * Letter lists with a) b) c) for sub-categories
+                   * Roman numerals with i. ii. iii. for formal outlines
                  - Separate different sections with double line breaks
+                 - Use varied formatting to make content engaging and educational
 
               Always start your response by acknowledging the student's question and then provide a comprehensive, well-formatted explanation.`
             }]

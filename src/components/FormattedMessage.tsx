@@ -19,7 +19,7 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
       // Format different types of content
       if (section.includes('**') || section.includes('*')) {
         return formatTextWithMarkdown(section, index);
-      } else if (section.match(/^\d+\./m) || section.match(/^[-•]/m)) {
+      } else if (section.match(/^\d+\./m) || section.match(/^[-•*]\s/m) || section.match(/^[•◦▪▫]\s/m)) {
         return formatList(section, index);
       } else if (section.includes('Step') && section.includes(':')) {
         return formatSteps(section, index);
@@ -31,6 +31,10 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
         return formatNote(section, index);
       } else if (section.includes('Answer:') || section.includes('Solution:')) {
         return formatAnswer(section, index);
+      } else if (section.match(/^\s*[a-zA-Z]\)\s/m)) {
+        return formatLetterList(section, index);
+      } else if (section.match(/^\s*[ivxlcdm]+[\.\)]\s/mi)) {
+        return formatRomanList(section, index);
       } else {
         return formatParagraph(section, index);
       }
@@ -58,25 +62,36 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
     
     // Check if it's numbered or bulleted
     const isNumbered = lines[0]?.match(/^\d+\./);
+    const isBulleted = lines[0]?.match(/^[-•*▪▫◦]\s/);
     
     return (
       <div key={key} className="mb-4">
         {isNumbered ? (
-          <ol className="list-decimal list-inside space-y-2 text-sm md:text-base">
-            {lines.map((line, i) => (
-              <li key={i} className="leading-relaxed">
-                {line.replace(/^\d+\.\s*/, '')}
-              </li>
-            ))}
+          <ol className="list-none space-y-3 text-sm md:text-base">
+            {lines.map((line, i) => {
+              const number = line.match(/^(\d+)\./)?.[1] || (i + 1).toString();
+              const content = line.replace(/^\d+\.\s*/, '');
+              return (
+                <li key={i} className="flex items-start space-x-3 leading-relaxed">
+                  <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">
+                    {number}
+                  </div>
+                  <span className="flex-1">{content}</span>
+                </li>
+              );
+            })}
           </ol>
         ) : (
-          <ul className="space-y-2 text-sm md:text-base">
-            {lines.map((line, i) => (
-              <li key={i} className="flex items-start space-x-2 leading-relaxed">
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>{line.replace(/^[-•]\s*/, '')}</span>
-              </li>
-            ))}
+          <ul className="list-none space-y-2 text-sm md:text-base">
+            {lines.map((line, i) => {
+              const content = line.replace(/^[-•*▪▫◦]\s*/, '');
+              return (
+                <li key={i} className="flex items-start space-x-3 leading-relaxed">
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="flex-1">{content}</span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
@@ -174,7 +189,123 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
     );
   };
 
+  const formatLetterList = (text: string, key: number) => {
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    return (
+      <div key={key} className="mb-4">
+        <ol className="list-none space-y-2 text-sm md:text-base">
+          {lines.map((line, i) => {
+            const letter = line.match(/^([a-zA-Z])\)/)?.[1] || String.fromCharCode(97 + i);
+            const content = line.replace(/^[a-zA-Z]\)\s*/, '');
+            return (
+              <li key={i} className="flex items-start space-x-3 leading-relaxed">
+                <div className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">
+                  {letter}
+                </div>
+                <span className="flex-1">{content}</span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    );
+  };
+
+  const formatRomanList = (text: string, key: number) => {
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    return (
+      <div key={key} className="mb-4">
+        <ol className="list-none space-y-2 text-sm md:text-base">
+          {lines.map((line, i) => {
+            const roman = line.match(/^([ivxlcdm]+)[\.\)]/i)?.[1] || ['i', 'ii', 'iii', 'iv', 'v'][i] || 'i';
+            const content = line.replace(/^[ivxlcdm]+[\.\)]\s*/i, '');
+            return (
+              <li key={i} className="flex items-start space-x-3 leading-relaxed">
+                <div className="bg-indigo-600 text-white rounded-lg px-2 py-1 text-sm font-medium flex-shrink-0 mt-0.5">
+                  {roman.toUpperCase()}
+                </div>
+                <span className="flex-1">{content}</span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    );
+  };
+
   const formatParagraph = (text: string, key: number) => {
+    // Check if paragraph contains inline lists
+    const lines = text.split('\n');
+    const hasInlineList = lines.some(line => 
+      line.match(/^\s*[-•*▪▫◦]\s/) || 
+      line.match(/^\s*\d+\.\s/) || 
+      line.match(/^\s*[a-zA-Z]\)\s/) ||
+      line.match(/^\s*[ivxlcdm]+[\.\)]\s/i)
+    );
+
+    if (hasInlineList && lines.length > 1) {
+      // Mixed content - handle each line individually
+      return (
+        <div key={key} className="mb-4 space-y-2">
+          {lines.map((line, lineIndex) => {
+            if (!line.trim()) return null;
+            
+            if (line.match(/^\s*[-•*▪▫◦]\s/)) {
+              const content = line.replace(/^\s*[-•*▪▫◦]\s*/, '');
+              return (
+                <div key={lineIndex} className="flex items-start space-x-3 text-sm md:text-base leading-relaxed">
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="flex-1">{content}</span>
+                </div>
+              );
+            } else if (line.match(/^\s*\d+\.\s/)) {
+              const number = line.match(/^\s*(\d+)\./)?.[1];
+              const content = line.replace(/^\s*\d+\.\s*/, '');
+              return (
+                <div key={lineIndex} className="flex items-start space-x-3 text-sm md:text-base leading-relaxed">
+                  <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">
+                    {number}
+                  </div>
+                  <span className="flex-1">{content}</span>
+                </div>
+              );
+            } else if (line.match(/^\s*[a-zA-Z]\)\s/)) {
+              const letter = line.match(/^\s*([a-zA-Z])\)/)?.[1];
+              const content = line.replace(/^\s*[a-zA-Z]\)\s*/, '');
+              return (
+                <div key={lineIndex} className="flex items-start space-x-3 text-sm md:text-base leading-relaxed">
+                  <div className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">
+                    {letter}
+                  </div>
+                  <span className="flex-1">{content}</span>
+                </div>
+              );
+            } else if (line.match(/^\s*[ivxlcdm]+[\.\)]\s/i)) {
+              const roman = line.match(/^\s*([ivxlcdm]+)[\.\)]/i)?.[1];
+              const content = line.replace(/^\s*[ivxlcdm]+[\.\)]\s*/i, '');
+              return (
+                <div key={lineIndex} className="flex items-start space-x-3 text-sm md:text-base leading-relaxed">
+                  <div className="bg-indigo-600 text-white rounded-lg px-2 py-1 text-sm font-medium flex-shrink-0 mt-0.5">
+                    {roman?.toUpperCase()}
+                  </div>
+                  <span className="flex-1">{content}</span>
+                </div>
+              );
+            } else {
+              return (
+                <p key={lineIndex} className="text-sm md:text-base leading-relaxed">
+                  {line}
+                </p>
+              );
+            }
+          }).filter(Boolean)}
+        </div>
+      );
+    }
+
+    // Regular paragraph without lists
     return (
       <div key={key} className="mb-4">
         <p className="text-sm md:text-base leading-relaxed">
