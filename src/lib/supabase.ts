@@ -80,6 +80,13 @@ export interface UserSettings {
 export interface BillingInfo {
   id: string;
   user_id: string;
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  country?: string;
   billing_name?: string;
   billing_email?: string;
   billing_address_line1?: string;
@@ -100,10 +107,14 @@ export interface BillingInfo {
 export interface SubscriptionHistory {
   id: string;
   user_id: string;
+  from_plan?: string;
+  to_plan: string;
+  action_type: 'upgrade' | 'downgrade' | 'renewal' | 'cancellation';
+  amount?: number;
+  payment_id?: string;
   old_plan?: string;
   new_plan: string;
   change_reason?: string;
-  payment_id?: string;
   effective_date: string;
   created_at: string;
 }
@@ -611,19 +622,24 @@ export const dbHelpers = {
 
   async logSubscriptionChange(
     userId: string, 
-    oldPlan: string | null, 
-    newPlan: string, 
-    changeReason?: string,
-    paymentId?: string
+    fromPlan: string | null, 
+    toPlan: string, 
+    actionType: 'upgrade' | 'downgrade' | 'renewal' | 'cancellation',
+    paymentId?: string,
+    amount?: number
   ): Promise<SubscriptionHistory | null> {
     const { data, error } = await supabase
       .from('subscription_history')
       .insert([{
         user_id: userId,
-        old_plan: oldPlan,
-        new_plan: newPlan,
-        change_reason: changeReason,
-        payment_id: paymentId
+        from_plan: fromPlan,
+        to_plan: toPlan,
+        action_type: actionType,
+        amount: amount,
+        payment_id: paymentId,
+        old_plan: fromPlan, // Keep for backward compatibility
+        new_plan: toPlan,   // Keep for backward compatibility
+        change_reason: actionType
       }])
       .select()
       .single();

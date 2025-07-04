@@ -163,8 +163,27 @@ export default function Billing() {
     }
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     setIsPaymentModalOpen(false);
+    
+    // Log subscription change
+    if (selectedPlan) {
+      await dbHelpers.logSubscriptionChange(
+        user!.id,
+        user!.plan,
+        selectedPlan.id,
+        'upgrade',
+        undefined, // Payment ID would come from actual payment processor
+        selectedPlan.price
+      );
+      
+      await dbHelpers.logUserActivity(user!.id, 'subscription_upgraded', {
+        from_plan: user!.plan,
+        to_plan: selectedPlan.id,
+        amount: selectedPlan.price
+      });
+    }
+    
     setSelectedPlan(null);
     refreshUser();
     toast({
@@ -172,6 +191,35 @@ export default function Billing() {
       description: "Your plan has been upgraded successfully.",
       variant: "success",
     });
+  };
+
+  const handleSaveBillingInfo = async () => {
+    setIsSavingBilling(true);
+    try {
+      const updatedBilling = await dbHelpers.updateBillingInfo(user!.id, billingInfo);
+      
+      if (updatedBilling) {
+        await dbHelpers.logUserActivity(user!.id, 'billing_info_updated');
+        toast({
+          title: "Billing Information Updated!",
+          description: "Your billing details have been saved successfully.",
+          variant: "success",
+        });
+      }
+    } catch (error: any) {
+      console.error("Billing update error:", error);
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update billing information. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingBilling(false);
+    }
+  };
+
+  const handleBillingChange = (field: string, value: string) => {
+    setBillingInfo(prev => ({ ...prev, [field]: value }));
   };
 
   const currentPlan = plans.find(plan => plan.current);
@@ -430,40 +478,164 @@ export default function Billing() {
           </CardContent>
         </Card>
 
-        {/* Payment History */}
+        {/* Billing Information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Payment History
+              <User className="h-5 w-5" />
+              Billing Information
             </CardTitle>
-            <CardDescription>Your recent transactions and invoices</CardDescription>
+            <CardDescription>Manage your billing details and payment methods</CardDescription>
           </CardHeader>
           <CardContent>
-            {user.plan === "free" ? (
-              <p className="text-muted-foreground text-center py-8">
-                No payment history available. You're currently on the free plan.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b">
-                  <div>
-                    <p className="font-medium">{currentPlan?.name} - Monthly</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date().toLocaleDateString()}
-                    </p>
+            <Tabs defaultValue="billing-info" className="w-full">
+              <TabsList>
+                <TabsTrigger value="billing-info">Billing Details</TabsTrigger>
+                <TabsTrigger value="payment-history">Payment History</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="billing-info" className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="billing-name">Full Name</Label>
+                    <Input
+                      id="billing-name"
+                      value={billingInfo.full_name || ''}
+                      onChange={(e) => handleBillingChange('full_name', e.target.value)}
+                      placeholder="Enter your full name"
+                    />
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">KES {currentPlan?.price}.00</p>
-                    <Badge variant="outline" className="text-xs">Paid</Badge>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="billing-email">Email Address</Label>
+                    <Input
+                      id="billing-email"
+                      type="email"
+                      value={billingInfo.email || user.email || ''}
+                      onChange={(e) => handleBillingChange('email', e.target.value)}
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="billing-phone">Phone Number</Label>
+                    <Input
+                      id="billing-phone"
+                      value={billingInfo.phone || ''}
+                      onChange={(e) => handleBillingChange('phone', e.target.value)}
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="billing-country">Country</Label>
+                    <Input
+                      id="billing-country"
+                      value={billingInfo.country || ''}
+                      onChange={(e) => handleBillingChange('country', e.target.value)}
+                      placeholder="Enter your country"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="billing-address">Address</Label>
+                    <Input
+                      id="billing-address"
+                      value={billingInfo.address || ''}
+                      onChange={(e) => handleBillingChange('address', e.target.value)}
+                      placeholder="Enter your full address"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="billing-city">City</Label>
+                    <Input
+                      id="billing-city"
+                      value={billingInfo.city || ''}
+                      onChange={(e) => handleBillingChange('city', e.target.value)}
+                      placeholder="Enter your city"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="billing-postal">Postal Code</Label>
+                    <Input
+                      id="billing-postal"
+                      value={billingInfo.postal_code || ''}
+                      onChange={(e) => handleBillingChange('postal_code', e.target.value)}
+                      placeholder="Enter postal code"
+                    />
                   </div>
                 </div>
                 
-                <p className="text-sm text-muted-foreground">
-                  More payment history features coming soon.
-                </p>
-              </div>
-            )}
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={handleSaveBillingInfo}
+                    disabled={isSavingBilling}
+                    className="flex items-center gap-2"
+                  >
+                    <Save className="h-4 w-4" />
+                    {isSavingBilling ? "Saving..." : "Save Billing Info"}
+                  </Button>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="payment-history" className="space-y-4">
+                {subscriptionHistory.length > 0 ? (
+                  <div className="space-y-4">
+                    {subscriptionHistory.map((record) => (
+                      <div key={record.id} className="flex items-center justify-between py-3 border-b">
+                        <div>
+                          <p className="font-medium">
+                            {record.action_type === 'upgrade' ? 'Plan Upgrade' : 
+                             record.action_type === 'downgrade' ? 'Plan Downgrade' : 
+                             record.action_type === 'renewal' ? 'Subscription Renewal' : 
+                             'Subscription Change'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {record.from_plan} → {record.to_plan}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(record.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          {record.amount && (
+                            <p className="font-medium">KES {record.amount}</p>
+                          )}
+                          <Badge variant="outline" className="text-xs">
+                            {record.payment_id ? 'Paid' : 'Pending'}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : user.plan === "free" ? (
+                  <p className="text-muted-foreground text-center py-8">
+                    No payment history available. You're currently on the free plan.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between py-3 border-b">
+                      <div>
+                        <p className="font-medium">{currentPlan?.name} - Monthly</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date().toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">KES {currentPlan?.price}.00</p>
+                        <Badge variant="outline" className="text-xs">Paid</Badge>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground">
+                      More payment history features coming soon.
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>

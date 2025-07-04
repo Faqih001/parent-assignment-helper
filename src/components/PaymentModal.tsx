@@ -67,10 +67,10 @@ export function PaymentModal({
     }
 
     // Validate phone number format for Kenyan numbers
-    if (paymentData.phoneNumber && !/^(\+254|254|0)[17]\d{8}$/.test(paymentData.phoneNumber)) {
+    if (paymentData.phoneNumber && !/^(\+254|254|0)?[17]\d{8}$/.test(paymentData.phoneNumber.replace(/\s/g, ''))) {
       toast({
         title: "Invalid Phone Number",
-        description: "Please enter a valid Kenyan phone number (e.g., 0712345678).",
+        description: "Please enter a valid Kenyan phone number (e.g., 0712345678 or 0112345678).",
         variant: "destructive",
       });
       return false;
@@ -93,13 +93,18 @@ export function PaymentModal({
     // Remove any spaces or special characters
     const cleaned = phone.replace(/\D/g, '');
     
-    // Convert to international format
+    // Convert to international format for IntaSend (254XXXXXXXXX)
     if (cleaned.startsWith('0')) {
       return `254${cleaned.substring(1)}`;
     } else if (cleaned.startsWith('254')) {
       return cleaned;
     } else if (cleaned.startsWith('+254')) {
       return cleaned.substring(1);
+    }
+    
+    // If it's just 9 digits, assume it's missing the leading 0
+    if (cleaned.length === 9) {
+      return `254${cleaned}`;
     }
     
     return cleaned;
