@@ -217,7 +217,7 @@ Let's start learning together! 📚✨`,
 
       toast({
         title: "Answer Generated!",
-        description: `Question answered! You have ${(user.questionsRemaining || 0) - 1} questions remaining.`,
+        description: `Question answered! You have ${user.questionsRemaining || 0} questions remaining.`,
       });
 
     } catch (error) {
@@ -323,7 +323,7 @@ Let's start learning together! 📚✨`,
 
         toast({
           title: "Image Analyzed!",
-          description: `Image processed successfully! You have ${(user.questionsRemaining || 0) - 1} questions remaining.`,
+          description: `Image processed successfully! You have ${user.questionsRemaining || 0} questions remaining.`,
         });
 
       } catch (error) {

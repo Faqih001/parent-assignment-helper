@@ -9,17 +9,49 @@ interface FormattedMessageProps {
 export default function FormattedMessage({ content, className = "" }: FormattedMessageProps) {
   
   const formatContent = (text: string) => {
+    // Clean up the text first
+    let cleanedText = text
+      // Remove markdown headers and process them separately
+      .replace(/#{1,3}\s*(.*?)$/gm, '---HEADER---$1---HEADER---')
+      // Clean up stray asterisks that aren't part of formatting
+      .replace(/\*\s*(?=[a-zA-Z])/g, '• ')
+      // Fix spacing issues
+      .replace(/\*\s*$/gm, '')
+      // Handle horizontal rules
+      .replace(/^---+$/gm, '---DIVIDER---');
+
     // Split content into sections and format each part
-    const sections = text.split('\n\n');
+    const sections = cleanedText.split('\n\n');
     
     return sections.map((section, index) => {
       // Skip empty sections
       if (!section.trim()) return null;
       
+      // Handle headers
+      if (section.includes('---HEADER---')) {
+        const headerText = section.replace(/---HEADER---(.*?)---HEADER---/g, '$1');
+        return (
+          <div key={index} className="mb-4">
+            <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200 mb-3 mt-4 border-b border-blue-200 pb-2">
+              {headerText}
+            </h3>
+          </div>
+        );
+      }
+      
+      // Handle dividers
+      if (section.includes('---DIVIDER---')) {
+        return (
+          <div key={index} className="mb-6">
+            <hr className="border-gray-300 dark:border-gray-600" />
+          </div>
+        );
+      }
+      
       // Format different types of content
       if (section.includes('**') || section.includes('*')) {
         return formatTextWithMarkdown(section, index);
-      } else if (section.match(/^\d+\./m) || section.match(/^[-•*]\s/m) || section.match(/^[•◦▪▫]\s/m)) {
+      } else if (section.match(/^\s*\d+\./m) || section.match(/^[-•*]\s/m) || section.match(/^[•◦▪▫]\s/m)) {
         return formatList(section, index);
       } else if (section.includes('Step') && section.includes(':')) {
         return formatSteps(section, index);
@@ -42,14 +74,24 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
   };
 
   const formatTextWithMarkdown = (text: string, key: number) => {
-    // Convert **bold** and *italic* text
+    // Clean up markdown symbols and format text
     let formatted = text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>');
+      // Remove ### headers and convert to styled headers
+      .replace(/###\s*(.*?)$/gm, '<h3 class="text-lg font-bold text-blue-800 dark:text-blue-200 mb-2 mt-4">$1</h3>')
+      // Remove ## headers and convert to styled headers
+      .replace(/##\s*(.*?)$/gm, '<h2 class="text-xl font-bold text-blue-900 dark:text-blue-100 mb-3 mt-5">$1</h2>')
+      // Remove # headers and convert to styled headers
+      .replace(/#\s*(.*?)$/gm, '<h1 class="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-4 mt-6">$1</h1>')
+      // Convert **bold** text
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-gray-100">$1</strong>')
+      // Clean up remaining single * that aren't in bold
+      .replace(/(?<!\*)\*(?!\*)/g, '')
+      // Convert line breaks to proper spacing
+      .replace(/\n/g, '<br>');
     
     return (
       <div key={key} className="mb-4">
-        <p 
+        <div 
           className="text-sm md:text-base leading-relaxed" 
           dangerouslySetInnerHTML={{ __html: formatted }}
         />
@@ -61,16 +103,16 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
     const lines = text.split('\n').filter(line => line.trim());
     
     // Check if it's numbered or bulleted
-    const isNumbered = lines[0]?.match(/^\d+\./);
-    const isBulleted = lines[0]?.match(/^[-•*▪▫◦]\s/);
+    const isNumbered = lines[0]?.match(/^\s*\d+\./);
+    const isBulleted = lines[0]?.match(/^[-•*▪▫◦]\s/) || lines[0]?.match(/^\s*•\s/);
     
     return (
       <div key={key} className="mb-4">
         {isNumbered ? (
           <ol className="list-none space-y-3 text-sm md:text-base">
             {lines.map((line, i) => {
-              const number = line.match(/^(\d+)\./)?.[1] || (i + 1).toString();
-              const content = line.replace(/^\d+\.\s*/, '');
+              const number = line.match(/^\s*(\d+)\./)?.[1] || (i + 1).toString();
+              const content = line.replace(/^\s*\d+\.\s*/, '').trim();
               return (
                 <li key={i} className="flex items-start space-x-3 leading-relaxed">
                   <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">
@@ -84,7 +126,7 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
         ) : (
           <ul className="list-none space-y-2 text-sm md:text-base">
             {lines.map((line, i) => {
-              const content = line.replace(/^[-•*▪▫◦]\s*/, '');
+              const content = line.replace(/^[-•*▪▫◦]\s*/, '').replace(/^\s*•\s*/, '').trim();
               return (
                 <li key={i} className="flex items-start space-x-3 leading-relaxed">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
@@ -236,13 +278,20 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
   };
 
   const formatParagraph = (text: string, key: number) => {
+    // Clean up stray asterisks and formatting issues
+    let cleanedText = text
+      .replace(/\*\s*(?=[a-zA-Z])/g, '• ')
+      .replace(/\*\s*$/gm, '')
+      .trim();
+    
     // Check if paragraph contains inline lists
-    const lines = text.split('\n');
+    const lines = cleanedText.split('\n');
     const hasInlineList = lines.some(line => 
       line.match(/^\s*[-•*▪▫◦]\s/) || 
       line.match(/^\s*\d+\.\s/) || 
       line.match(/^\s*[a-zA-Z]\)\s/) ||
-      line.match(/^\s*[ivxlcdm]+[\.\)]\s/i)
+      line.match(/^\s*[ivxlcdm]+[\.\)]\s/i) ||
+      line.match(/^\s*•\s/)
     );
 
     if (hasInlineList && lines.length > 1) {
@@ -252,8 +301,8 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
           {lines.map((line, lineIndex) => {
             if (!line.trim()) return null;
             
-            if (line.match(/^\s*[-•*▪▫◦]\s/)) {
-              const content = line.replace(/^\s*[-•*▪▫◦]\s*/, '');
+            if (line.match(/^\s*[-•*▪▫◦]\s/) || line.match(/^\s*•\s/)) {
+              const content = line.replace(/^\s*[-•*▪▫◦]\s*/, '').replace(/^\s*•\s*/, '').trim();
               return (
                 <div key={lineIndex} className="flex items-start space-x-3 text-sm md:text-base leading-relaxed">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
@@ -262,7 +311,7 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
               );
             } else if (line.match(/^\s*\d+\.\s/)) {
               const number = line.match(/^\s*(\d+)\./)?.[1];
-              const content = line.replace(/^\s*\d+\.\s*/, '');
+              const content = line.replace(/^\s*\d+\.\s*/, '').trim();
               return (
                 <div key={lineIndex} className="flex items-start space-x-3 text-sm md:text-base leading-relaxed">
                   <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">
@@ -273,7 +322,7 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
               );
             } else if (line.match(/^\s*[a-zA-Z]\)\s/)) {
               const letter = line.match(/^\s*([a-zA-Z])\)/)?.[1];
-              const content = line.replace(/^\s*[a-zA-Z]\)\s*/, '');
+              const content = line.replace(/^\s*[a-zA-Z]\)\s*/, '').trim();
               return (
                 <div key={lineIndex} className="flex items-start space-x-3 text-sm md:text-base leading-relaxed">
                   <div className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">
@@ -284,7 +333,7 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
               );
             } else if (line.match(/^\s*[ivxlcdm]+[\.\)]\s/i)) {
               const roman = line.match(/^\s*([ivxlcdm]+)[\.\)]/i)?.[1];
-              const content = line.replace(/^\s*[ivxlcdm]+[\.\)]\s*/i, '');
+              const content = line.replace(/^\s*[ivxlcdm]+[\.\)]\s*/i, '').trim();
               return (
                 <div key={lineIndex} className="flex items-start space-x-3 text-sm md:text-base leading-relaxed">
                   <div className="bg-indigo-600 text-white rounded-lg px-2 py-1 text-sm font-medium flex-shrink-0 mt-0.5">
@@ -296,7 +345,7 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
             } else {
               return (
                 <p key={lineIndex} className="text-sm md:text-base leading-relaxed">
-                  {line}
+                  {line.trim()}
                 </p>
               );
             }
@@ -309,7 +358,7 @@ export default function FormattedMessage({ content, className = "" }: FormattedM
     return (
       <div key={key} className="mb-4">
         <p className="text-sm md:text-base leading-relaxed">
-          {text}
+          {cleanedText}
         </p>
       </div>
     );

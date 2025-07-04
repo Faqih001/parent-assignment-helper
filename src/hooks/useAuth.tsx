@@ -23,18 +23,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [isRegisterLoading, setIsRegisterLoading] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { toast } = useToast();
 
   // Check for existing session on component mount
   useEffect(() => {
     const getSession = async () => {
       try {
-        // Handle URL hash for authentication tokens
+        // Check if there are auth tokens in the URL (skip session loading if redirecting)
         if (window.location.hash.includes('access_token') || window.location.hash.includes('error')) {
-          // Let Supabase handle the session from URL
-          await supabase.auth.getSession();
-          // Clean up the URL hash
-          window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+          // Let AuthRedirectHandler handle this
+          setIsLoading(false);
+          setIsInitialLoad(false);
+          return;
         }
         
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -63,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Session error:', error);
       } finally {
         setIsLoading(false);
+        setIsInitialLoad(false);
       }
     };
 
@@ -74,14 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Auth state change:', event, session?.user?.email);
         
         if (event === 'SIGNED_IN' && session?.user) {
-          // Only show welcome message for email confirmations when there's no existing user
-          if (session.user.email_confirmed_at && !user) {
-            toast({
-              title: "Email Confirmed!",
-              description: "Your email has been verified successfully. Welcome to HomeworkHelper!",
-              variant: "default",
-            });
-          }
+          // Don't show notifications for initial page loads
+          const isFromInitialLoad = isInitialLoad;
           
           // Fetch user profile from database
           const profile = await dbHelpers.getUserProfile(session.user.id);
@@ -186,7 +182,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('User state set successfully');
         
         toast({
-          title: "Welcome back!",
+          title: "Logged in successfully!",
           description: `Welcome back, ${profile.name}! Ready to tackle some homework?`,
           variant: "default",
         });
@@ -223,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log('New user state set successfully');
           
           toast({
-            title: "Welcome back!",
+            title: "Logged in successfully!",
             description: `Welcome back, ${createdProfile.name}! Ready to tackle some homework?`,
             variant: "default",
           });
