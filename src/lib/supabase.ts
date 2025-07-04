@@ -62,6 +62,63 @@ export interface ChatMessage {
   created_at: string;
 }
 
+export interface UserSettings {
+  id: string;
+  user_id: string;
+  theme: 'light' | 'dark' | 'system';
+  language: string;
+  email_notifications: boolean;
+  push_notifications: boolean;
+  marketing_emails: boolean;
+  timezone: string;
+  date_format: string;
+  time_format: '12h' | '24h';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BillingInfo {
+  id: string;
+  user_id: string;
+  billing_name?: string;
+  billing_email?: string;
+  billing_address_line1?: string;
+  billing_address_line2?: string;
+  billing_city?: string;
+  billing_state?: string;
+  billing_postal_code?: string;
+  billing_country?: string;
+  tax_id?: string;
+  company_name?: string;
+  phone_number?: string;
+  preferred_payment_method: 'card' | 'mobile_money' | 'bank_transfer';
+  auto_renewal: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubscriptionHistory {
+  id: string;
+  user_id: string;
+  old_plan?: string;
+  new_plan: string;
+  change_reason?: string;
+  payment_id?: string;
+  effective_date: string;
+  created_at: string;
+}
+
+export interface UsageAnalytics {
+  id: string;
+  user_id: string;
+  action_type: string;
+  metadata?: any;
+  session_id?: string;
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+}
+
 export interface CustomPlan {
   id: string;
   name: string;
@@ -416,5 +473,206 @@ export const dbHelpers = {
     }
 
     return true;
+  },
+
+  // Photo upload operations
+  async uploadProfilePicture(userId: string, file: File): Promise<string | null> {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/profile.${fileExt}`;
+      
+      // Delete existing profile picture if it exists
+      await supabase.storage
+        .from('profile-pictures')
+        .remove([fileName]);
+
+      // Upload new picture
+      const { data, error } = await supabase.storage
+        .from('profile-pictures')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (error) {
+        console.error('Error uploading profile picture:', error);
+        return null;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error in uploadProfilePicture:', error);
+      return null;
+    }
+  },
+
+  async deleteProfilePicture(userId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase.storage
+        .from('profile-pictures')
+        .remove([`${userId}/profile.jpg`, `${userId}/profile.png`, `${userId}/profile.jpeg`]);
+
+      if (error) {
+        console.error('Error deleting profile picture:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in deleteProfilePicture:', error);
+      return false;
+    }
+  },
+
+  // User settings operations
+  async getUserSettings(userId: string): Promise<UserSettings | null> {
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching user settings:', error);
+      return null;
+    }
+    
+    return data;
+  },
+
+  async updateUserSettings(userId: string, settings: Partial<UserSettings>): Promise<UserSettings | null> {
+    const { data, error } = await supabase
+      .from('user_settings')
+      .update({ ...settings, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating user settings:', error);
+      return null;
+    }
+    
+    return data;
+  },
+
+  // Billing info operations
+  async getBillingInfo(userId: string): Promise<BillingInfo | null> {
+    const { data, error } = await supabase
+      .from('billing_info')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching billing info:', error);
+      return null;
+    }
+    
+    return data;
+  },
+
+  async updateBillingInfo(userId: string, billingInfo: Partial<BillingInfo>): Promise<BillingInfo | null> {
+    const { data, error } = await supabase
+      .from('billing_info')
+      .update({ ...billingInfo, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating billing info:', error);
+      return null;
+    }
+    
+    return data;
+  },
+
+  // Subscription history operations
+  async getSubscriptionHistory(userId: string): Promise<SubscriptionHistory[]> {
+    const { data, error } = await supabase
+      .from('subscription_history')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching subscription history:', error);
+      return [];
+    }
+    
+    return data || [];
+  },
+
+  async logSubscriptionChange(
+    userId: string, 
+    oldPlan: string | null, 
+    newPlan: string, 
+    changeReason?: string,
+    paymentId?: string
+  ): Promise<SubscriptionHistory | null> {
+    const { data, error } = await supabase
+      .from('subscription_history')
+      .insert([{
+        user_id: userId,
+        old_plan: oldPlan,
+        new_plan: newPlan,
+        change_reason: changeReason,
+        payment_id: paymentId
+      }])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error logging subscription change:', error);
+      return null;
+    }
+    
+    return data;
+  },
+
+  // Usage analytics operations
+  async logUserActivity(
+    userId: string, 
+    actionType: string, 
+    metadata?: any,
+    sessionId?: string
+  ): Promise<boolean> {
+    const { error } = await supabase
+      .from('usage_analytics')
+      .insert([{
+        user_id: userId,
+        action_type: actionType,
+        metadata,
+        session_id: sessionId
+      }]);
+    
+    if (error) {
+      console.error('Error logging user activity:', error);
+      return false;
+    }
+    
+    return true;
+  },
+
+  async getUserAnalytics(userId: string, limit: number = 100): Promise<UsageAnalytics[]> {
+    const { data, error } = await supabase
+      .from('usage_analytics')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    
+    if (error) {
+      console.error('Error fetching user analytics:', error);
+      return [];
+    }
+    
+    return data || [];
   }
 };
