@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -9,13 +9,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { User, Mail, Camera, Save, Shield, Crown, Users, Trash2 } from "lucide-react";
+import { User, Mail, Camera, Save, Shield, Crown, Users, Trash2, Upload, X } from "lucide-react";
 import { supabase, dbHelpers } from "@/lib/supabase";
 
 export default function Profile() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -81,6 +83,9 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     setIsLoading(true);
     try {
+      const originalEmail = user.email;
+      const originalName = user.name;
+
       // Update user profile in database
       const updatedProfile = await dbHelpers.updateUserProfile(user.id, {
         name: formData.name,
@@ -105,6 +110,13 @@ export default function Profile() {
           description: "Your profile information has been successfully updated.",
           variant: "success",
         });
+
+        // Log the activity
+        const changes: any = {};
+        if (formData.name !== originalName) changes.name = { from: originalName, to: formData.name };
+        if (formData.email !== originalEmail) changes.email = { from: originalEmail, to: formData.email };
+        
+        await dbHelpers.logUserActivity(user.id, 'profile_updated', { changes });
       }
     } catch (error: any) {
       console.error("Profile update error:", error);
@@ -150,6 +162,101 @@ export default function Profile() {
     }
   };
 
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please select an image file (JPG, PNG, etc.)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Please select an image smaller than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsPhotoUploading(true);
+    try {
+      // Upload to Supabase Storage
+      const publicUrl = await dbHelpers.uploadProfilePicture(user.id, file);
+      
+      if (!publicUrl) {
+        throw new Error("Failed to upload image");
+      }
+
+      // Update user profile with new avatar URL
+      const updatedProfile = await dbHelpers.updateUserProfile(user.id, {
+        avatar_url: publicUrl
+      });
+
+      if (updatedProfile) {
+        await refreshUser();
+        toast({
+          title: "Photo Updated!",
+          description: "Your profile picture has been successfully updated.",
+          variant: "success",
+        });
+
+        // Log the activity
+        await dbHelpers.logUserActivity(user.id, 'profile_picture_updated');
+      }
+    } catch (error: any) {
+      console.error("Photo upload error:", error);
+      toast({
+        title: "Upload Failed",
+        description: error.message || "Failed to upload photo. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPhotoUploading(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    setIsPhotoUploading(true);
+    try {
+      // Delete from storage
+      await dbHelpers.deleteProfilePicture(user.id);
+
+      // Update user profile to remove avatar URL
+      const updatedProfile = await dbHelpers.updateUserProfile(user.id, {
+        avatar_url: null
+      });
+
+      if (updatedProfile) {
+        await refreshUser();
+        toast({
+          title: "Photo Removed",
+          description: "Your profile picture has been removed.",
+          variant: "success",
+        });
+
+        // Log the activity
+        await dbHelpers.logUserActivity(user.id, 'profile_picture_removed');
+      }
+    } catch (error: any) {
+      console.error("Photo removal error:", error);
+      toast({
+        title: "Removal Failed",
+        description: error.message || "Failed to remove photo. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPhotoUploading(false);
+    }
+  };
+
   const planInfo = getPlanInfo(user.plan);
 
   return (
@@ -180,12 +287,39 @@ export default function Profile() {
                     {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <Button variant="outline" size="sm" disabled>
-                    <Camera className="h-4 w-4 mr-2" />
-                    Change Photo
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-1">Coming soon</p>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isPhotoUploading}
+                    >
+                      <Camera className="h-4 w-4 mr-2" />
+                      {isPhotoUploading ? "Uploading..." : "Change Photo"}
+                    </Button>
+                    {user.avatar && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleRemovePhoto}
+                        disabled={isPhotoUploading}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    JPG, PNG up to 5MB
+                  </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
                 </div>
               </div>
 

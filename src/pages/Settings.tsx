@@ -11,34 +11,35 @@ import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Shield, Bell, Palette, Globe, Lock, Eye, EyeOff, Save } from "lucide-react";
+import { dbHelpers, UserSettings } from "@/lib/supabase";
 
 export default function SettingsPage() {
   const { user, updatePassword } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   
   // Settings state
-  const [settings, setSettings] = useState({
-    // Notifications
-    emailNotifications: true,
-    pushNotifications: true,
+  const [settings, setSettings] = useState<Partial<UserSettings>>({
+    theme: 'system',
+    language: 'en',
+    email_notifications: true,
+    push_notifications: true,
+    marketing_emails: false,
+    timezone: 'UTC',
+    date_format: 'MM/DD/YYYY',
+    time_format: '12h',
+  });
+
+  // Additional settings not in database
+  const [localSettings, setLocalSettings] = useState({
     weeklyDigest: true,
-    marketingEmails: false,
-    
-    // Privacy
     profileVisibility: "private",
     dataCollection: true,
     analyticsOptOut: false,
-    
-    // Preferences
-    theme: "system",
-    language: "en",
-    timezone: "UTC",
     autoSave: true,
-    
-    // Security
     twoFactorAuth: false,
     sessionTimeout: "24h",
     loginNotifications: true,
@@ -52,12 +53,28 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    // Load saved settings from localStorage
-    const savedSettings = localStorage.getItem("userSettings");
-    if (savedSettings) {
-      setSettings(prev => ({ ...prev, ...JSON.parse(savedSettings) }));
+    loadUserSettings();
+  }, [user]);
+
+  const loadUserSettings = async () => {
+    if (!user) return;
+
+    try {
+      // Load settings from database
+      const userSettings = await dbHelpers.getUserSettings(user.id);
+      if (userSettings) {
+        setSettings(userSettings);
+      }
+
+      // Load additional settings from localStorage
+      const savedLocalSettings = localStorage.getItem(`localSettings_${user.id}`);
+      if (savedLocalSettings) {
+        setLocalSettings(prev => ({ ...prev, ...JSON.parse(savedLocalSettings) }));
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
     }
-  }, []);
+  };
 
   if (!user) {
     return (
@@ -71,16 +88,46 @@ export default function SettingsPage() {
     );
   }
 
-  const handleSettingChange = (key: string, value: any) => {
-    const updatedSettings = { ...settings, [key]: value };
-    setSettings(updatedSettings);
-    localStorage.setItem("userSettings", JSON.stringify(updatedSettings));
-    
-    toast({
-      title: "Setting Updated",
-      description: "Your preference has been saved.",
-      variant: "success",
-    });
+  const handleSettingChange = async (key: string, value: any) => {
+    if (['theme', 'language', 'email_notifications', 'push_notifications', 'marketing_emails', 'timezone', 'date_format', 'time_format'].includes(key)) {
+      // Database setting
+      const updatedSettings = { ...settings, [key]: value };
+      setSettings(updatedSettings);
+      
+      setIsSavingSettings(true);
+      try {
+        await dbHelpers.updateUserSettings(user!.id, { [key]: value });
+        await dbHelpers.logUserActivity(user!.id, 'settings_updated', { setting: key, value });
+        
+        toast({
+          title: "Setting Updated",
+          description: "Your preference has been saved.",
+          variant: "success",
+        });
+      } catch (error) {
+        console.error('Error saving setting:', error);
+        toast({
+          title: "Save Failed",
+          description: "Failed to save setting. Please try again.",
+          variant: "destructive",
+        });
+        // Revert the change
+        setSettings(prev => ({ ...prev, [key]: settings[key as keyof typeof settings] }));
+      } finally {
+        setIsSavingSettings(false);
+      }
+    } else {
+      // Local setting
+      const updatedLocalSettings = { ...localSettings, [key]: value };
+      setLocalSettings(updatedLocalSettings);
+      localStorage.setItem(`localSettings_${user!.id}`, JSON.stringify(updatedLocalSettings));
+      
+      toast({
+        title: "Setting Updated",
+        description: "Your preference has been saved.",
+        variant: "success",
+      });
+    }
   };
 
   const handlePasswordChange = async () => {
@@ -119,34 +166,65 @@ export default function SettingsPage() {
     }
   };
 
-  const handleExportData = () => {
-    // Simulate data export
-    const userData = {
-      profile: {
-        name: user.name,
-        email: user.email,
-        plan: user.plan,
-        questionsRemaining: user.questionsRemaining,
-      },
-      settings: settings,
-      exportDate: new Date().toISOString(),
-    };
+  const handleExportData = async () => {
+    try {
+      // Get comprehensive user data
+      const [userSettings, billingInfo, subscriptionHistory, analytics] = await Promise.all([
+        dbHelpers.getUserSettings(user!.id),
+        dbHelpers.getBillingInfo(user!.id),
+        dbHelpers.getSubscriptionHistory(user!.id),
+        dbHelpers.getUserAnalytics(user!.id, 1000)
+      ]);
 
-    const dataStr = JSON.stringify(userData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `homework-helper-data-${new Date().toISOString().split('T')[0]}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    toast({
-      title: "Data Exported",
-      description: "Your data has been downloaded as a JSON file.",
-      variant: "success",
-    });
+      const userData = {
+        profile: {
+          id: user!.id,
+          name: user!.name,
+          email: user!.email,
+          plan: user!.plan,
+          questionsRemaining: user!.questionsRemaining,
+          role: user!.role
+        },
+        settings: {
+          database: userSettings,
+          local: localSettings
+        },
+        billingInfo,
+        subscriptionHistory,
+        analytics: analytics.map(a => ({
+          ...a,
+          ip_address: undefined, // Remove sensitive data
+          user_agent: undefined
+        })),
+        exportDate: new Date().toISOString(),
+      };
+
+      const dataStr = JSON.stringify(userData, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = `homework-helper-data-${new Date().toISOString().split('T')[0]}.json`;
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      
+      // Log the export activity
+      await dbHelpers.logUserActivity(user!.id, 'data_exported');
+      
+      toast({
+        title: "Data Exported",
+        description: "Your data has been downloaded as a JSON file.",
+        variant: "success",
+      });
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      toast({
+        title: "Export Failed",
+        description: "Failed to export data. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -242,8 +320,9 @@ export default function SettingsPage() {
                     </p>
                   </div>
                   <Switch
-                    checked={settings.autoSave}
+                    checked={localSettings.autoSave}
                     onCheckedChange={(checked) => handleSettingChange("autoSave", checked)}
+                    disabled={isSavingSettings}
                   />
                 </div>
               </CardContent>
@@ -270,8 +349,9 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <Switch
-                      checked={settings.emailNotifications}
-                      onCheckedChange={(checked) => handleSettingChange("emailNotifications", checked)}
+                      checked={settings.email_notifications}
+                      onCheckedChange={(checked) => handleSettingChange("email_notifications", checked)}
+                      disabled={isSavingSettings}
                     />
                   </div>
 
@@ -283,8 +363,9 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <Switch
-                      checked={settings.pushNotifications}
-                      onCheckedChange={(checked) => handleSettingChange("pushNotifications", checked)}
+                      checked={settings.push_notifications}
+                      onCheckedChange={(checked) => handleSettingChange("push_notifications", checked)}
+                      disabled={isSavingSettings}
                     />
                   </div>
 
@@ -296,8 +377,9 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <Switch
-                      checked={settings.weeklyDigest}
+                      checked={localSettings.weeklyDigest}
                       onCheckedChange={(checked) => handleSettingChange("weeklyDigest", checked)}
+                      disabled={isSavingSettings}
                     />
                   </div>
 
@@ -309,8 +391,9 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <Switch
-                      checked={settings.marketingEmails}
-                      onCheckedChange={(checked) => handleSettingChange("marketingEmails", checked)}
+                      checked={settings.marketing_emails}
+                      onCheckedChange={(checked) => handleSettingChange("marketing_emails", checked)}
+                      disabled={isSavingSettings}
                     />
                   </div>
                 </div>
@@ -333,8 +416,9 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="profile-visibility">Profile Visibility</Label>
                     <Select 
-                      value={settings.profileVisibility} 
+                      value={localSettings.profileVisibility} 
                       onValueChange={(value) => handleSettingChange("profileVisibility", value)}
+                      disabled={isSavingSettings}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select visibility" />
@@ -357,8 +441,9 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <Switch
-                      checked={settings.dataCollection}
+                      checked={localSettings.dataCollection}
                       onCheckedChange={(checked) => handleSettingChange("dataCollection", checked)}
+                      disabled={isSavingSettings}
                     />
                   </div>
 
@@ -370,8 +455,9 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <Switch
-                      checked={settings.analyticsOptOut}
+                      checked={localSettings.analyticsOptOut}
                       onCheckedChange={(checked) => handleSettingChange("analyticsOptOut", checked)}
+                      disabled={isSavingSettings}
                     />
                   </div>
                 </div>
@@ -504,7 +590,7 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <Switch
-                      checked={settings.twoFactorAuth}
+                      checked={localSettings.twoFactorAuth}
                       onCheckedChange={(checked) => handleSettingChange("twoFactorAuth", checked)}
                       disabled
                     />
@@ -513,8 +599,9 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label htmlFor="session-timeout">Session Timeout</Label>
                     <Select 
-                      value={settings.sessionTimeout} 
+                      value={localSettings.sessionTimeout} 
                       onValueChange={(value) => handleSettingChange("sessionTimeout", value)}
+                      disabled={isSavingSettings}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select timeout" />
@@ -537,8 +624,9 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <Switch
-                      checked={settings.loginNotifications}
+                      checked={localSettings.loginNotifications}
                       onCheckedChange={(checked) => handleSettingChange("loginNotifications", checked)}
+                      disabled={isSavingSettings}
                     />
                   </div>
                 </div>

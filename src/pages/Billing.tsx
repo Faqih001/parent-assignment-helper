@@ -2,13 +2,16 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaymentModal } from "@/components/PaymentModal";
-import { dbHelpers, CustomPlan } from "@/lib/supabase";
-import { CreditCard, Crown, Users, Shield, Check, X, Calendar, DollarSign, TrendingUp, MessageCircle, Building, Star } from "lucide-react";
+import { dbHelpers, CustomPlan, BillingInfo, SubscriptionHistory } from "@/lib/supabase";
+import { CreditCard, Crown, Users, Shield, Check, X, Calendar, DollarSign, TrendingUp, MessageCircle, Building, Star, Save, User } from "lucide-react";
 
 export default function Billing() {
   const { user, refreshUser } = useAuth();
@@ -17,17 +20,29 @@ export default function Billing() {
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [customPlans, setCustomPlans] = useState<CustomPlan[]>([]);
+  const [billingInfo, setBillingInfo] = useState<Partial<BillingInfo>>({});
+  const [subscriptionHistory, setSubscriptionHistory] = useState<SubscriptionHistory[]>([]);
+  const [isSavingBilling, setIsSavingBilling] = useState(false);
 
   useEffect(() => {
-    loadCustomPlans();
-  }, []);
+    if (user) {
+      loadData();
+    }
+  }, [user]);
 
-  const loadCustomPlans = async () => {
+  const loadData = async () => {
     try {
-      const plans = await dbHelpers.getCustomPlans();
+      const [plans, billing, history] = await Promise.all([
+        dbHelpers.getCustomPlans(),
+        dbHelpers.getBillingInfo(user!.id),
+        dbHelpers.getSubscriptionHistory(user!.id)
+      ]);
+      
       setCustomPlans(plans);
+      if (billing) setBillingInfo(billing);
+      setSubscriptionHistory(history);
     } catch (error) {
-      console.error('Error loading custom plans:', error);
+      console.error('Error loading billing data:', error);
     }
   };
 
