@@ -1,5 +1,5 @@
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowRight, BookOpen, MessageCircle, Clock, Shield, Star, Users, Target, Award, Zap, Heart, Globe, Smartphone, CheckCircle, TrendingUp } from "lucide-react";
+import { ArrowRight, BookOpen, MessageCircle, Clock, Shield, Star, Users, Target, Award, Zap, Heart, Globe, Smartphone, CheckCircle, TrendingUp, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
