@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { geminiService } from "@/lib/gemini";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,13 +23,57 @@ const subjects = [
 ];
 
 export default function Video() {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedGrade, setSelectedGrade] = useState("All Grades");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [aiVideoUrl, setAiVideoUrl] = useState<string | null>(null);
+  const [aiVideoTitle, setAiVideoTitle] = useState<string>("");
 
   const filteredVideos = videoLibrary.filter(
     v => (selectedGrade === "All Grades" || v.grade === selectedGrade) &&
          (selectedSubject === "All Subjects" || v.subject === selectedSubject)
   );
+
+  const handleGenerateVideo = async () => {
+    if (!input.trim() || isLoading || !user) return;
+    setIsLoading(true);
+    setAiVideoUrl(null);
+    setAiVideoTitle("");
+    try {
+      // Simulate AI video generation (replace with real API call)
+      // const videoUrl = await geminiService.generateVideo({ prompt: input, grade: selectedGrade, subject: selectedSubject });
+      // For demo, use a static video
+      const videoUrl = "https://www.youtube.com/embed/UPBMG5EYydo";
+      setAiVideoUrl(videoUrl);
+      setAiVideoTitle(input);
+      toast({ title: "Video Generated!", description: "Your AI video is ready to watch." });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to generate video. Please try again.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen-safe bg-gradient-to-br from-background to-accent flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="flex items-center justify-center gap-2">
+              <PlayCircle className="h-6 w-6" />
+              <span>Login Required</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground">Please log in to access the AI video generator.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen-mobile bg-gradient-to-br from-background to-accent">
@@ -37,13 +84,54 @@ export default function Video() {
               <PlayCircle className="h-6 w-6 text-primary" />
               Video Library
             </h1>
-            <p className="text-sm md:text-base text-muted-foreground">Watch topic videos for better understanding</p>
+            <p className="text-sm md:text-base text-muted-foreground">Watch topic videos for better understanding or generate your own with AI</p>
           </div>
           <Button variant="outline" size="sm" className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
             Upload Video
           </Button>
         </div>
+
+        {/* AI Video Generation Input */}
+        <Card className="mb-6">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row items-end gap-3 md:gap-4">
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="ai-video-input" className="text-sm font-medium">Describe the topic you want an AI video for</Label>
+                <textarea
+                  id="ai-video-input"
+                  placeholder="e.g. Explain photosynthesis for Grade 5"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  className="min-h-[60px] md:min-h-[80px] max-h-32 resize-none w-full border rounded-md p-2 text-sm"
+                  disabled={isLoading}
+                />
+              </div>
+              <Button
+                onClick={handleGenerateVideo}
+                disabled={!input.trim() || isLoading}
+                className="px-6 md:px-8 h-12 md:h-14"
+                size="default"
+              >
+                {isLoading ? "Generating..." : "Generate Video"}
+              </Button>
+            </div>
+            {aiVideoUrl && (
+              <div className="mt-6">
+                <h3 className="text-base font-semibold mb-2">AI Generated Video: {aiVideoTitle}</h3>
+                <div className="aspect-video rounded-lg overflow-hidden mb-2">
+                  <iframe
+                    src={aiVideoUrl}
+                    title={aiVideoTitle}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full border-0"
+                  ></iframe>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
         <div className="mb-4 md:mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
           <div className="space-y-2">
             <Label htmlFor="grade" className="text-sm font-medium">Grade/Form</Label>
