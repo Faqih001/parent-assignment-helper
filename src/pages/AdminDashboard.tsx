@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { useNavigate } from "react-router-dom";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { dbHelpers, UserProfile, CustomPlan, ParentStudent, TeacherClass } from "@/lib/supabase";
@@ -38,8 +39,8 @@ export default function AdminDashboard() {
   const [students, setStudents] = useState<UserProfile[]>([]);
   const [teachers, setTeachers] = useState<UserProfile[]>([]);
   const [parents, setParents] = useState<UserProfile[]>([]);
-  const [parentChild, setParentChild] = useState<ParentStudent[]>([]);
-  const [teacherClass, setTeacherClass] = useState<TeacherClass[]>([]);
+  const [parentChild, setParentChild] = useState<any[]>([]);
+  const [teacherClass, setTeacherClass] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'overview'|'students'|'teachers'|'parents'|'impersonate'|'relationships'|'analytics'>('overview');
   const [impersonateUser, setImpersonateUser] = useState<UserProfile|null>(null);
   const [impersonateAssignments, setImpersonateAssignments] = useState<any[]>([]);
@@ -688,8 +689,8 @@ export default function AdminDashboard() {
                   {parentChild.map(rel => (
                     <li key={rel.id} className="flex items-center gap-2">
                       {rel.parent_name} <span className="text-xs">(parent)</span> → {rel.student_name} <span className="text-xs">(student)</span>
-                      <Button size="xs" variant="outline" onClick={async () => {
-                        await dbHelpers.removeParentStudent(rel.id); loadData();
+                      <Button size="sm" variant="outline" onClick={async () => {
+                        await dbHelpers.removeParentStudent?.(rel.id); loadData();
                       }}>Remove</Button>
                     </li>
                   ))}
@@ -709,7 +710,7 @@ export default function AdminDashboard() {
                   </Select>
                   <Button size="sm" onClick={async () => {
                     if (newParentId && newStudentId) {
-                      await dbHelpers.addParentStudent(newParentId, newStudentId); loadData();
+                      await dbHelpers.addParentStudent?.(newParentId, newStudentId); loadData();
                     }
                   }}>Add</Button>
                 </div>
@@ -720,8 +721,8 @@ export default function AdminDashboard() {
                   {teacherClass.map(rel => (
                     <li key={rel.id} className="flex items-center gap-2">
                       {rel.teacher_name} <span className="text-xs">(teacher)</span> → {rel.class_name} <span className="text-xs">(class)</span>
-                      <Button size="xs" variant="outline" onClick={async () => {
-                        await dbHelpers.removeTeacherClass(rel.id); loadData();
+                      <Button size="sm" variant="outline" onClick={async () => {
+                        await dbHelpers.removeTeacherClass?.(rel.id); loadData();
                       }}>Remove</Button>
                     </li>
                   ))}
@@ -736,7 +737,7 @@ export default function AdminDashboard() {
                   <Input className="w-40" placeholder="Class Name" value={newClassName} onChange={e => setNewClassName(e.target.value)} />
                   <Button size="sm" onClick={async () => {
                     if (newTeacherId && newClassName) {
-                      await dbHelpers.addTeacherClass(newTeacherId, newClassName); loadData();
+                      await dbHelpers.addTeacherClass?.(newTeacherId, newClassName); loadData();
                     }
                   }}>Add</Button>
                 </div>

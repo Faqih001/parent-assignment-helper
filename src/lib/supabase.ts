@@ -405,6 +405,166 @@ export interface AuthError {
 
 // Database helper functions
 export const dbHelpers = {
+  // --- ADMIN DASHBOARD BACKEND HELPERS ---
+
+  // Suspend a user (set a suspended flag or change plan/role)
+  async suspendUser(userId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ plan: 'free', suspended: true, updated_at: new Date().toISOString() })
+      .eq('id', userId);
+    if (error) {
+      console.error('Error suspending user:', error);
+      return false;
+    }
+    return true;
+  },
+
+  // Reactivate a user (unset suspended flag)
+  async reactivateUser(userId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ suspended: false, updated_at: new Date().toISOString() })
+      .eq('id', userId);
+    if (error) {
+      console.error('Error reactivating user:', error);
+      return false;
+    }
+    return true;
+  },
+
+  // Reset user password (admin action, triggers email)
+  async resetUserPassword(userId: string): Promise<boolean> {
+    // This requires a backend function or integration with Supabase Auth API
+    // Here, we log the intent and return false (stub)
+    // TODO: Implement with Supabase Admin API or custom function
+    console.warn('resetUserPassword: Not implemented. Requires Supabase Admin API.');
+    return false;
+  },
+
+  // Send user email (admin action, triggers transactional email)
+  async sendUserEmail(userId: string, subject: string, message: string): Promise<boolean> {
+    // This requires integration with an email service (e.g., Resend, SendGrid)
+    // Here, we log the intent and return false (stub)
+    // TODO: Implement with backend email service
+    console.warn('sendUserEmail: Not implemented. Requires backend email integration.');
+    return false;
+  },
+
+  // Add parent-student relationship
+  async addParentStudent(parentId: string, studentId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('parent_students')
+      .insert([{ parent_id: parentId, student_id: studentId }]);
+    if (error) {
+      console.error('Error adding parent-student relationship:', error);
+      return false;
+    }
+    return true;
+  },
+
+  // Remove parent-student relationship
+  async removeParentStudent(parentId: string, studentId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('parent_students')
+      .delete()
+      .eq('parent_id', parentId)
+      .eq('student_id', studentId);
+    if (error) {
+      console.error('Error removing parent-student relationship:', error);
+      return false;
+    }
+    return true;
+  },
+
+  // Add teacher-class relationship
+  async addTeacherClass(teacherId: string, classId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('class_teachers')
+      .insert([{ teacher_id: teacherId, class_id: classId }]);
+    if (error) {
+      console.error('Error adding teacher-class relationship:', error);
+      return false;
+    }
+    return true;
+  },
+
+  // Remove teacher-class relationship
+  async removeTeacherClass(teacherId: string, classId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('class_teachers')
+      .delete()
+      .eq('teacher_id', teacherId)
+      .eq('class_id', classId);
+    if (error) {
+      console.error('Error removing teacher-class relationship:', error);
+      return false;
+    }
+    return true;
+  },
+
+  // Get all parent-student relationships (for admin view)
+  async getAllParentStudents(): Promise<{ parent_id: string; student_id: string }[]> {
+    const { data, error } = await supabase
+      .from('parent_students')
+      .select('parent_id, student_id');
+    if (error) {
+      console.error('Error fetching all parent-student relationships:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  // Get all teacher-class relationships (for admin view)
+  async getAllTeacherClasses(): Promise<{ teacher_id: string; class_id: string }[]> {
+    const { data, error } = await supabase
+      .from('class_teachers')
+      .select('teacher_id, class_id');
+    if (error) {
+      console.error('Error fetching all teacher-class relationships:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  // Get all assignments for a student (for impersonation preview)
+  async getAssignmentsForStudent(studentId: string) {
+    return studentHelpers.getAssignments(studentId);
+  },
+
+  // Get all classes for a teacher (for impersonation preview)
+  async getClassesForTeacher(teacherId: string) {
+    const { data: classes, error } = await supabase
+      .from('classes')
+      .select('*')
+      .eq('teacher_id', teacherId);
+    if (error) {
+      console.error('Error fetching classes for teacher:', error);
+      return [];
+    }
+    return classes || [];
+  },
+
+  // Get admin analytics (site-wide stats)
+  async getAdminAnalytics(): Promise<any> {
+    // Example: count users, parents, students, teachers, assignments, classes
+    const [users, parents, students, teachers, assignments, classes] = await Promise.all([
+      supabase.from('user_profiles').select('id', { count: 'exact', head: true }),
+      supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('role', 'parent'),
+      supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('role', 'student'),
+      supabase.from('user_profiles').select('id', { count: 'exact', head: true }).eq('role', 'teacher'),
+      supabase.from('assignments').select('id', { count: 'exact', head: true }),
+      supabase.from('classes').select('id', { count: 'exact', head: true })
+    ]);
+    return {
+      totalUsers: users.count,
+      totalParents: parents.count,
+      totalStudents: students.count,
+      totalTeachers: teachers.count,
+      totalAssignments: assignments.count,
+      totalClasses: classes.count
+    };
+  },
   // User Profile operations
   async getUserProfile(userId: string): Promise<UserProfile | null> {
     const { data, error } = await supabase
