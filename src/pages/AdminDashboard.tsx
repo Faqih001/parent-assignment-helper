@@ -1,12 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-  // --- Admin feature state ---
-// const [studentSearch, setStudentSearch] = useState("");
-// const [teacherSearch, setTeacherSearch] = useState("");
-// const [parentSearch, setParentSearch] = useState("");
-// const [newParentId, setNewParentId] = useState("");
-// const [newStudentId, setNewStudentId] = useState("");
-// const [newTeacherId, setNewTeacherId] = useState("");
-// const [newClassName, setNewClassName] = useState("");
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -24,34 +16,49 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { dbHelpers, UserProfile, CustomPlan } from "@/lib/supabase";
 import { Settings, Users, CreditCard, Plus, Edit, Trash2, Shield, UserCheck, Building, Crown } from "lucide-react";
 
-type Role = 'student' | 'teacher' | 'parent' | 'admin';
-              )}
+export default function AdminDashboard() {
 
-// --- HOOKS: Load impersonation preview data when impersonateUser changes ---
-useEffect(() => {
-  if (!impersonateUser) {
-    setImpersonateAssignments([]);
-    setImpersonateClasses([]);
-    setImpersonateChildren([]);
-    return;
-  }
-  if ((impersonateUser.role as string) === 'student') {
-    dbHelpers.getAssignmentsForStudent?.(impersonateUser.id).then(setImpersonateAssignments);
-  } else if ((impersonateUser.role as string) === 'teacher') {
-    dbHelpers.getClassesForTeacher?.(impersonateUser.id).then(setImpersonateClasses);
-  } else if ((impersonateUser.role as string) === 'parent') {
-    const children = parentChild
-      .filter((rel: any) => rel.parent_id === impersonateUser.id)
-      .map((rel: any) => students.find(s => s.id === rel.student_id))
-      .filter(Boolean) as UserProfile[];
-    setImpersonateChildren(children);
-  }
-}, [impersonateUser, parentChild, students]);
-  const [editingUser, setEditingUser] = useState<(UserProfile & { questions_limit?: number }) | null>(null);
+  // --- Additional state for user groups and relationships ---
+  const [students, setStudents] = useState<UserProfile[]>([]);
+  const [teachers, setTeachers] = useState<UserProfile[]>([]);
+  const [parents, setParents] = useState<UserProfile[]>([]);
+  const [parentChild, setParentChild] = useState<{
+    id: string;
+    parent_id: string;
+    parent_name: string;
+    student_id: string;
+    student_name: string;
+  }[]>([]);
+  const [teacherClass, setTeacherClass] = useState<{
+    id: string;
+    teacher_id: string;
+    teacher_name: string;
+    class_id: string;
+    class_name: string;
+  }[]>([]);
+
+  // --- Search fields for filtering ---
+  const [studentSearch, setStudentSearch] = useState("");
+  const [teacherSearch, setTeacherSearch] = useState("");
+  const [parentSearch, setParentSearch] = useState("");
+
+  // --- Relationship management fields ---
+
+  const [newParentId, setNewParentId] = useState("");
+  const [newStudentId, setNewStudentId] = useState("");
+  const [newTeacherId, setNewTeacherId] = useState("");
+  const [newClassName, setNewClassName] = useState("");
+
+  // ...existing state declarations...
+
+  const [editingUser, setEditingUser] = useState<(Omit<UserProfile, 'plan'> & { plan: string; questions_limit?: number }) | null>(null);
   const [activeTab, setActiveTab] = useState<'overview'|'students'|'teachers'|'parents'|'impersonate'|'relationships'|'analytics'>('overview');
   const [impersonateUser, setImpersonateUser] = useState<UserProfile|null>(null);
-  const [impersonateAssignments, setImpersonateAssignments] = useState<any[]>([]);
-  const [impersonateClasses, setImpersonateClasses] = useState<any[]>([]);
+  // Replace 'any' with more specific types if available, otherwise use 'unknown[]' as a fallback
+  type Assignment = { id: string; title: string };
+  type Class = { id: string; name: string };
+  const [impersonateAssignments, setImpersonateAssignments] = useState<Assignment[]>([]);
+  const [impersonateClasses, setImpersonateClasses] = useState<Class[]>([]);
   const [impersonateChildren, setImpersonateChildren] = useState<UserProfile[]>([]);
   const [analytics, setAnalytics] = useState<{assignments: number, classes: number, materials: number, parentalControls: number}>({assignments: 0, classes: 0, materials: 0, parentalControls: 0});
   // Upload state and handler for admin video/material upload
@@ -116,8 +123,28 @@ useEffect(() => {
       setStudents(usersData.filter(u => (u.role as string) === 'student'));
       setTeachers(usersData.filter(u => (u.role as string) === 'teacher'));
       setParents(usersData.filter(u => (u.role as string) === 'parent'));
-      setParentChild(parentChildData);
-      setTeacherClass(teacherClassData);
+      setParentChild(
+        Array.isArray(parentChildData) && parentChildData.length > 0 && !('id' in parentChildData[0])
+          ? parentChildData.map((rel, idx) => ({
+              id: `${rel.parent_id}_${rel.student_id}`,
+              parent_id: rel.parent_id,
+              parent_name: usersData.find(u => u.id === rel.parent_id)?.name || '',
+              student_id: rel.student_id,
+              student_name: usersData.find(u => u.id === rel.student_id)?.name || '',
+            }))
+          : parentChildData
+      );
+      setTeacherClass(
+        Array.isArray(teacherClassData) && teacherClassData.length > 0 && !('id' in teacherClassData[0])
+          ? teacherClassData.map((rel, idx) => ({
+              id: `${rel.teacher_id}_${rel.class_id}`,
+              teacher_id: rel.teacher_id,
+              teacher_name: usersData.find(u => u.id === rel.teacher_id)?.name || '',
+              class_id: rel.class_id,
+              class_name: rel.class_id || '',
+            }))
+          : teacherClassData
+      );
       setAnalytics(analyticsData);
     } catch (error) {
       console.error('Error loading admin data:', error);
@@ -563,8 +590,8 @@ useEffect(() => {
                     }}>Send Email</Button>
                   </div>
                   {(() => {
-                    switch (impersonateUser.role) {
-                      case 'student':
+                  switch (String(impersonateUser.role)) {
+                    case 'student':
                         return <div>
                           <div className="font-semibold mb-1">Student Dashboard</div>
                           <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
@@ -620,7 +647,7 @@ useEffect(() => {
                         <div className="space-y-4">
                           <div>
                             <Label htmlFor="user-plan">Plan</Label>
-                            <Select value={editingUser.plan} onValueChange={v => setEditingUser({ ...editingUser, plan: v })}>
+                            <Select value={String(editingUser.plan)} onValueChange={(v: string) => setEditingUser({ ...editingUser, plan: v })}>
                               <SelectTrigger><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 {customPlans.map(plan => <SelectItem key={plan.name} value={plan.name}>{plan.name}</SelectItem>)}
@@ -645,23 +672,7 @@ useEffect(() => {
                 </div>
               )}
 
-  // Load impersonation preview data when impersonateUser changes
-  useEffect(() => {
-    if (!impersonateUser) {
-      setImpersonateAssignments([]);
-      setImpersonateClasses([]);
-      setImpersonateChildren([]);
-      return;
-    }
-    if (impersonateUser.role === 'student') {
-      dbHelpers.getAssignmentsForStudent?.(impersonateUser.id).then(setImpersonateAssignments);
-    } else if (impersonateUser.role === 'teacher') {
-      dbHelpers.getClassesForTeacher?.(impersonateUser.id).then(setImpersonateClasses);
-    } else if (impersonateUser.role === 'parent') {
-      const children = parentChild.filter(rel => rel.parent_id === impersonateUser.id).map(rel => students.find(s => s.id === rel.student_id)).filter(Boolean) as UserProfile[];
-      setImpersonateChildren(children);
-    }
-  }, [impersonateUser, parentChild, students]);
+  // (Removed duplicate useEffect for impersonation preview)
             </CardContent>
           </Card>
         )}
