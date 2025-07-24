@@ -1,3 +1,39 @@
+// --- Parental Controls Table & Helpers ---
+export interface ParentalControl {
+  id: string;
+  parent_id: string;
+  student_id: string;
+  show_assignments: boolean;
+  allow_downloads: boolean;
+  updated_at: string;
+}
+
+export const parentalControlHelpers = {
+  // Get all controls for a parent (returns map student_id -> control)
+  async getControls(parentId: string): Promise<Record<string, ParentalControl>> {
+    const { data, error } = await supabase
+      .from('parental_controls')
+      .select('*')
+      .eq('parent_id', parentId);
+    if (error || !data) return {};
+    const map: Record<string, ParentalControl> = {};
+    for (const ctrl of data) map[ctrl.student_id] = ctrl;
+    return map;
+  },
+  // Upsert a control for a parent-child pair
+  async setControl(parentId: string, studentId: string, updates: { show_assignments: boolean; allow_downloads: boolean }) {
+    const { error } = await supabase
+      .from('parental_controls')
+      .upsert({
+        parent_id: parentId,
+        student_id: studentId,
+        show_assignments: updates.show_assignments,
+        allow_downloads: updates.allow_downloads,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: ['parent_id', 'student_id'] });
+    return !error;
+  }
+};
 // --- Parent Dashboard Helpers ---
 export const parentHelpers = {
   // Fetch children (students) for a parent
