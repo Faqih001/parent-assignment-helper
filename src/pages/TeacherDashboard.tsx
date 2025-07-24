@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
@@ -15,7 +16,8 @@ export default function TeacherDashboard() {
           <p className="mb-4 text-muted-foreground">Manage your classes, assignments, and view student progress.</p>
           <div className="mb-6">
             <h3 className="font-semibold mb-2">Upload Videos & Materials</h3>
-            <input type="file" accept="video/*,application/pdf" className="mb-2" />
+            <label htmlFor="teacher-upload" className="block text-sm font-medium mb-1">Select file to upload</label>
+            <input id="teacher-upload" type="file" accept="video/*,application/pdf" className="mb-2" />
             <Button variant="outline" className="mb-4">Upload</Button>
             <p className="text-xs text-muted-foreground">(Coming soon: Teachers will be able to upload learning materials for their students.)</p>
           </div>

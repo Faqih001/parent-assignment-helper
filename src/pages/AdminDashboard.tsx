@@ -61,9 +61,9 @@ export default function AdminDashboard() {
     }
     
     loadData();
-  }, [user, navigate, toast]);
+  }, [user, navigate, toast, loadData]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [usersData, plansData] = await Promise.all([
@@ -82,7 +82,7 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   const handleCreatePlan = async () => {
     if (!newPlan.name || !newPlan.description) {
@@ -249,15 +249,15 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{users.length}</div>
-        <CardContent>
-          <p className="mb-4 text-muted-foreground">Manage users, plans, and upload learning materials for the platform.</p>
-          <div className="mb-6">
-            <h3 className="font-semibold mb-2">Upload Videos & Materials</h3>
-            <input type="file" accept="video/*,application/pdf" className="mb-2" />
-            <Button variant="outline" className="mb-4">Upload</Button>
-            <p className="text-xs text-muted-foreground">(Coming soon: Video/material upload will be saved to the platform for teachers and students.)</p>
-          </div>
-          <div>
+              <p className="mb-4 text-muted-foreground">Manage users, plans, and upload learning materials for the platform.</p>
+              <div className="mb-6">
+                <h3 className="font-semibold mb-2">Upload Videos & Materials</h3>
+                <label htmlFor="admin-upload" className="block text-sm font-medium mb-1">Select file to upload</label>
+                <input id="admin-upload" title="Select file to upload" type="file" accept="video/*,application/pdf" className="mb-2" />
+                <Button variant="outline" className="mb-4">Upload</Button>
+                <p className="text-xs text-muted-foreground">(Coming soon: Video/material upload will be saved to the platform for teachers and students.)</p>
+              </div>
+              <div>
             <h3 className="font-semibold mb-2">Update Plan Prices</h3>
             <Button variant="outline">Edit Prices</Button>
             <p className="text-xs text-muted-foreground">(Coming soon: Admins will be able to update plan prices and features.)</p>
@@ -601,7 +601,7 @@ export default function AdminDashboard() {
                   <Textarea
                     id="edit-plan-features"
                     value={Array.isArray(editingPlan.features) ? editingPlan.features.join('\n') : editingPlan.features}
-                    onChange={(e) => setEditingPlan({ ...editingPlan, features: e.target.value as any })}
+                    onChange={(e) => setEditingPlan({ ...editingPlan, features: e.target.value as string })}
                     rows={4}
                   />
                 </div>
