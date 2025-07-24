@@ -116,7 +116,7 @@ export default function AdminDashboard() {
         dbHelpers.getAllCustomPlans(),
         dbHelpers.getAllParentStudents?.() ?? [],
         dbHelpers.getAllTeacherClasses?.() ?? [],
-        dbHelpers.getAdminAnalytics?.() ?? {assignments: 0, classes: 0, materials: 0, parentalControls: 0}
+        dbHelpers.getDashboardStats?.() ?? {assignments: 0, classes: 0, materials: 0, parentalControls: 0}
       ]);
       setUsers(usersData);
       setCustomPlans(plansData);

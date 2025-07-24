@@ -405,6 +405,8 @@ export interface AuthError {
 
 // Database helper functions
 export const dbHelpers = {
+  // NOTE: For AdminDashboard stats, use getDashboardStats().
+  // getAdminAnalytics() is for site-wide user/assignment/class analytics, not dashboard cards.
   // Dashboard stats for AdminDashboard page
   async getDashboardStats(): Promise<{
     assignments: number;
