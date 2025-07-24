@@ -289,6 +289,52 @@ export default function Pricing() {
         </div>
       </section>
 
+      {/* Sponsorship & Partnership Info */}
+      <section className="py-20 bg-gradient-to-br from-pink-100/60 to-blue-100/60">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+          <div className="text-center space-y-4 mb-10 animate-fade-in">
+            <h2 className="text-3xl lg:text-4xl font-bold flex items-center justify-center gap-2">
+              <span className="inline-flex items-center gap-2"><Heart className="h-7 w-7 text-pink-500" /> Sponsor a Family or School</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              NGOs, companies, and individuals can sponsor HomeworkHelper access for families, schools, or communities. Your support helps bridge the education gap and empowers learners.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-white/90 rounded-xl shadow-soft p-8 space-y-4">
+              <h3 className="text-xl font-semibold flex items-center gap-2"><Users className="h-6 w-6 text-primary" /> Why Sponsor?</h3>
+              <ul className="list-disc pl-6 text-muted-foreground text-base space-y-1">
+                <li>Fully or partially sponsor subscriptions for families or schools</li>
+                <li>Get impact reports and testimonials from beneficiaries</li>
+                <li>Branding and partnership opportunities</li>
+                <li>Flexible sponsorship packages (monthly, annual, or custom)</li>
+              </ul>
+              <div className="flex gap-4 mt-6">
+                <Button asChild size="lg" variant="hero">
+                  <a href="mailto:partnerships@homeworkhelper.co.ke?subject=Sponsorship Inquiry">Contact Us</a>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <a href="/">See Impact Stories</a>
+                </Button>
+              </div>
+            </div>
+            <div className="bg-white/90 rounded-xl shadow-soft p-8 space-y-4">
+              <h3 className="text-xl font-semibold flex items-center gap-2"><Building className="h-6 w-6 text-blue-500" /> For Organizations & CSR</h3>
+              <ul className="list-disc pl-6 text-muted-foreground text-base space-y-1">
+                <li>Bulk sponsorships for schools or regions</li>
+                <li>Co-branded campaigns and reporting</li>
+                <li>Employee engagement and volunteering</li>
+              </ul>
+              <div className="mt-6">
+                <Button asChild size="lg" variant="outline">
+                  <a href="mailto:partnerships@homeworkhelper.co.ke?subject=CSR Partnership">Partner With Us</a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ Section */}
       <section className="py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
