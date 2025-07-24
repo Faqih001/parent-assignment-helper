@@ -21,26 +21,33 @@ import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { dbHelpers, UserProfile, CustomPlan, ParentStudent, TeacherClass } from "@/lib/supabase";
+import { dbHelpers, UserProfile, CustomPlan } from "@/lib/supabase";
 import { Settings, Users, CreditCard, Plus, Edit, Trash2, Shield, UserCheck, Building, Crown } from "lucide-react";
 
 type Role = 'student' | 'teacher' | 'parent' | 'admin';
+              )}
 
-export default function AdminDashboard() {
-  // --- Admin feature state ---
-  const [studentSearch, setStudentSearch] = useState("");
-  const [teacherSearch, setTeacherSearch] = useState("");
-  const [parentSearch, setParentSearch] = useState("");
-  const [newParentId, setNewParentId] = useState("");
-  const [newStudentId, setNewStudentId] = useState("");
-  const [newTeacherId, setNewTeacherId] = useState("");
-  const [newClassName, setNewClassName] = useState("");
-  // --- Admin tabs and impersonation state ---
-  const [students, setStudents] = useState<UserProfile[]>([]);
-  const [teachers, setTeachers] = useState<UserProfile[]>([]);
-  const [parents, setParents] = useState<UserProfile[]>([]);
-  const [parentChild, setParentChild] = useState<any[]>([]);
-  const [teacherClass, setTeacherClass] = useState<any[]>([]);
+// --- HOOKS: Load impersonation preview data when impersonateUser changes ---
+useEffect(() => {
+  if (!impersonateUser) {
+    setImpersonateAssignments([]);
+    setImpersonateClasses([]);
+    setImpersonateChildren([]);
+    return;
+  }
+  if ((impersonateUser.role as string) === 'student') {
+    dbHelpers.getAssignmentsForStudent?.(impersonateUser.id).then(setImpersonateAssignments);
+  } else if ((impersonateUser.role as string) === 'teacher') {
+    dbHelpers.getClassesForTeacher?.(impersonateUser.id).then(setImpersonateClasses);
+  } else if ((impersonateUser.role as string) === 'parent') {
+    const children = parentChild
+      .filter((rel: any) => rel.parent_id === impersonateUser.id)
+      .map((rel: any) => students.find(s => s.id === rel.student_id))
+      .filter(Boolean) as UserProfile[];
+    setImpersonateChildren(children);
+  }
+}, [impersonateUser, parentChild, students]);
+  const [editingUser, setEditingUser] = useState<(UserProfile & { questions_limit?: number }) | null>(null);
   const [activeTab, setActiveTab] = useState<'overview'|'students'|'teachers'|'parents'|'impersonate'|'relationships'|'analytics'>('overview');
   const [impersonateUser, setImpersonateUser] = useState<UserProfile|null>(null);
   const [impersonateAssignments, setImpersonateAssignments] = useState<any[]>([]);
@@ -106,9 +113,9 @@ export default function AdminDashboard() {
       ]);
       setUsers(usersData);
       setCustomPlans(plansData);
-      setStudents(usersData.filter(u => u.role === 'student'));
-      setTeachers(usersData.filter(u => u.role === 'teacher'));
-      setParents(usersData.filter(u => u.role === 'parent'));
+      setStudents(usersData.filter(u => (u.role as string) === 'student'));
+      setTeachers(usersData.filter(u => (u.role as string) === 'teacher'));
+      setParents(usersData.filter(u => (u.role as string) === 'parent'));
       setParentChild(parentChildData);
       setTeacherClass(teacherClassData);
       setAnalytics(analyticsData);
@@ -373,7 +380,7 @@ export default function AdminDashboard() {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction onClick={async () => {
-                              await dbHelpers.deleteUser(student.id);
+                              await dbHelpers.deleteUserProfile(student.id);
                               toast({ title: "User Deleted", description: "Student has been deleted.", variant: "success" });
                               loadData();
                             }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
@@ -429,7 +436,7 @@ export default function AdminDashboard() {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction onClick={async () => {
-                              await dbHelpers.deleteUser(teacher.id);
+                              await dbHelpers.deleteUserProfile(teacher.id);
                               toast({ title: "User Deleted", description: "Teacher has been deleted.", variant: "success" });
                               loadData();
                             }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
@@ -485,7 +492,7 @@ export default function AdminDashboard() {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction onClick={async () => {
-                              await dbHelpers.deleteUser(parent.id);
+                              await dbHelpers.deleteUserProfile(parent.id);
                               toast({ title: "User Deleted", description: "Parent has been deleted.", variant: "success" });
                               loadData();
                             }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
@@ -513,7 +520,12 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="flex flex-wrap gap-2 mb-4">
                 {[...students, ...teachers, ...parents, user].map(u => (
-                  <Button key={u.id} size="sm" variant="outline" onClick={() => setImpersonateUser(u)}>
+                <Button key={u.id} size="sm" variant="outline" onClick={() => {
+                  // Only allow impersonateUser to be set if it has all UserProfile fields
+                  if ('questions_remaining' in u && 'created_at' in u && 'updated_at' in u && 'last_free_reset' in u) {
+                    setImpersonateUser(u as UserProfile);
+                  }
+                }}>
                     {u.name} <span className="ml-1 text-xs text-muted-foreground">({u.role})</span>
                   </Button>
                 ))}
@@ -546,7 +558,7 @@ export default function AdminDashboard() {
                       toast({ title: "Copied", description: "Email copied to clipboard.", variant: "success" });
                     }}>Copy Email</Button>
                     <Button size="sm" variant="outline" onClick={async () => {
-                      await dbHelpers.sendUserEmail(impersonateUser.id);
+                      await dbHelpers.sendUserEmail(impersonateUser.id, "Admin Message", "This is a message from the admin.");
                       toast({ title: "Email Sent", description: "Email sent to user.", variant: "success" });
                     }}>Send Email</Button>
                   </div>
@@ -558,7 +570,8 @@ export default function AdminDashboard() {
                           <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
                           <div>Questions Remaining: {impersonateUser.questions_remaining}</div>
                           <div>Email: {impersonateUser.email}</div>
-                          <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
+                          {/* No last_active property in UserProfile, so skip or use created_at */}
+                          <div className="mt-2 text-sm text-muted-foreground">Joined: {new Date(impersonateUser.created_at).toLocaleString()}</div>
                           <div className="mt-2 text-sm">Assignments:</div>
                           <ul className="list-disc ml-6 text-sm">
                             {impersonateAssignments.length > 0 ? impersonateAssignments.map(a => <li key={a.id}>{a.title}</li>) : <li>No assignments</li>}
@@ -569,7 +582,7 @@ export default function AdminDashboard() {
                           <div className="font-semibold mb-1">Teacher Dashboard</div>
                           <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
                           <div>Email: {impersonateUser.email}</div>
-                          <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
+                          <div className="mt-2 text-sm text-muted-foreground">Joined: {new Date(impersonateUser.created_at).toLocaleString()}</div>
                           <div className="mt-2 text-sm">Classes:</div>
                           <ul className="list-disc ml-6 text-sm">
                             {impersonateClasses.length > 0 ? impersonateClasses.map(c => <li key={c.id}>{c.name}</li>) : <li>No classes</li>}
@@ -580,7 +593,7 @@ export default function AdminDashboard() {
                           <div className="font-semibold mb-1">Parent Dashboard</div>
                           <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
                           <div>Email: {impersonateUser.email}</div>
-                          <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
+                          <div className="mt-2 text-sm text-muted-foreground">Joined: {new Date(impersonateUser.created_at).toLocaleString()}</div>
                           <div className="mt-2 text-sm">Children:</div>
                           <ul className="list-disc ml-6 text-sm">
                             {impersonateChildren.length > 0 ? impersonateChildren.map(child => <li key={child.id}>{child.name}</li>) : <li>No children</li>}
@@ -590,7 +603,7 @@ export default function AdminDashboard() {
                         return <div>
                           <div className="font-semibold mb-1">Admin Dashboard</div>
                           <div>Email: {impersonateUser.email}</div>
-                          <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
+                          <div className="mt-2 text-sm text-muted-foreground">Joined: {new Date(impersonateUser.created_at).toLocaleString()}</div>
                         </div>;
                       default:
                         return <div>Unknown role.</div>;
@@ -631,25 +644,6 @@ export default function AdminDashboard() {
                   )}
                 </div>
               )}
-  // Load impersonation preview data when impersonateUser changes
-  useEffect(() => {
-    if (!impersonateUser) {
-      setImpersonateAssignments([]);
-      setImpersonateClasses([]);
-      setImpersonateChildren([]);
-      return;
-    }
-    if (impersonateUser.role === 'student') {
-      dbHelpers.getAssignmentsForStudent?.(impersonateUser.id).then(setImpersonateAssignments);
-    } else if (impersonateUser.role === 'teacher') {
-      dbHelpers.getClassesForTeacher?.(impersonateUser.id).then(setImpersonateClasses);
-    } else if (impersonateUser.role === 'parent') {
-      const children = parentChild.filter(rel => rel.parent_id === impersonateUser.id).map(rel => students.find(s => s.id === rel.student_id)).filter(Boolean) as UserProfile[];
-      setImpersonateChildren(children);
-    }
-  }, [impersonateUser, parentChild, students]);
-  // For impersonation quick actions
-  const [editingUser, setEditingUser] = useState<UserProfile & { questions_limit?: number } | null>(null);
 
   // Load impersonation preview data when impersonateUser changes
   useEffect(() => {
@@ -690,7 +684,7 @@ export default function AdminDashboard() {
                     <li key={rel.id} className="flex items-center gap-2">
                       {rel.parent_name} <span className="text-xs">(parent)</span> → {rel.student_name} <span className="text-xs">(student)</span>
                       <Button size="sm" variant="outline" onClick={async () => {
-                        await dbHelpers.removeParentStudent?.(rel.id); loadData();
+                        await dbHelpers.removeParentStudent?.(rel.parent_id, rel.student_id); loadData();
                       }}>Remove</Button>
                     </li>
                   ))}
@@ -722,7 +716,7 @@ export default function AdminDashboard() {
                     <li key={rel.id} className="flex items-center gap-2">
                       {rel.teacher_name} <span className="text-xs">(teacher)</span> → {rel.class_name} <span className="text-xs">(class)</span>
                       <Button size="sm" variant="outline" onClick={async () => {
-                        await dbHelpers.removeTeacherClass?.(rel.id); loadData();
+                        await dbHelpers.removeTeacherClass?.(rel.teacher_id, rel.class_id); loadData();
                       }}>Remove</Button>
                     </li>
                   ))}
