@@ -1,4 +1,4 @@
-import { Check, Star, MessageCircle, Users, Building, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, Star, MessageCircle, Users, Building, Heart, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,18 +7,31 @@ import { PaymentModal } from "@/components/PaymentModal";
 import { useState } from "react";
 
 export default function Pricing() {
-  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  type Plan = {
+    name: string;
+    price: string;
+    originalPrice: number;
+    period: string;
+    description: string;
+    badge: string;
+    features: string[];
+    buttonText: string;
+    buttonVariant: "outline" | "hero" | "gradient";
+    popular: boolean;
+  };
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
-  const handlePaymentSuccess = (paymentData: any) => {
+  // Define a type for paymentData if needed, or use unknown for now
+  const handlePaymentSuccess = (paymentData: unknown) => {
     console.log('Payment successful:', paymentData);
     setIsPaymentModalOpen(false);
     setSelectedPlan(null);
     // Here you can redirect to success page or update user subscription
   };
 
-  const handlePlanSelect = (plan: any) => {
+  const handlePlanSelect = (plan: Plan) => {
     if (plan.name === "School Partnership") {
       // Redirect to contact page for enterprise plans
       return;
