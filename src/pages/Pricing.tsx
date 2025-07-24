@@ -139,13 +139,7 @@ export default function Pricing() {
     <div className="flex flex-col">
       {/* Hero Section */}
       <section 
-        className="relative py-20 bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 overflow-hidden"
-        style={{
-          backgroundImage: `linear-gradient(rgba(30, 58, 138, 0.85), rgba(67, 56, 202, 0.85)), url('/src/assets/progress.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
+        className="relative py-20 bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 overflow-hidden pricing-hero-section"
       >
         {/* Decorative elements */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>

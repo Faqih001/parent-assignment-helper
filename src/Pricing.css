@@ -1,0 +1,8 @@
+/* Pricing page styles extracted from inline styles */
+
+.pricing-hero-section {
+  background-image: linear-gradient(rgba(30, 58, 138, 0.85), rgba(67, 56, 202, 0.85)), url('/src/assets/progress.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
