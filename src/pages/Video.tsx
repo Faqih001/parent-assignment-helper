@@ -18,6 +18,7 @@ const videoLibrary = [
 // Removed stray top-level return/JSX. All logic and rendering is now inside the Video function below.
 export default function Video() {
   // Video upload state for admin
+  // Video upload state for admin (single instance)
   const [videoUploadFile, setVideoUploadFile] = useState<File | null>(null);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [videoUploadMessage, setVideoUploadMessage] = useState<string | null>(null);
@@ -58,26 +59,6 @@ export default function Video() {
   // Accessibility: text-to-speech
   const ttsRef = useRef<SpeechSynthesisUtterance | null>(null);
   // Video upload state for admin
-  const [videoUploadFile, setVideoUploadFile] = useState<File | null>(null);
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
-  const [videoUploadMessage, setVideoUploadMessage] = useState<string | null>(null);
-
-  // Dummy upload handler (replace with real upload logic)
-  const handleVideoUpload = async () => {
-    if (!videoUploadFile) return;
-    setIsUploadingVideo(true);
-    setVideoUploadMessage(null);
-    try {
-      // TODO: Replace with actual upload logic (e.g., Supabase Storage, API call)
-      await new Promise(res => setTimeout(res, 1200));
-      setVideoUploadMessage('Upload successful!');
-      setVideoUploadFile(null);
-    } catch (err) {
-      setVideoUploadMessage('Upload failed. Please try again.');
-    } finally {
-      setIsUploadingVideo(false);
-    }
-  };
 
   // Add curriculum-specific filtering
   const filteredVideos = videoLibrary.filter(
@@ -231,27 +212,6 @@ export default function Video() {
               {videoUploadMessage && <p className="text-xs text-muted-foreground mt-1">{videoUploadMessage}</p>}
             </div>
           )}
-// Add at the top, after other useState hooks
-  const [videoUploadFile, setVideoUploadFile] = useState<File | null>(null);
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
-  const [videoUploadMessage, setVideoUploadMessage] = useState<string | null>(null);
-
-  // Dummy upload handler (replace with real upload logic)
-  const handleVideoUpload = async () => {
-    if (!videoUploadFile) return;
-    setIsUploadingVideo(true);
-    setVideoUploadMessage(null);
-    try {
-      // TODO: Replace with actual upload logic (e.g., Supabase Storage, API call)
-      await new Promise(res => setTimeout(res, 1200));
-      setVideoUploadMessage('Upload successful!');
-      setVideoUploadFile(null);
-    } catch (err) {
-      setVideoUploadMessage('Upload failed. Please try again.');
-    } finally {
-      setIsUploadingVideo(false);
-    }
-  };
         </div>
 
         {/* AI Video Generation Input */}

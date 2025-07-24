@@ -17,6 +17,27 @@ import { Settings, Users, CreditCard, Plus, Edit, Trash2, Shield, UserCheck, Bui
 import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
+  // Upload state and handler for admin video/material upload
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+
+  // Dummy upload handler (replace with real upload logic)
+  const handleUpload = async () => {
+    if (!uploadFile) return;
+    setIsUploading(true);
+    setUploadMessage(null);
+    try {
+      // TODO: Replace with actual upload logic (e.g., Supabase Storage, API call)
+      await new Promise(res => setTimeout(res, 1200));
+      setUploadMessage('Upload successful!');
+      setUploadFile(null);
+    } catch (err) {
+      setUploadMessage('Upload failed. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -271,27 +292,6 @@ export default function AdminDashboard() {
                 </Button>
                 {uploadMessage && <p className="text-xs text-muted-foreground mb-2">{uploadMessage}</p>}
                 <p className="text-xs text-muted-foreground">Upload videos or PDF materials for the platform. (Feature in beta)</p>
-// Add at the top, after other useState hooks
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
-
-  // Dummy upload handler (replace with real upload logic)
-  const handleUpload = async () => {
-    if (!uploadFile) return;
-    setIsUploading(true);
-    setUploadMessage(null);
-    try {
-      // TODO: Replace with actual upload logic (e.g., Supabase Storage, API call)
-      await new Promise(res => setTimeout(res, 1200));
-      setUploadMessage('Upload successful!');
-      setUploadFile(null);
-    } catch (err) {
-      setUploadMessage('Upload failed. Please try again.');
-    } finally {
-      setIsUploading(false);
-    }
-  };
               </div>
               <div>
             <h3 className="font-semibold mb-2">Update Plan Prices</h3>
