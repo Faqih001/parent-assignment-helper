@@ -25,6 +25,41 @@ export interface HomeworkQuestion {
 }
 
 export class GeminiService {
+  /**
+   * Generate an AI video for a given prompt/topic, grade, and subject
+   * Returns a video URL (simulate for now, structure for real API)
+   */
+  async generateVideo({ prompt, grade, subject }: { prompt: string, grade: string, subject: string }): Promise<string> {
+    try {
+      // Compose a prompt for the video model
+      const fullPrompt = `Generate an educational video for a ${grade} student in Kenya about the following topic in ${subject}:\n${prompt}`;
+
+      // Start the video generation operation
+      let operation = await ai.models.generateVideos({
+        model: "veo-3.0-generate-preview",
+        prompt: fullPrompt,
+        config: {
+          aspectRatio: "16:9",
+          negativePrompt: "cartoon, drawing, low quality"
+        },
+      });
+
+      // Poll the operation status until the video is ready
+      while (!operation.done) {
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+        operation = await ai.operations.getVideosOperation({ operation });
+      }
+
+      // Get the video file URL (assuming the API returns a downloadable URL)
+      const videoFile = operation.response.generatedVideos[0].video;
+      // If the API provides a direct URL, return it. If not, you may need to download and host it, or return a blob URL.
+      // For now, return the file URL for embedding in an <iframe> or <video> tag
+      return videoFile;
+    } catch (error) {
+      console.error('Failed to generate AI video:', error);
+      throw new Error('Failed to generate AI video. Please try again.');
+    }
+  }
   private chat: any = null;
 
   /**

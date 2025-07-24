@@ -43,10 +43,12 @@ export default function Video() {
     setAiVideoUrl(null);
     setAiVideoTitle("");
     try {
-      // Simulate AI video generation (replace with real API call)
-      // const videoUrl = await geminiService.generateVideo({ prompt: input, grade: selectedGrade, subject: selectedSubject });
-      // For demo, use a static video
-      const videoUrl = "https://www.youtube.com/embed/UPBMG5EYydo";
+      // Real API call to Gemini AI video generation backend
+      const videoUrl = await geminiService.generateVideo({
+        prompt: input,
+        grade: selectedGrade,
+        subject: selectedSubject
+      });
       setAiVideoUrl(videoUrl);
       setAiVideoTitle(input);
       toast({ title: "Video Generated!", description: "Your AI video is ready to watch." });
