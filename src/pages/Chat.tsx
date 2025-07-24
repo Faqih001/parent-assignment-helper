@@ -32,8 +32,16 @@ export default function Chat() {
   const [grade, setGrade] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isAiInitialized, setIsAiInitialized] = useState(false);
+  const [language, setLanguage] = useState("English");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const languages = [
+    "English",
+    "Kikuyu",
+    "Kalenjin",
+    "Somali",
+    "Mijikenda"
+  ];
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -172,6 +180,7 @@ Let's start learning together! 📚✨`,
     const currentInput = input;
     const currentSubject = subject || "General";
     const currentGrade = grade || "General";
+    const currentLanguage = language || "English";
     setInput("");
     setIsLoading(true);
 
@@ -183,12 +192,16 @@ Let's start learning together! 📚✨`,
         content: currentInput
       });
 
-      const homeworkQuestion: HomeworkQuestion = {
+
+      // Pass language to AI backend
+      const homeworkQuestion: HomeworkQuestion & { language?: string } = {
         subject: currentSubject,
         grade: currentGrade,
-        question: currentInput
+        question: currentInput,
+        language: currentLanguage
       };
 
+      // Only pass the homeworkQuestion object (language is included as a property)
       const response = await geminiService.askHomeworkQuestion(homeworkQuestion);
 
       const botResponse: Message = {
@@ -295,6 +308,7 @@ Let's start learning together! 📚✨`,
           image_url: imageUrl
         });
 
+        // Only pass file and currentInput (language is included in currentInput or not supported)
         const response = await geminiService.analyzeHomeworkImage(file, currentInput);
 
         const botResponse: Message = {
@@ -377,8 +391,7 @@ Let's start learning together! 📚✨`,
 
   return (
     <div className="min-h-screen-mobile bg-gradient-to-br from-background to-accent">
-      <div className="container mx-auto px-4 py-4 md:py-8 min-h-screen-safe flex flex-col max-w-4xl"
-           style={{ minHeight: 'calc(100vh - 4rem)' }}>
+      <div className="container mx-auto px-4 py-4 md:py-8 min-h-screen-safe flex flex-col max-w-4xl min-h-[calc(100vh-4rem)]">
         {/* Header */}
         <div className="mb-4 md:mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -402,8 +415,27 @@ Let's start learning together! 📚✨`,
           </div>
         </div>
 
-        {/* Subject and Grade Selection */}
-        <div className="mb-4 md:mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+        {/* Language, Subject and Grade Selection */}
+        <div className="mb-4 md:mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="language" className="flex items-center text-sm font-medium">
+              <BookOpen className="h-4 w-4 mr-1" />
+              Answer Language
+            </Label>
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select language..." />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((lang) => (
+                  <SelectItem key={lang} value={lang}>
+                    {lang}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="subject" className="flex items-center text-sm font-medium">
               <BookOpen className="h-4 w-4 mr-1" />
@@ -510,8 +542,8 @@ Let's start learning together! 📚✨`,
                     <div className="flex items-center space-x-2">
                       <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce animate-delay-100"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce animate-delay-200"></div>
                       </div>
                       <span className="text-sm md:text-base text-muted-foreground">AI is thinking...</span>
                     </div>
@@ -572,6 +604,9 @@ Let's start learning together! 📚✨`,
               accept="image/*"
               onChange={handleImageUpload}
               className="hidden"
+              title="Upload homework image"
+              placeholder="Upload homework image"
+              aria-label="Upload homework image"
             />
             
             <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground flex-wrap gap-2">
