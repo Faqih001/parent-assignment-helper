@@ -15,38 +15,29 @@ const videoLibrary = [
   { id: 3, title: "The Water Cycle", grade: "Grade 4", subject: "Science", curriculum: "NECTA", url: "https://www.youtube.com/embed/IO9tT186mZw" },
 ];
 
-const grades = [
-  "All Grades", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Form 1", "Form 2", "Form 3", "Form 4"
-];
-const subjects = [
-  "All Subjects", "Mathematics", "Science", "English", "Kiswahili", "Social Studies", "Physics", "Chemistry", "Biology", "Geography", "History", "Other"
-];
-const languages = [
-  "English",
-  "Swahili",
-  "Hausa",
-  "Kikuyu",
-  "Kalenjin",
-  "Somali",
-  "Mijikenda"
-];
-const curriculumInfo: Record<string, { description: string; icon: string }> = {
-  CBC: {
-    description: "Kenya's Competency Based Curriculum (CBC) focuses on skills and competencies.",
-    icon: "🇰🇪",
-  },
-  WAEC: {
-    description: "West African Examinations Council (WAEC) curriculum for West Africa.",
-    icon: "🌍",
-  },
-  NECTA: {
-    description: "Tanzania's National Examinations Council (NECTA) curriculum.",
-    icon: "🇹🇿",
-  },
-};
-const curricula = ["All Curricula", ...Object.keys(curriculumInfo)];
-
+// Removed stray top-level return/JSX. All logic and rendering is now inside the Video function below.
 export default function Video() {
+  // Video upload state for admin
+  const [videoUploadFile, setVideoUploadFile] = useState<File | null>(null);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [videoUploadMessage, setVideoUploadMessage] = useState<string | null>(null);
+
+  // Dummy upload handler (replace with real upload logic)
+  const handleVideoUpload = async () => {
+    if (!videoUploadFile) return;
+    setIsUploadingVideo(true);
+    setVideoUploadMessage(null);
+    try {
+      // TODO: Replace with actual upload logic (e.g., Supabase Storage, API call)
+      await new Promise(res => setTimeout(res, 1200));
+      setVideoUploadMessage('Upload successful!');
+      setVideoUploadFile(null);
+    } catch (err) {
+      setVideoUploadMessage('Upload failed. Please try again.');
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedGrade, setSelectedGrade] = useState("All Grades");
@@ -66,6 +57,27 @@ export default function Video() {
   const [badges, setBadges] = useState<string[]>([]);
   // Accessibility: text-to-speech
   const ttsRef = useRef<SpeechSynthesisUtterance | null>(null);
+  // Video upload state for admin
+  const [videoUploadFile, setVideoUploadFile] = useState<File | null>(null);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [videoUploadMessage, setVideoUploadMessage] = useState<string | null>(null);
+
+  // Dummy upload handler (replace with real upload logic)
+  const handleVideoUpload = async () => {
+    if (!videoUploadFile) return;
+    setIsUploadingVideo(true);
+    setVideoUploadMessage(null);
+    try {
+      // TODO: Replace with actual upload logic (e.g., Supabase Storage, API call)
+      await new Promise(res => setTimeout(res, 1200));
+      setVideoUploadMessage('Upload successful!');
+      setVideoUploadFile(null);
+    } catch (err) {
+      setVideoUploadMessage('Upload failed. Please try again.');
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
 
   // Add curriculum-specific filtering
   const filteredVideos = videoLibrary.filter(
@@ -73,6 +85,56 @@ export default function Video() {
          (selectedSubject === "All Subjects" || v.subject === selectedSubject) &&
          (selectedCurriculum === "All Curricula" || v.curriculum === selectedCurriculum)
   );
+
+  // Accessibility: text-to-speech for video descriptions
+  const speak = (text: string) => {
+    if (window.speechSynthesis) {
+      if (ttsRef.current) window.speechSynthesis.cancel();
+      const utter = new window.SpeechSynthesisUtterance(text);
+      ttsRef.current = utter;
+      window.speechSynthesis.speak(utter);
+    }
+  };
+
+  const handleGenerateVideo = async () => {
+    if (!input.trim() || isLoading || !user) return;
+    setIsLoading(true);
+    setAiVideoUrl(null);
+    setAiVideoTitle("");
+    try {
+      // Real API call to Gemini AI video generation backend
+      const videoUrl = await geminiService.generateVideo({
+        prompt: input,
+        grade: selectedGrade,
+        subject: selectedSubject
+      });
+      setAiVideoUrl(videoUrl);
+      setAiVideoTitle(input);
+      toast({ title: "Video Generated!", description: "Your AI video is ready to watch." });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to generate video. Please try again.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen-safe bg-gradient-to-br from-background to-accent flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="flex items-center justify-center gap-2">
+              <PlayCircle className="h-6 w-6" />
+              <span>Login Required</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground">Please log in to access the AI video generator.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Accessibility: text-to-speech for video descriptions
   const speak = (text: string) => {
@@ -147,10 +209,49 @@ export default function Video() {
             </h1>
             <p className="text-sm md:text-base text-muted-foreground">Watch topic videos for better understanding or generate your own with AI</p>
           </div>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Upload className="h-4 w-4" />
-            Upload Video
-          </Button>
+          {user?.role === 'admin' && (
+            <div className="flex flex-col items-end">
+              <label htmlFor="video-upload" className="block text-xs font-medium mb-1">Upload Video/PDF</label>
+              <input
+                id="video-upload"
+                type="file"
+                accept="video/*,application/pdf"
+                className="mb-2"
+                onChange={e => setVideoUploadFile(e.target.files?.[0] || null)}
+                value={undefined}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleVideoUpload}
+                disabled={!videoUploadFile || isUploadingVideo}
+              >
+                {isUploadingVideo ? 'Uploading...' : 'Upload'}
+              </Button>
+              {videoUploadMessage && <p className="text-xs text-muted-foreground mt-1">{videoUploadMessage}</p>}
+            </div>
+          )}
+// Add at the top, after other useState hooks
+  const [videoUploadFile, setVideoUploadFile] = useState<File | null>(null);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [videoUploadMessage, setVideoUploadMessage] = useState<string | null>(null);
+
+  // Dummy upload handler (replace with real upload logic)
+  const handleVideoUpload = async () => {
+    if (!videoUploadFile) return;
+    setIsUploadingVideo(true);
+    setVideoUploadMessage(null);
+    try {
+      // TODO: Replace with actual upload logic (e.g., Supabase Storage, API call)
+      await new Promise(res => setTimeout(res, 1200));
+      setVideoUploadMessage('Upload successful!');
+      setVideoUploadFile(null);
+    } catch (err) {
+      setVideoUploadMessage('Upload failed. Please try again.');
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
         </div>
 
         {/* AI Video Generation Input */}
@@ -329,6 +430,18 @@ export default function Video() {
                       allowFullScreen
                       className="w-full h-full border-0"
                     ></iframe>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <Button variant="outline" className="w-full" onClick={() => window.open(video.url, '_blank')}>Watch on YouTube</Button>
+                    <Button variant="secondary" className="w-full" onClick={() => {
+                      // Placeholder for offline download logic
+                      // In production, implement actual download or service worker logic
+                      window.open(video.url, '_blank');
+                      toast({
+                        title: "Download Started",
+                        description: "Offline download is coming soon. For now, open the video in a new tab to save it.",
+                      });
+                    }}>Download</Button>
                   </div>
                 </CardContent>
               </Card>

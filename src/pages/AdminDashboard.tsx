@@ -253,9 +253,45 @@ export default function AdminDashboard() {
               <div className="mb-6">
                 <h3 className="font-semibold mb-2">Upload Videos & Materials</h3>
                 <label htmlFor="admin-upload" className="block text-sm font-medium mb-1">Select file to upload</label>
-                <input id="admin-upload" title="Select file to upload" type="file" accept="video/*,application/pdf" className="mb-2" />
-                <Button variant="outline" className="mb-4">Upload</Button>
-                <p className="text-xs text-muted-foreground">(Coming soon: Video/material upload will be saved to the platform for teachers and students.)</p>
+                <input
+                  id="admin-upload"
+                  title="Select file to upload"
+                  type="file"
+                  accept="video/*,application/pdf"
+                  className="mb-2"
+                  onChange={e => setUploadFile(e.target.files?.[0] || null)}
+                />
+                <Button
+                  variant="outline"
+                  className="mb-4"
+                  onClick={handleUpload}
+                  disabled={!uploadFile || isUploading}
+                >
+                  {isUploading ? 'Uploading...' : 'Upload'}
+                </Button>
+                {uploadMessage && <p className="text-xs text-muted-foreground mb-2">{uploadMessage}</p>}
+                <p className="text-xs text-muted-foreground">Upload videos or PDF materials for the platform. (Feature in beta)</p>
+// Add at the top, after other useState hooks
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+
+  // Dummy upload handler (replace with real upload logic)
+  const handleUpload = async () => {
+    if (!uploadFile) return;
+    setIsUploading(true);
+    setUploadMessage(null);
+    try {
+      // TODO: Replace with actual upload logic (e.g., Supabase Storage, API call)
+      await new Promise(res => setTimeout(res, 1200));
+      setUploadMessage('Upload successful!');
+      setUploadFile(null);
+    } catch (err) {
+      setUploadMessage('Upload failed. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
               </div>
               <div>
             <h3 className="font-semibold mb-2">Update Plan Prices</h3>

@@ -28,6 +28,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Video from "./pages/Video";
+import ForumPage from "./pages/ForumPage";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/integration-demo" element={<IntegrationDemo />} />
               <Route path="/formatting-demo" element={<FormattingDemo />} />
+              <Route path="/forum" element={<ForumPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

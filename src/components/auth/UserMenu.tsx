@@ -151,6 +151,13 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
               <User className="mr-2 h-4 w-4" />
               <span>Parent Dashboard</span>
             </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer hover:bg-accent"
+              onClick={() => navigate('/forum')}
+            >
+              <UserCog className="mr-2 h-4 w-4" />
+              <span>Community Forum</span>
+            </DropdownMenuItem>
           </>
         )}
         {user.role === 'teacher' && (
@@ -163,6 +170,13 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
               <User className="mr-2 h-4 w-4" />
               <span>Teacher Dashboard</span>
             </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer hover:bg-accent"
+              onClick={() => navigate('/forum')}
+            >
+              <UserCog className="mr-2 h-4 w-4" />
+              <span>Community Forum</span>
+            </DropdownMenuItem>
           </>
         )}
         {user.role === 'student' && (
@@ -174,6 +188,13 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
             >
               <User className="mr-2 h-4 w-4" />
               <span>Student Dashboard</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer hover:bg-accent"
+              onClick={() => navigate('/forum')}
+            >
+              <UserCog className="mr-2 h-4 w-4" />
+              <span>Community Forum</span>
             </DropdownMenuItem>
           </>
         )}
