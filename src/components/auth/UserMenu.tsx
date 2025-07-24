@@ -20,7 +20,7 @@ interface UserMenuProps {
     avatar?: string;
     plan: "free" | "family" | "premium" | "enterprise";
     questionsRemaining?: number;
-    role?: "user" | "admin";
+    role?: "user" | "admin" | "parent" | "teacher" | "student";
   };
   onLogout: () => void;
 }
@@ -84,9 +84,9 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
                   <span className="font-medium text-primary">{user.questionsRemaining}/5</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-1.5 mt-1">
-                  <div 
-                    className="bg-gradient-primary h-1.5 rounded-full transition-all duration-300" 
-                    style={{ width: `${(user.questionsRemaining / 5) * 100}%` }}
+                  <div
+                    className={`bg-gradient-primary h-1.5 rounded-full transition-all duration-300 user-progress-bar-width`}
+                    data-progress={user.questionsRemaining}
                   ></div>
                 </div>
               </div>

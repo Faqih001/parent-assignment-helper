@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -43,26 +43,6 @@ export default function AdminDashboard() {
     is_active: true
   });
 
-  // Check if user is admin
-  useEffect(() => {
-    if (!user) {
-      navigate('/');
-      return;
-    }
-    
-    if (user.role !== 'admin') {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access this page.",
-        variant: "destructive",
-      });
-      navigate('/');
-      return;
-    }
-    
-    loadData();
-  }, [user, navigate, toast, loadData]);
-
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -83,6 +63,26 @@ export default function AdminDashboard() {
       setIsLoading(false);
     }
   }, [toast]);
+
+  // Check if user is admin
+  useEffect(() => {
+    if (!user) {
+      navigate('/');
+      return;
+    }
+    
+    if (user.role !== 'admin') {
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission to access this page.",
+        variant: "destructive",
+      });
+      navigate('/');
+      return;
+    }
+    
+    loadData();
+  }, [user, navigate, toast, loadData]);
 
   const handleCreatePlan = async () => {
     if (!newPlan.name || !newPlan.description) {
@@ -601,7 +601,7 @@ export default function AdminDashboard() {
                   <Textarea
                     id="edit-plan-features"
                     value={Array.isArray(editingPlan.features) ? editingPlan.features.join('\n') : editingPlan.features}
-                    onChange={(e) => setEditingPlan({ ...editingPlan, features: e.target.value as string })}
+                    onChange={(e) => setEditingPlan({ ...editingPlan, features: e.target.value.split('\n').filter(f => f.trim()) })}
                     rows={4}
                   />
                 </div>
