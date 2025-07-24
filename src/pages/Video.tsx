@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { geminiService } from "@/lib/gemini";
@@ -60,6 +60,12 @@ export default function Video() {
   const [aiVideoUrl, setAiVideoUrl] = useState<string | null>(null);
   const [aiVideoTitle, setAiVideoTitle] = useState<string>("");
   const [showCurriculumInfo, setShowCurriculumInfo] = useState(false);
+  // Accessibility: high-contrast mode
+  const [highContrast, setHighContrast] = useState(false);
+  // Gamification: badges (scaffold)
+  const [badges, setBadges] = useState<string[]>([]);
+  // Accessibility: text-to-speech
+  const ttsRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Add curriculum-specific filtering
   const filteredVideos = videoLibrary.filter(
@@ -67,6 +73,16 @@ export default function Video() {
          (selectedSubject === "All Subjects" || v.subject === selectedSubject) &&
          (selectedCurriculum === "All Curricula" || v.curriculum === selectedCurriculum)
   );
+
+  // Accessibility: text-to-speech for video descriptions
+  const speak = (text: string) => {
+    if (window.speechSynthesis) {
+      if (ttsRef.current) window.speechSynthesis.cancel();
+      const utter = new window.SpeechSynthesisUtterance(text);
+      ttsRef.current = utter;
+      window.speechSynthesis.speak(utter);
+    }
+  };
 
   const handleGenerateVideo = async () => {
     if (!input.trim() || isLoading || !user) return;
@@ -109,8 +125,20 @@ export default function Video() {
   }
 
   return (
-    <div className="min-h-screen-mobile bg-gradient-to-br from-background to-accent">
+    <div className={
+      `min-h-screen-mobile bg-gradient-to-br from-background to-accent ${highContrast ? 'contrast-150 bg-black text-yellow-200' : ''}`
+    }>
       <div className="container mx-auto px-4 py-4 md:py-8 min-h-screen-safe flex flex-col max-w-4xl min-h-[calc(100vh-4rem)]">
+        {/* Accessibility: High Contrast Toggle */}
+        <div className="flex justify-end mb-2">
+          <button
+            className={`px-3 py-1 rounded text-xs font-semibold border ${highContrast ? 'bg-yellow-300 text-black' : 'bg-muted text-foreground'}`}
+            onClick={() => setHighContrast(v => !v)}
+            aria-label="Toggle high contrast mode"
+          >
+            {highContrast ? 'Normal Mode' : 'High Contrast'}
+          </button>
+        </div>
         <div className="mb-4 md:mb-6 flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
@@ -275,15 +303,23 @@ export default function Video() {
           ) : (
             filteredVideos.map(video => (
               <Card key={video.id} className="shadow-soft">
-                <CardHeader>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold flex items-center gap-1">
-                      <span>{curriculumInfo[selectedCurriculum].icon}</span> {selectedCurriculum}
-                    </span>
-                  </div>
-                  <CardTitle className="text-base md:text-lg">{video.title}</CardTitle>
-                  <div className="text-xs text-muted-foreground">{video.subject} | {video.grade}</div>
-                </CardHeader>
+            <CardHeader>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold flex items-center gap-1">
+                  <span>{curriculumInfo[selectedCurriculum].icon}</span> {selectedCurriculum}
+                </span>
+                {/* Accessibility: Text-to-speech button for video title/desc */}
+                <button
+                  className="ml-2 px-2 py-1 rounded bg-muted text-xs border hover:bg-accent"
+                  onClick={() => speak(`${video.title}. ${video.subject}, ${video.grade}, ${curriculumInfo[video.curriculum]?.description || ''}`)}
+                  aria-label="Read video description aloud"
+                >
+                  🔊
+                </button>
+              </div>
+              <CardTitle className="text-base md:text-lg">{video.title}</CardTitle>
+              <div className="text-xs text-muted-foreground">{video.subject} | {video.grade}</div>
+            </CardHeader>
                 <CardContent>
                   <div className="aspect-video rounded-lg overflow-hidden mb-2">
                     <iframe
