@@ -1,3 +1,42 @@
+// --- Parent Dashboard Helpers ---
+export const parentHelpers = {
+  // Fetch children (students) for a parent
+  async getChildren(parentId: string): Promise<UserProfile[]> {
+    const { data: links, error: linkErr } = await supabase
+      .from('parent_students')
+      .select('student_id')
+      .eq('parent_id', parentId);
+    if (linkErr || !links) return [];
+    const studentIds = links.map((l: { student_id: string }) => l.student_id);
+    if (!studentIds.length) return [];
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .in('id', studentIds);
+    if (error) return [];
+    return data || [];
+  },
+
+  // Fetch all assignments for a child
+  async getChildAssignments(studentId: string) {
+    return studentHelpers.getAssignments(studentId);
+  },
+
+  // Fetch all progress analytics for a child
+  async getChildProgress(studentId: string) {
+    return studentHelpers.getProgress(studentId);
+  },
+
+  // Fetch all classes for a child
+  async getChildClasses(studentId: string) {
+    return studentHelpers.getClasses(studentId);
+  },
+
+  // Fetch all learning materials for a child
+  async getChildMaterials(studentId: string) {
+    return studentHelpers.getLearningMaterials(studentId);
+  },
+};
 // --- Student Dashboard Helpers ---
 
 // Learning Materials
