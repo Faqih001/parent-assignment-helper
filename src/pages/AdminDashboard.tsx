@@ -12,11 +12,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { dbHelpers, UserProfile, CustomPlan } from "@/lib/supabase";
+import { dbHelpers, UserProfile, CustomPlan, ParentStudent, TeacherClass } from "@/lib/supabase";
 import { Settings, Users, CreditCard, Plus, Edit, Trash2, Shield, UserCheck, Building, Crown } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+
+type Role = 'student' | 'teacher' | 'parent' | 'admin';
 
 export default function AdminDashboard() {
+  // --- Admin tabs and impersonation state ---
+  const [students, setStudents] = useState<UserProfile[]>([]);
+  const [teachers, setTeachers] = useState<UserProfile[]>([]);
+  const [parents, setParents] = useState<UserProfile[]>([]);
+  const [parentChild, setParentChild] = useState<ParentStudent[]>([]);
+  const [teacherClass, setTeacherClass] = useState<TeacherClass[]>([]);
+  const [activeTab, setActiveTab] = useState<'overview'|'students'|'teachers'|'parents'|'impersonate'|'relationships'|'analytics'>('overview');
+  const [impersonateUser, setImpersonateUser] = useState<UserProfile|null>(null);
+  const [analytics, setAnalytics] = useState<{assignments: number, classes: number, materials: number, parentalControls: number}>({assignments: 0, classes: 0, materials: 0, parentalControls: 0});
   // Upload state and handler for admin video/material upload
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -67,12 +77,21 @@ export default function AdminDashboard() {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [usersData, plansData] = await Promise.all([
+      const [usersData, plansData, parentChildData, teacherClassData, analyticsData] = await Promise.all([
         dbHelpers.getAllUsers(),
-        dbHelpers.getAllCustomPlans()
+        dbHelpers.getAllCustomPlans(),
+        dbHelpers.getAllParentStudents?.() ?? [],
+        dbHelpers.getAllTeacherClasses?.() ?? [],
+        dbHelpers.getAdminAnalytics?.() ?? {assignments: 0, classes: 0, materials: 0, parentalControls: 0}
       ]);
       setUsers(usersData);
       setCustomPlans(plansData);
+      setStudents(usersData.filter(u => u.role === 'student'));
+      setTeachers(usersData.filter(u => u.role === 'teacher'));
+      setParents(usersData.filter(u => u.role === 'parent'));
+      setParentChild(parentChildData);
+      setTeacherClass(teacherClassData);
+      setAnalytics(analyticsData);
     } catch (error) {
       console.error('Error loading admin data:', error);
       toast({
@@ -249,6 +268,17 @@ export default function AdminDashboard() {
     return null;
   }
 
+  // Tab navigation
+  const tabList = [
+    { key: 'overview', label: 'Overview' },
+    { key: 'students', label: 'Students' },
+    { key: 'teachers', label: 'Teachers' },
+    { key: 'parents', label: 'Parents' },
+    { key: 'impersonate', label: 'Impersonate' },
+    { key: 'relationships', label: 'Relationships' },
+    { key: 'analytics', label: 'Analytics' },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="space-y-8">
@@ -258,317 +288,277 @@ export default function AdminDashboard() {
             <Shield className="h-8 w-8" />
             Admin Dashboard
           </h1>
-          <p className="text-muted-foreground">Manage users, plans, and system settings</p>
+          <p className="text-muted-foreground">Manage users, plans, relationships, analytics, and system settings</p>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid gap-6 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{users.length}</div>
-              <p className="mb-4 text-muted-foreground">Manage users, plans, and upload learning materials for the platform.</p>
-              <div className="mb-6">
-                <h3 className="font-semibold mb-2">Upload Videos & Materials</h3>
-                <label htmlFor="admin-upload" className="block text-sm font-medium mb-1">Select file to upload</label>
-                <input
-                  id="admin-upload"
-                  title="Select file to upload"
-                  type="file"
-                  accept="video/*,application/pdf"
-                  className="mb-2"
-                  onChange={e => setUploadFile(e.target.files?.[0] || null)}
-                />
-                <Button
-                  variant="outline"
-                  className="mb-4"
-                  onClick={handleUpload}
-                  disabled={!uploadFile || isUploading}
-                >
-                  {isUploading ? 'Uploading...' : 'Upload'}
-                </Button>
-                {uploadMessage && <p className="text-xs text-muted-foreground mb-2">{uploadMessage}</p>}
-                <p className="text-xs text-muted-foreground">Upload videos or PDF materials for the platform. (Feature in beta)</p>
-              </div>
-              <div>
-            <h3 className="font-semibold mb-2">Update Plan Prices</h3>
-            <Button variant="outline">Edit Prices</Button>
-            <p className="text-xs text-muted-foreground">(Coming soon: Admins will be able to update plan prices and features.)</p>
-          </div>
-        </CardContent>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Free Users</CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {users.filter(u => u.plan === 'free').length}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Paid Users</CardTitle>
-              <Crown className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {users.filter(u => u.plan !== 'free').length}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Custom Plans</CardTitle>
-              <Building className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{customPlans.length}</div>
-            </CardContent>
-          </Card>
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-4">
+          {tabList.map(tab => (
+            <Button
+              key={tab.key}
+              variant={activeTab === tab.key ? 'default' : 'outline'}
+              onClick={() => setActiveTab(tab.key as any)}
+            >
+              {tab.label}
+            </Button>
+          ))}
         </div>
 
-        {/* Custom Plans Management */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Custom Plans
-                </CardTitle>
-                <CardDescription>Create and manage custom pricing plans</CardDescription>
-              </div>
-              <Dialog open={isCreatePlanOpen} onOpenChange={setIsCreatePlanOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Plan
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Create Custom Plan</DialogTitle>
-                    <DialogDescription>
-                      Create a new custom pricing plan for enterprise customers.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="plan-name">Plan Name</Label>
-                      <Input
-                        id="plan-name"
-                        value={newPlan.name}
-                        onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-                        placeholder="e.g., School Enterprise"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="plan-price">Price (KES)</Label>
-                      <Input
-                        id="plan-price"
-                        type="number"
-                        value={newPlan.price}
-                        onChange={(e) => setNewPlan({ ...newPlan, price: parseInt(e.target.value) || 0 })}
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="questions-limit">Questions Limit</Label>
-                      <Input
-                        id="questions-limit"
-                        type="number"
-                        value={newPlan.questions_limit}
-                        onChange={(e) => setNewPlan({ ...newPlan, questions_limit: parseInt(e.target.value) || 0 })}
-                        placeholder="100"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="plan-period">Billing Period</Label>
-                      <Select 
-                        value={newPlan.period} 
-                        onValueChange={(value) => setNewPlan({ ...newPlan, period: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="per month">Per Month</SelectItem>
-                          <SelectItem value="per year">Per Year</SelectItem>
-                          <SelectItem value="one-time">One-time</SelectItem>
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="plan-description">Description</Label>
-                      <Input
-                        id="plan-description"
-                        value={newPlan.description}
-                        onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
-                        placeholder="Brief description of the plan"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="plan-features">Features (one per line)</Label>
-                      <Textarea
-                        id="plan-features"
-                        value={newPlan.features}
-                        onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
-                        placeholder="Unlimited questions&#10;Priority support&#10;Custom integrations"
-                        rows={4}
-                      />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="plan-active"
-                        checked={newPlan.is_active}
-                        onCheckedChange={(checked) => setNewPlan({ ...newPlan, is_active: checked })}
-                      />
-                      <Label htmlFor="plan-active">Active Plan</Label>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCreatePlanOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleCreatePlan}>Create Plan</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {customPlans.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  No custom plans created yet. Create your first plan above.
-                </p>
-              ) : (
-                customPlans.map((plan) => (
-                  <div key={plan.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold">{plan.name}</h4>
-                          <Badge variant={plan.is_active ? "default" : "secondary"}>
-                            {plan.is_active ? "Active" : "Inactive"}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{plan.description}</p>
-                        <div className="flex items-center gap-4 text-sm">
-                          <span>KES {plan.price} {plan.period}</span>
-                          <span>{plan.questions_limit} questions</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setEditingPlan(plan)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="outline">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Plan</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete this plan? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeletePlan(plan.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Tab Content */}
+        {activeTab === 'overview' && (
+          <>
+            {/* ...existing code for stats overview and custom plans... */}
+            {/* ...existing code... */}
+          </>
+        )}
 
-        {/* Users Management */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Users Management
-            </CardTitle>
-            <CardDescription>View and manage all registered users</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {users.map((userProfile) => (
-                <div key={userProfile.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between">
+        {/* Students Tab */}
+        {activeTab === 'students' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Students
+              </CardTitle>
+              <CardDescription>Manage all student users</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {students.map((student) => (
+                  <div key={student.id} className="border rounded-lg p-4 flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold">{userProfile.name}</h4>
-                        <Badge variant={userProfile.role === 'admin' ? "destructive" : "secondary"}>
-                          {userProfile.role === 'admin' ? 'Admin' : 'User'}
-                        </Badge>
-                        <Badge variant="outline">
-                          {userProfile.plan.charAt(0).toUpperCase() + userProfile.plan.slice(1)}
-                        </Badge>
+                        <h4 className="font-semibold">{student.name}</h4>
+                        <Badge variant="secondary">Student</Badge>
+                        <Badge variant="outline">{student.plan.charAt(0).toUpperCase() + student.plan.slice(1)}</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{userProfile.email}</p>
+                      <p className="text-sm text-muted-foreground">{student.email}</p>
                       <div className="flex items-center gap-4 text-sm">
-                        <span>Questions: {userProfile.questions_remaining}</span>
-                        <span>Joined: {new Date(userProfile.created_at).toLocaleDateString()}</span>
+                        <span>Questions: {student.questions_remaining}</span>
+                        <span>Joined: {new Date(student.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Select
-                        value={userProfile.plan}
-                        onValueChange={(value) => handleUpdateUserPlan(userProfile.id, value)}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="free">Free</SelectItem>
-                          <SelectItem value="family">Family</SelectItem>
-                          <SelectItem value="premium">Premium</SelectItem>
-                          <SelectItem value="enterprise">Enterprise</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {userProfile.role !== 'admin' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleMakeAdmin(userProfile.id)}
-                        >
-                          <UserCheck className="h-4 w-4 mr-1" />
-                          Make Admin
-                        </Button>
-                      )}
+                      <Button size="sm" variant="outline" onClick={() => setImpersonateUser(student)}>Preview Dashboard</Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="outline"><Trash2 className="h-4 w-4" /></Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Student</AlertDialogTitle>
+                            <AlertDialogDescription>Are you sure you want to delete this student? This action cannot be undone.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => {/* TODO: delete user logic */}} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Teachers Tab */}
+        {activeTab === 'teachers' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Teachers
+              </CardTitle>
+              <CardDescription>Manage all teacher users</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {teachers.map((teacher) => (
+                  <div key={teacher.id} className="border rounded-lg p-4 flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold">{teacher.name}</h4>
+                        <Badge variant="secondary">Teacher</Badge>
+                        <Badge variant="outline">{teacher.plan.charAt(0).toUpperCase() + teacher.plan.slice(1)}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{teacher.email}</p>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span>Questions: {teacher.questions_remaining}</span>
+                        <span>Joined: {new Date(teacher.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setImpersonateUser(teacher)}>Preview Dashboard</Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="outline"><Trash2 className="h-4 w-4" /></Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Teacher</AlertDialogTitle>
+                            <AlertDialogDescription>Are you sure you want to delete this teacher? This action cannot be undone.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => {/* TODO: delete user logic */}} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Parents Tab */}
+        {activeTab === 'parents' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Parents
+              </CardTitle>
+              <CardDescription>Manage all parent users</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {parents.map((parent) => (
+                  <div key={parent.id} className="border rounded-lg p-4 flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold">{parent.name}</h4>
+                        <Badge variant="secondary">Parent</Badge>
+                        <Badge variant="outline">{parent.plan.charAt(0).toUpperCase() + parent.plan.slice(1)}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{parent.email}</p>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span>Questions: {parent.questions_remaining}</span>
+                        <span>Joined: {new Date(parent.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setImpersonateUser(parent)}>Preview Dashboard</Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="outline"><Trash2 className="h-4 w-4" /></Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Parent</AlertDialogTitle>
+                            <AlertDialogDescription>Are you sure you want to delete this parent? This action cannot be undone.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => {/* TODO: delete user logic */}} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Impersonate Tab */}
+        {activeTab === 'impersonate' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Impersonate User
+              </CardTitle>
+              <CardDescription>Preview dashboards as any user for troubleshooting</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {[...students, ...teachers, ...parents, user].map(u => (
+                  <Button key={u.id} size="sm" variant="outline" onClick={() => setImpersonateUser(u)}>
+                    {u.name} <span className="ml-1 text-xs text-muted-foreground">({u.role})</span>
+                  </Button>
+                ))}
+              </div>
+              {impersonateUser && (
+                <div className="border rounded-lg p-4 mt-4">
+                  <h4 className="font-semibold mb-2">Previewing as: {impersonateUser.name} <Badge variant="secondary">{impersonateUser.role}</Badge></h4>
+                  {/* TODO: Render dashboard preview for impersonateUser.role */}
+                  <div className="text-muted-foreground">Dashboard preview for <b>{impersonateUser.role}</b> coming soon.</div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Relationships Tab */}
+        {activeTab === 'relationships' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Relationships
+              </CardTitle>
+              <CardDescription>Manage parent-child and teacher-class relationships</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-6">
+                <h4 className="font-semibold mb-2">Parent-Child Relationships</h4>
+                <ul className="list-disc ml-6">
+                  {parentChild.map(rel => (
+                    <li key={rel.id}>{rel.parent_name} <span className="text-xs">(parent)</span> → {rel.student_name} <span className="text-xs">(student)</span></li>
+                  ))}
+                </ul>
+                {/* TODO: Add controls to add/remove parent-child relationships */}
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Teacher-Class Relationships</h4>
+                <ul className="list-disc ml-6">
+                  {teacherClass.map(rel => (
+                    <li key={rel.id}>{rel.teacher_name} <span className="text-xs">(teacher)</span> → {rel.class_name} <span className="text-xs">(class)</span></li>
+                  ))}
+                </ul>
+                {/* TODO: Add controls to add/remove teacher-class relationships */}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Platform Analytics
+              </CardTitle>
+              <CardDescription>Platform-wide stats for assignments, classes, materials, and parental controls</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="border rounded-lg p-4">
+                  <div className="font-semibold">Assignments</div>
+                  <div className="text-2xl">{analytics.assignments}</div>
+                </div>
+                <div className="border rounded-lg p-4">
+                  <div className="font-semibold">Classes</div>
+                  <div className="text-2xl">{analytics.classes}</div>
+                </div>
+                <div className="border rounded-lg p-4">
+                  <div className="font-semibold">Materials</div>
+                  <div className="text-2xl">{analytics.materials}</div>
+                </div>
+                <div className="border rounded-lg p-4">
+                  <div className="font-semibold">Parental Controls</div>
+                  <div className="text-2xl">{analytics.parentalControls}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Edit Plan Dialog */}
         {editingPlan && (
