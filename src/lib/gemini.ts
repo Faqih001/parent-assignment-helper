@@ -50,16 +50,63 @@ export class GeminiService {
         operation = await ai.operations.getVideosOperation({ operation });
       }
 
-      // Get the video file URL (assuming the API returns a downloadable URL)
-      const videoFile = operation.response.generatedVideos[0].video;
-      // If the API provides a direct URL, return it. If not, you may need to download and host it, or return a blob URL.
-      // For now, return the file URL for embedding in an <iframe> or <video> tag
-      return videoFile;
+      // Robustly handle the returned video file (URL, Blob, or base64)
+      // The Gemini API may return a string (URL or base64), Blob, or an object with data/mimeType
+      const videoFile: unknown = operation.response.generatedVideos[0].video;
+
+      // If it's a direct URL (http/https), return as is
+      if (typeof videoFile === 'string' && videoFile.startsWith('http')) {
+        return videoFile;
+      }
+
+      // If it's a base64 string, convert to Blob and return a blob URL
+      if (typeof videoFile === 'string' && /^[A-Za-z0-9+/=]+$/.test(videoFile)) {
+        // Try to detect mime type (default to mp4)
+        const mimeType = 'video/mp4';
+        const byteCharacters = atob(videoFile);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mimeType });
+        return URL.createObjectURL(blob);
+      }
+
+      // If it's a Blob (unlikely from API, but for completeness)
+      if (videoFile instanceof Blob) {
+        return URL.createObjectURL(videoFile);
+      }
+
+      // If it's an object with a data property (e.g., { data: base64, mimeType })
+      if (
+        typeof videoFile === 'object' &&
+        videoFile !== null &&
+        'data' in videoFile &&
+        typeof (videoFile as { data: unknown }).data === 'string'
+      ) {
+        const mimeType =
+          'mimeType' in videoFile && typeof (videoFile as { mimeType?: unknown }).mimeType === 'string'
+            ? (videoFile as { mimeType: string }).mimeType
+            : 'video/mp4';
+        const base64 = (videoFile as { data: string }).data;
+        const byteCharacters = atob(base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mimeType });
+        return URL.createObjectURL(blob);
+      }
+
+      throw new Error('Unknown video file format returned from Gemini API.');
     } catch (error) {
       console.error('Failed to generate AI video:', error);
       throw new Error('Failed to generate AI video. Please try again.');
     }
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private chat: any = null;
 
   /**
