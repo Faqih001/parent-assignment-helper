@@ -22,7 +22,10 @@ interface Message {
   image?: string;
 }
 
-export default function Chat() {
+  // Accessibility: high-contrast mode
+  const [highContrast, setHighContrast] = useState(false);
+  // Accessibility: text-to-speech
+  const ttsRef = useRef<SpeechSynthesisUtterance | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -397,9 +400,31 @@ Let's start learning together! 📚✨`,
     );
   }
 
+  // Accessibility: text-to-speech for AI answers
+  const speak = (text: string) => {
+    if (window.speechSynthesis) {
+      if (ttsRef.current) window.speechSynthesis.cancel();
+      const utter = new window.SpeechSynthesisUtterance(text);
+      ttsRef.current = utter;
+      window.speechSynthesis.speak(utter);
+    }
+  };
+
   return (
-    <div className="min-h-screen-mobile bg-gradient-to-br from-background to-accent">
+    <div className={
+      `min-h-screen-mobile bg-gradient-to-br from-background to-accent ${highContrast ? 'contrast-150 bg-black text-yellow-200' : ''}`
+    }>
       <div className="container mx-auto px-4 py-4 md:py-8 min-h-screen-safe flex flex-col max-w-4xl min-h-[calc(100vh-4rem)]">
+        {/* Accessibility: High Contrast Toggle */}
+        <div className="flex justify-end mb-2">
+          <button
+            className={`px-3 py-1 rounded text-xs font-semibold border ${highContrast ? 'bg-yellow-300 text-black' : 'bg-muted text-foreground'}`}
+            onClick={() => setHighContrast(v => !v)}
+            aria-label="Toggle high contrast mode"
+          >
+            {highContrast ? 'Normal Mode' : 'High Contrast'}
+          </button>
+        </div>
         {/* Header */}
         <div className="mb-4 md:mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -544,6 +569,14 @@ Let's start learning together! 📚✨`,
                           <span className="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold">
                             {curriculum}
                           </span>
+                          {/* Accessibility: Text-to-speech button for AI answer */}
+                          <button
+                            className="ml-2 px-2 py-1 rounded bg-muted text-xs border hover:bg-accent"
+                            onClick={() => speak(message.content)}
+                            aria-label="Read answer aloud"
+                          >
+                            🔊
+                          </button>
                         </div>
                         <FormattedMessage 
                           content={message.content} 
