@@ -428,36 +428,35 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 7. Success Stories */}
-      <section className="py-20 relative">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-fixed bg-family-study"
-        >
+      {/* 7. Impact Stories (expanded) */}
+      <section id="impact-stories" className="py-20 relative">
+        <div className="absolute inset-0 bg-cover bg-center bg-fixed bg-family-study">
           <div className="absolute inset-0 bg-primary/90"></div>
         </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center space-y-4 mb-16 text-white animate-fade-in">
-            <h2 className="text-3xl lg:text-4xl font-bold">Success Stories</h2>
-            <p className="text-xl opacity-90">Real transformations from Kenyan families</p>
+            <h2 className="text-3xl lg:text-4xl font-bold flex items-center justify-center gap-2">
+              <Award className="h-7 w-7 text-yellow-300" /> Impact Stories
+            </h2>
+            <p className="text-xl opacity-90">Real transformations from Kenyan families and sponsored schools</p>
           </div>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
                 title: "From F to A in Mathematics",
-                description: "12-year-old Kevin improved from failing math to getting As within 3 months",
+                description: "12-year-old Kevin improved from failing math to getting As within 3 months, thanks to a sponsored subscription.",
                 metric: "Grade improvement: F → A",
                 family: "The Wanjiku Family"
               },
               {
                 title: "Homework Time Reduced by 70%",
-                description: "What used to take 3 hours now takes just 45 minutes with better understanding",
+                description: "What used to take 3 hours now takes just 45 minutes with better understanding. Sponsored by a local NGO.",
                 metric: "Time saved: 2+ hours daily",
                 family: "The Ochieng Family"
               },
               {
                 title: "Confidence Boost",
-                description: "Shy student now actively participates in class and asks questions confidently",
+                description: "Shy student now actively participates in class and asks questions confidently. Supported by a school partnership.",
                 metric: "Participation: 0% → 85%",
                 family: "The Mwangi Family"
               }
@@ -471,6 +470,11 @@ export default function Home() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+          <div className="text-center mt-12 animate-fade-in">
+            <Button asChild size="lg" variant="hero">
+              <a href="mailto:partnerships@homeworkhelper.co.ke?subject=Sponsor Impact Story">Sponsor a Family or School</a>
+            </Button>
           </div>
         </div>
       </section>
@@ -512,6 +516,52 @@ export default function Home() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 8.5 Sponsorship & Partnership CTA */}
+      <section className="py-20 bg-gradient-to-br from-pink-100/60 to-blue-100/60">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+          <div className="text-center space-y-4 mb-10 animate-fade-in">
+            <h2 className="text-3xl lg:text-4xl font-bold flex items-center justify-center gap-2">
+              <span className="inline-flex items-center gap-2"><Heart className="h-7 w-7 text-pink-500" /> Sponsor a Family or School</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              NGOs, companies, and individuals can sponsor HomeworkHelper access for families, schools, or communities. Your support helps bridge the education gap and empowers learners.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-white/90 rounded-xl shadow-soft p-8 space-y-4">
+              <h3 className="text-xl font-semibold flex items-center gap-2"><Users className="h-6 w-6 text-primary" /> Why Sponsor?</h3>
+              <ul className="list-disc pl-6 text-muted-foreground text-base space-y-1">
+                <li>Fully or partially sponsor subscriptions for families or schools</li>
+                <li>Get impact reports and testimonials from beneficiaries</li>
+                <li>Branding and partnership opportunities</li>
+                <li>Flexible sponsorship packages (monthly, annual, or custom)</li>
+              </ul>
+              <div className="flex gap-4 mt-6">
+                <Button asChild size="lg" variant="hero">
+                  <a href="mailto:partnerships@homeworkhelper.co.ke?subject=Sponsorship Inquiry">Contact Us</a>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <a href="#impact-stories">See Impact Stories</a>
+                </Button>
+              </div>
+            </div>
+            <div className="bg-white/90 rounded-xl shadow-soft p-8 space-y-4">
+              <h3 className="text-xl font-semibold flex items-center gap-2"><Building className="h-6 w-6 text-blue-500" /> For Organizations & CSR</h3>
+              <ul className="list-disc pl-6 text-muted-foreground text-base space-y-1">
+                <li>Bulk sponsorships for schools or regions</li>
+                <li>Co-branded campaigns and reporting</li>
+                <li>Employee engagement and volunteering</li>
+              </ul>
+              <div className="mt-6">
+                <Button asChild size="lg" variant="outline">
+                  <a href="mailto:partnerships@homeworkhelper.co.ke?subject=CSR Partnership">Partner With Us</a>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
