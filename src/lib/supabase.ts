@@ -1,3 +1,163 @@
+// --- Student Dashboard Helpers ---
+
+// Learning Materials
+export interface LearningMaterial {
+  id: string;
+  title: string;
+  description: string;
+  file_url: string;
+  uploaded_by: string;
+  class_id?: string;
+  is_public: boolean;
+  created_at: string;
+}
+
+// Assignment
+export interface Assignment {
+  id: string;
+  title: string;
+  description: string;
+  due_date: string;
+  class_id: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface StudentAssignment {
+  id: string;
+  assignment_id: string;
+  student_id: string;
+  status: 'pending' | 'completed' | 'overdue';
+  completed_at?: string;
+}
+
+// Achievement Badge
+export interface AchievementBadge {
+  id: string;
+  user_id: string;
+  badge_type: string;
+  awarded_at: string;
+  description: string;
+}
+
+// Class Info
+export interface ClassInfo {
+  id: string;
+  name: string;
+  teacher_id: string;
+  created_at: string;
+}
+
+export const studentHelpers = {
+  // Fetch learning materials for student (public or for their classes)
+  async getLearningMaterials(studentId: string): Promise<LearningMaterial[]> {
+    // Get class IDs for student
+    const { data: classLinks, error: classErr } = await supabase
+      .from('class_students')
+      .select('class_id')
+      .eq('student_id', studentId);
+    if (classErr) return [];
+    const classIds = (classLinks || []).map((c: { class_id: string }) => c.class_id);
+    // Fetch public or class-specific materials
+    const { data, error } = await supabase
+      .from('learning_materials')
+      .select('*')
+      .or([
+        'is_public.eq.true',
+        classIds.length > 0 ? `class_id.in.(${classIds.join(',')})` : ''
+      ].filter(Boolean).join(','))
+      .order('created_at', { ascending: false });
+    if (error) return [];
+    return data || [];
+  },
+
+  // Fetch assignments for student (with status)
+  async getAssignments(studentId: string): Promise<(Assignment & { status: string; completed_at?: string })[]> {
+    // Get all assignments for student's classes
+    const { data: classLinks, error: classErr } = await supabase
+      .from('class_students')
+      .select('class_id')
+      .eq('student_id', studentId);
+    if (classErr) return [];
+    const classIds = (classLinks || []).map((c: { class_id: string }) => c.class_id);
+    if (!classIds.length) return [];
+    // Get assignments for these classes
+    const { data: assignments, error: assignErr } = await supabase
+      .from('assignments')
+      .select('*')
+      .in('class_id', classIds)
+      .order('due_date', { ascending: true });
+    if (assignErr) return [];
+    // Get student assignment status
+    const { data: statuses, error: statusErr } = await supabase
+      .from('class_students_assignments')
+      .select('*')
+      .eq('student_id', studentId);
+    if (statusErr) return [];
+    // Merge status into assignments
+    return (assignments || []).map((a: Assignment) => {
+      const found = (statuses || []).find((s: StudentAssignment) => s.assignment_id === a.id);
+      return {
+        ...a,
+        status: found?.status || 'pending',
+        completed_at: found?.completed_at
+      };
+    });
+  },
+
+  // Mark assignment as complete
+  async completeAssignment(studentId: string, assignmentId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('class_students_assignments')
+      .upsert({
+        student_id: studentId,
+        assignment_id: assignmentId,
+        status: 'completed',
+        completed_at: new Date().toISOString()
+      }, { onConflict: ['student_id', 'assignment_id'] });
+    return !error;
+  },
+
+  // Fetch progress analytics (usage_analytics)
+  async getProgress(studentId: string): Promise<UsageAnalytics[]> {
+    const { data, error } = await supabase
+      .from('usage_analytics')
+      .select('*')
+      .eq('user_id', studentId)
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) return [];
+    return data || [];
+  },
+
+  // Fetch achievement badges
+  async getBadges(studentId: string): Promise<AchievementBadge[]> {
+    const { data, error } = await supabase
+      .from('achievement_badges')
+      .select('*')
+      .eq('user_id', studentId)
+      .order('awarded_at', { ascending: false });
+    if (error) return [];
+    return data || [];
+  },
+
+  // Fetch class info for student
+  async getClasses(studentId: string): Promise<ClassInfo[]> {
+    const { data: classLinks, error: classErr } = await supabase
+      .from('class_students')
+      .select('class_id')
+      .eq('student_id', studentId);
+    if (classErr) return [];
+    const classIds = (classLinks || []).map((c: { class_id: string }) => c.class_id);
+    if (!classIds.length) return [];
+    const { data, error } = await supabase
+      .from('classes')
+      .select('*')
+      .in('id', classIds);
+    if (error) return [];
+    return data || [];
+  }
+};
 import { createClient } from '@supabase/supabase-js';
 import { env } from './env';
 
@@ -123,7 +283,7 @@ export interface UsageAnalytics {
   id: string;
   user_id: string;
   action_type: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   session_id?: string;
   ip_address?: string;
   user_agent?: string;
@@ -296,7 +456,7 @@ export const dbHelpers = {
   },
 
   async getChatMessages(userId: string, sessionId?: string): Promise<ChatMessage[]> {
-    let query = supabase
+    const query = supabase
       .from('chat_messages')
       .select('*')
       .eq('user_id', userId)
@@ -447,7 +607,7 @@ export const dbHelpers = {
   },
 
   async updateUserPlan(userId: string, plan: string, questionsLimit?: number): Promise<boolean> {
-    const updates: any = { 
+    const updates: { plan: string; updated_at: string; questions_remaining?: number } = { 
       plan, 
       updated_at: new Date().toISOString() 
     };
@@ -656,7 +816,7 @@ export const dbHelpers = {
   async logUserActivity(
     userId: string, 
     actionType: string, 
-    metadata?: any,
+    metadata?: Record<string, unknown>,
     sessionId?: string
   ): Promise<boolean> {
     const { error } = await supabase
