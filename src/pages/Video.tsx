@@ -21,12 +21,25 @@ const grades = [
 const subjects = [
   "All Subjects", "Mathematics", "Science", "English", "Kiswahili", "Social Studies", "Physics", "Chemistry", "Biology", "Geography", "History", "Other"
 ];
+const languages = [
+  "English",
+  "Swahili",
+  "Hausa",
+  "Kikuyu",
+  "Kalenjin",
+  "Somali",
+  "Mijikenda"
+];
+const curricula = ["CBC", "WAEC", "NECTA"];
 
 export default function Video() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedGrade, setSelectedGrade] = useState("All Grades");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
+  const [selectedLanguage, setSelectedLanguage] = useState("English");
+  const [selectedCurriculum, setSelectedCurriculum] = useState("CBC");
+  const [liteMode, setLiteMode] = useState(false);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [aiVideoUrl, setAiVideoUrl] = useState<string | null>(null);
@@ -47,7 +60,10 @@ export default function Video() {
       const videoUrl = await geminiService.generateVideo({
         prompt: input,
         grade: selectedGrade,
-        subject: selectedSubject
+        subject: selectedSubject,
+        language: selectedLanguage,
+        curriculum: selectedCurriculum,
+        liteMode
       });
       setAiVideoUrl(videoUrl);
       setAiVideoTitle(input);
@@ -108,6 +124,38 @@ export default function Video() {
                   className="min-h-[60px] md:min-h-[80px] max-h-32 resize-none w-full border rounded-md p-2 text-sm"
                   disabled={isLoading}
                 />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <div>
+                    <Label htmlFor="video-language" className="text-xs">Language</Label>
+                    <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                      <SelectTrigger className="w-28 h-8 text-xs">
+                        <SelectValue placeholder="Language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {languages.map((lang) => (
+                          <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="video-curriculum" className="text-xs">Curriculum</Label>
+                    <Select value={selectedCurriculum} onValueChange={setSelectedCurriculum}>
+                      <SelectTrigger className="w-24 h-8 text-xs">
+                        <SelectValue placeholder="Curriculum" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {curricula.map((cur) => (
+                          <SelectItem key={cur} value={cur}>{cur}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center">
+                    <input type="checkbox" id="video-lite-mode" checked={liteMode} onChange={() => setLiteMode(v => !v)} className="mr-1" title="Enable Lite Mode" />
+                    <Label htmlFor="video-lite-mode" className="text-xs">Lite Mode</Label>
+                  </div>
+                </div>
               </div>
               <Button
                 onClick={handleGenerateVideo}

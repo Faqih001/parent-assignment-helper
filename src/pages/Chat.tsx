@@ -33,15 +33,21 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(false);
   const [isAiInitialized, setIsAiInitialized] = useState(false);
   const [language, setLanguage] = useState("English");
+  const [curriculum, setCurriculum] = useState("CBC");
+  const [liteMode, setLiteMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const languages = [
     "English",
+    "Swahili",
+    "Hausa",
     "Kikuyu",
     "Kalenjin",
     "Somali",
     "Mijikenda"
   ];
+
+  const curricula = ["CBC", "WAEC", "NECTA"];
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -194,12 +200,14 @@ Let's start learning together! 📚✨`,
 
 
       // Pass language to AI backend
-      const homeworkQuestion: HomeworkQuestion & { language?: string } = {
-        subject: currentSubject,
-        grade: currentGrade,
-        question: currentInput,
-        language: currentLanguage
-      };
+    const homeworkQuestion: HomeworkQuestion & { language?: string; curriculum?: string; liteMode?: boolean } = {
+      subject: currentSubject,
+      grade: currentGrade,
+      question: currentInput,
+      language: currentLanguage,
+      curriculum,
+      liteMode
+    };
 
       // Only pass the homeworkQuestion object (language is included as a property)
       const response = await geminiService.askHomeworkQuestion(homeworkQuestion);
@@ -415,12 +423,12 @@ Let's start learning together! 📚✨`,
           </div>
         </div>
 
-        {/* Language, Subject and Grade Selection */}
-        <div className="mb-4 md:mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+        {/* Language, Curriculum, Subject and Grade Selection */}
+        <div className="mb-4 md:mb-6 grid grid-cols-1 sm:grid-cols-4 gap-3 md:gap-4">
           <div className="space-y-2">
             <Label htmlFor="language" className="flex items-center text-sm font-medium">
               <BookOpen className="h-4 w-4 mr-1" />
-              Answer Language
+              Language
             </Label>
             <Select value={language} onValueChange={setLanguage}>
               <SelectTrigger>
@@ -428,14 +436,27 @@ Let's start learning together! 📚✨`,
               </SelectTrigger>
               <SelectContent>
                 {languages.map((lang) => (
-                  <SelectItem key={lang} value={lang}>
-                    {lang}
-                  </SelectItem>
+                  <SelectItem key={lang} value={lang}>{lang}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-
+          <div className="space-y-2">
+            <Label htmlFor="curriculum" className="flex items-center text-sm font-medium">
+              <BookOpen className="h-4 w-4 mr-1" />
+              Curriculum
+            </Label>
+            <Select value={curriculum} onValueChange={setCurriculum}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select curriculum..." />
+              </SelectTrigger>
+              <SelectContent>
+                {curricula.map((cur) => (
+                  <SelectItem key={cur} value={cur}>{cur}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="subject" className="flex items-center text-sm font-medium">
               <BookOpen className="h-4 w-4 mr-1" />
@@ -447,14 +468,11 @@ Let's start learning together! 📚✨`,
               </SelectTrigger>
               <SelectContent>
                 {subjects.map((subj) => (
-                  <SelectItem key={subj} value={subj}>
-                    {subj}
-                  </SelectItem>
+                  <SelectItem key={subj} value={subj}>{subj}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="grade" className="flex items-center text-sm font-medium">
               <GraduationCap className="h-4 w-4 mr-1" />
@@ -466,13 +484,17 @@ Let's start learning together! 📚✨`,
               </SelectTrigger>
               <SelectContent>
                 {grades.map((gr) => (
-                  <SelectItem key={gr} value={gr}>
-                    {gr}
-                  </SelectItem>
+                  <SelectItem key={gr} value={gr}>{gr}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        {/* Lite Mode Toggle */}
+        <div className="mb-4 flex items-center gap-2">
+          <input type="checkbox" id="lite-mode" checked={liteMode} onChange={() => setLiteMode(v => !v)} className="mr-2" title="Enable Lite Mode" />
+          <Label htmlFor="lite-mode" className="text-xs">Lite Mode (Faster, less data, minimal UI)</Label>
         </div>
 
         {/* Sample Questions */}
