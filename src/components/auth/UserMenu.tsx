@@ -127,6 +127,42 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
             </DropdownMenuItem>
           </>
         )}
+        {user.role === 'parent' && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className="cursor-pointer hover:bg-accent"
+              onClick={() => navigate('/parent-dashboard')}
+            >
+              <User className="mr-2 h-4 w-4" />
+              <span>Parent Dashboard</span>
+            </DropdownMenuItem>
+          </>
+        )}
+        {user.role === 'teacher' && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className="cursor-pointer hover:bg-accent"
+              onClick={() => navigate('/teacher-dashboard')}
+            >
+              <User className="mr-2 h-4 w-4" />
+              <span>Teacher Dashboard</span>
+            </DropdownMenuItem>
+          </>
+        )}
+        {user.role === 'student' && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className="cursor-pointer hover:bg-accent"
+              onClick={() => navigate('/student-dashboard')}
+            >
+              <User className="mr-2 h-4 w-4" />
+              <span>Student Dashboard</span>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
