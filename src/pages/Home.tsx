@@ -262,7 +262,7 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <div key={index} className={`text-center animate-fade-in animation-delay-${index}`}>
                 <div className="mb-4 flex justify-center">
                   <div className="h-12 w-12 bg-gradient-primary rounded-lg flex items-center justify-center">
                     <stat.icon className="h-6 w-6 text-white" />
@@ -376,7 +376,7 @@ export default function Home() {
                 icon: Users
               }
             ].map((item, index) => (
-              <div key={index} className="text-center space-y-4 animate-slide-up" style={{ animationDelay: `${index * 0.2}s` }}>
+              <div key={index} className={`text-center space-y-4 animate-slide-up animation-delay-step-${index}`}>
                 <div className="h-20 w-20 bg-gradient-secondary rounded-full flex items-center justify-center mx-auto text-2xl font-bold text-white shadow-medium">
                   {item.step}
                 </div>
@@ -431,8 +431,7 @@ export default function Home() {
       {/* 7. Success Stories */}
       <section className="py-20 relative">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-fixed"
-          style={{ backgroundImage: `url(${familyStudy})` }}
+          className="absolute inset-0 bg-cover bg-center bg-fixed bg-family-study"
         >
           <div className="absolute inset-0 bg-primary/90"></div>
         </div>
@@ -790,8 +789,7 @@ export default function Home() {
       <section className="py-20 bg-gradient-hero relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{ backgroundImage: `url(${celebration})` }}
+          className="absolute inset-0 bg-cover bg-center opacity-30 bg-celebration"
         ></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="space-y-6 text-white max-w-3xl mx-auto animate-fade-in">
