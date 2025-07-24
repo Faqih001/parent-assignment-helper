@@ -40,6 +40,16 @@ export default function TeacherDashboard() {
   const [classes, setClasses] = useState<ClassInfo[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [progress, setProgress] = useState<UsageAnalytics[]>([]);
+  const [analyticsByClass, setAnalyticsByClass] = useState<Record<string, UsageAnalytics[]>>({});
+  const [showAnalytics, setShowAnalytics] = useState<string | null>(null);
+  // Assignment creation state
+  const [newAssignment, setNewAssignment] = useState({
+    title: "",
+    description: "",
+    due_date: "",
+    class_id: ""
+  });
+  const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -59,6 +69,12 @@ export default function TeacherDashboard() {
       setMaterials(m);
       setClasses(c);
       setProgress(p);
+      // Deeper analytics: group by class
+      const byClass: Record<string, UsageAnalytics[]> = {};
+      c.forEach(cls => {
+        byClass[cls.id] = p.filter(a => a.metadata && a.metadata.class_id === cls.id);
+      });
+      setAnalyticsByClass(byClass);
       setLoading(false);
     });
     // Fetch assignments created by this teacher
@@ -71,6 +87,31 @@ export default function TeacherDashboard() {
         if (!error && data) setAssignments(data);
       });
   }, [user?.id]);
+
+  // Assignment creation handler
+  async function handleCreateAssignment() {
+    if (!user?.id || !newAssignment.title || !newAssignment.class_id) return;
+    setCreating(true);
+    const { error } = await supabase
+      .from('assignments')
+      .insert({
+        title: newAssignment.title,
+        description: newAssignment.description,
+        due_date: newAssignment.due_date,
+        class_id: newAssignment.class_id,
+        created_by: user.id
+      });
+    if (!error) {
+      setNewAssignment({ title: "", description: "", due_date: "", class_id: "" });
+      // Refresh assignments
+      const { data, error: fetchErr } = await supabase
+        .from('assignments')
+        .select('*')
+        .eq('created_by', user.id);
+      if (!fetchErr && data) setAssignments(data);
+    }
+    setCreating(false);
+  }
 
   const handleUpload = async () => {
     if (!user?.id || !file || !title) return;
@@ -161,8 +202,48 @@ export default function TeacherDashboard() {
             )}
           </div>
 
-          {/* Assignments Management (list only) */}
+          {/* Assignment Creation & Management */}
           <div className="mb-8">
+            <h3 className="font-semibold mb-2">Create Assignment</h3>
+            <div className="flex flex-col md:flex-row md:items-end gap-2 mb-4">
+              <input
+                type="text"
+                placeholder="Title"
+                title="Assignment Title"
+                className="border rounded px-2 py-1 w-full md:w-1/4"
+                value={newAssignment.title}
+                onChange={e => setNewAssignment(a => ({ ...a, title: e.target.value }))}
+              />
+              <input
+                type="text"
+                placeholder="Description"
+                title="Assignment Description"
+                className="border rounded px-2 py-1 w-full md:w-1/4"
+                value={newAssignment.description}
+                onChange={e => setNewAssignment(a => ({ ...a, description: e.target.value }))}
+              />
+              <input
+                type="date"
+                className="border rounded px-2 py-1 w-full md:w-1/4"
+                value={newAssignment.due_date}
+                onChange={e => setNewAssignment(a => ({ ...a, due_date: e.target.value }))}
+                title="Due Date"
+              />
+              <select
+                className="border rounded px-2 py-1 w-full md:w-1/4"
+                value={newAssignment.class_id}
+                onChange={e => setNewAssignment(a => ({ ...a, class_id: e.target.value }))}
+                title="Select class for assignment"
+              >
+                <option value="">Select Class</option>
+                {classes.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <Button onClick={handleCreateAssignment} disabled={creating || !newAssignment.title || !newAssignment.class_id}>
+                {creating ? "Creating..." : "Create"}
+              </Button>
+            </div>
             <h3 className="font-semibold mb-2">Your Assignments</h3>
             {assignments.length === 0 ? (
               <p className="text-xs text-muted-foreground">No assignments created yet.</p>
@@ -181,7 +262,7 @@ export default function TeacherDashboard() {
             )}
           </div>
 
-          {/* Class List */}
+          {/* Class List & Analytics */}
           <div className="mb-8">
             <h3 className="font-semibold mb-2">Your Classes</h3>
             {classes.length === 0 ? (
@@ -191,6 +272,25 @@ export default function TeacherDashboard() {
                 {classes.map(c => (
                   <li key={c.id}>
                     <span className="font-medium">{c.name}</span>
+                    <Button size="sm" variant="outline" className="ml-2 px-2 py-0.5 text-xs" onClick={() => setShowAnalytics(showAnalytics === c.id ? null : c.id)}>
+                      {showAnalytics === c.id ? "Hide Analytics" : "Show Analytics"}
+                    </Button>
+                    {showAnalytics === c.id && (
+                      <div className="mt-2 ml-4 p-2 border rounded bg-muted">
+                        <h4 className="font-semibold text-xs mb-1">Recent Activity</h4>
+                        {analyticsByClass[c.id]?.length ? (
+                          <ul className="space-y-1 text-xs">
+                            {analyticsByClass[c.id].slice(0, 5).map((a, i) => (
+                              <li key={a.id || i}>
+                                <span className="font-medium">{a.action_type.replace(/_/g, ' ')}</span> - {a.created_at ? new Date(a.created_at).toLocaleString() : ''}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">No activity for this class.</span>
+                        )}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
