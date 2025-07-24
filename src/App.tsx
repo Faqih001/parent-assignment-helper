@@ -24,6 +24,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import Video from "./pages/Video";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/chat" element={<Chat />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/video" element={<Video />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/billing" element={<Billing />} />
               <Route path="/settings" element={<Settings />} />

@@ -73,6 +73,7 @@ export default function Header() {
     { name: "Home", path: "/" },
     { name: "How It Works", path: "/how-it-works" },
     { name: "Pricing", path: "/pricing" },
+    { name: "Video Library", path: "/video" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
   ];
@@ -116,6 +117,12 @@ export default function Header() {
                     Chat
                   </Button>
                 </Link>
+                <Link to="/video">
+                  <Button variant="outline" size="sm">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Video
+                  </Button>
+                </Link>
                 <UserMenu user={user} onLogout={logout} />
               </>
             ) : (
@@ -138,6 +145,12 @@ export default function Header() {
                   <Button variant="outline" size="sm">
                     <MessageCircle className="h-4 w-4" />
                     <span className="sr-only">Chat</span>
+                  </Button>
+                </Link>
+                <Link to="/video">
+                  <Button variant="outline" size="sm">
+                    <BookOpen className="h-4 w-4" />
+                    <span className="sr-only">Video</span>
                   </Button>
                 </Link>
                 <UserMenu user={user} onLogout={logout} />
