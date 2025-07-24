@@ -517,6 +517,13 @@ export default function AdminDashboard() {
               {impersonateUser && (
                 <div className="border rounded-lg p-4 mt-4">
                   <h4 className="font-semibold mb-2">Previewing as: {impersonateUser.name} <Badge variant="secondary">{impersonateUser.role}</Badge></h4>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <Button size="sm" variant="outline" onClick={async () => {
+                      await dbHelpers.resetUserPassword(impersonateUser.id);
+                      toast({ title: "Password Reset", description: "Password reset email sent.", variant: "success" });
+                    }}>Reset Password</Button>
+                    <Button size="sm" variant="outline" onClick={() => setEditingUser(impersonateUser)}>Change Plan</Button>
+                  </div>
                   {(() => {
                     switch (impersonateUser.role) {
                       case 'student':
@@ -525,30 +532,72 @@ export default function AdminDashboard() {
                           <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
                           <div>Questions Remaining: {impersonateUser.questions_remaining}</div>
                           <div>Email: {impersonateUser.email}</div>
+                          <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
+                          <div className="mt-2 text-sm">Assignments: {impersonateUser.assignments_count ?? 'N/A'}</div>
                         </div>;
                       case 'teacher':
                         return <div>
                           <div className="font-semibold mb-1">Teacher Dashboard</div>
                           <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
                           <div>Email: {impersonateUser.email}</div>
+                          <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
+                          <div className="mt-2 text-sm">Classes: {impersonateUser.classes_count ?? 'N/A'}</div>
                         </div>;
                       case 'parent':
                         return <div>
                           <div className="font-semibold mb-1">Parent Dashboard</div>
                           <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
                           <div>Email: {impersonateUser.email}</div>
+                          <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
+                          <div className="mt-2 text-sm">Children: {parentChild.filter(rel => rel.parent_id === impersonateUser.id).length}</div>
                         </div>;
                       case 'admin':
                         return <div>
                           <div className="font-semibold mb-1">Admin Dashboard</div>
                           <div>Email: {impersonateUser.email}</div>
+                          <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
                         </div>;
                       default:
                         return <div>Unknown role.</div>;
                     }
                   })()}
+                  {/* Change Plan Dialog */}
+                  {editingUser && editingUser.id === impersonateUser.id && (
+                    <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Change User Plan</DialogTitle>
+                          <DialogDescription>Update the plan for this user.</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="user-plan">Plan</Label>
+                            <Select value={editingUser.plan} onValueChange={v => setEditingUser({ ...editingUser, plan: v })}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {customPlans.map(plan => <SelectItem key={plan.name} value={plan.name}>{plan.name}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="user-questions">Questions Limit</Label>
+                            <Input id="user-questions" type="number" value={editingUser.questions_limit ?? ''} onChange={e => setEditingUser({ ...editingUser, questions_limit: parseInt(e.target.value) || 0 })} />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
+                          <Button onClick={async () => {
+                            await handleUpdateUserPlan(editingUser.id, editingUser.plan, editingUser.questions_limit);
+                            setEditingUser(null);
+                          }}>Update</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </div>
               )}
+  // For impersonation quick actions
+  const [editingUser, setEditingUser] = useState<UserProfile & { questions_limit?: number } | null>(null);
             </CardContent>
           </Card>
         )}
