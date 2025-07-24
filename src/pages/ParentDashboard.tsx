@@ -13,6 +13,10 @@ export default function ParentDashboard() {
         </CardHeader>
         <CardContent>
           <p className="mb-4 text-muted-foreground">Monitor your child's progress, view assignments, and manage account settings.</p>
+          <div className="mb-6">
+            <h3 className="font-semibold mb-2">Learning Materials</h3>
+            <p className="text-xs text-muted-foreground">(Coming soon: Parents will be able to view learning materials shared with their children.)</p>
+          </div>
           {/* TODO: Add child progress, assignments, and parental controls */}
         </CardContent>
       </Card>

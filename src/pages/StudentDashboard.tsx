@@ -13,6 +13,10 @@ export default function StudentDashboard() {
         </CardHeader>
         <CardContent>
           <p className="mb-4 text-muted-foreground">View your assignments, progress, and achievements.</p>
+          <div className="mb-6">
+            <h3 className="font-semibold mb-2">Learning Materials</h3>
+            <p className="text-xs text-muted-foreground">(Coming soon: Students will be able to access uploaded videos and materials from teachers and admins.)</p>
+          </div>
           {/* TODO: Add assignment list, progress tracking, and gamification features */}
         </CardContent>
       </Card>
