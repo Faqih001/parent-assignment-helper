@@ -539,10 +539,17 @@ Let's start learning together! 📚✨`,
                     {message.type === "user" ? (
                       <div className="whitespace-pre-line text-sm md:text-base leading-relaxed">{message.content}</div>
                     ) : (
-                      <FormattedMessage 
-                        content={message.content} 
-                        className="text-card-foreground"
-                      />
+                      <>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold">
+                            {curriculum}
+                          </span>
+                        </div>
+                        <FormattedMessage 
+                          content={message.content} 
+                          className="text-card-foreground"
+                        />
+                      </>
                     )}
                     <div className={`text-xs mt-2 md:mt-3 ${message.type === "user" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                       {message.timestamp.toLocaleTimeString()}

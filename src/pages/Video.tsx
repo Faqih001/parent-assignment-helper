@@ -168,6 +168,11 @@ export default function Video() {
             </div>
             {aiVideoUrl && (
               <div className="mt-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold">
+                    {selectedCurriculum}
+                  </span>
+                </div>
                 <h3 className="text-base font-semibold mb-2">AI Generated Video: {aiVideoTitle}</h3>
                 <div className="aspect-video rounded-lg overflow-hidden mb-2">
                   <iframe
@@ -217,6 +222,11 @@ export default function Video() {
             filteredVideos.map(video => (
               <Card key={video.id} className="shadow-soft">
                 <CardHeader>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold">
+                      {selectedCurriculum}
+                    </span>
+                  </div>
                   <CardTitle className="text-base md:text-lg">{video.title}</CardTitle>
                   <div className="text-xs text-muted-foreground">{video.subject} | {video.grade}</div>
                 </CardHeader>
