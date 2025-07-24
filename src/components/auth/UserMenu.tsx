@@ -1,4 +1,6 @@
 import { useState } from "react";
+import "./UserMenu.css";
+import "./UserMenu.progress.css";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -84,10 +86,22 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
                   <span className="font-medium text-primary">{user.questionsRemaining}/5</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-1.5 mt-1">
-                  <div
-                    className={`bg-gradient-primary h-1.5 rounded-full transition-all duration-300 user-progress-bar-width`}
-                    data-progress={user.questionsRemaining}
-                  ></div>
+                  {(() => {
+                    // Clamp and round to nearest 20 for class
+                    const q = Math.max(0, Math.min(5, user.questionsRemaining ?? 0));
+                    const percent = Math.round((q / 5) * 100);
+                    let widthClass = "progress-bar-0";
+                    if (percent >= 100) widthClass = "progress-bar-100";
+                    else if (percent >= 80) widthClass = "progress-bar-80";
+                    else if (percent >= 60) widthClass = "progress-bar-60";
+                    else if (percent >= 40) widthClass = "progress-bar-40";
+                    else if (percent >= 20) widthClass = "progress-bar-20";
+                    return (
+                      <div
+                        className={`bg-gradient-primary h-1.5 rounded-full transition-all duration-300 user-progress-bar-width ${widthClass}`}
+                      ></div>
+                    );
+                  })()}
                 </div>
               </div>
             )}

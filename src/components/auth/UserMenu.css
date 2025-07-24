@@ -1,0 +1,7 @@
+.user-progress-bar-width {
+  width: 0%;
+}
+
+[data-progress] {
+  width: calc(var(--progress, 0) * 1%);
+}
