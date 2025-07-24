@@ -42,6 +42,9 @@ export default function AdminDashboard() {
   const [teacherClass, setTeacherClass] = useState<TeacherClass[]>([]);
   const [activeTab, setActiveTab] = useState<'overview'|'students'|'teachers'|'parents'|'impersonate'|'relationships'|'analytics'>('overview');
   const [impersonateUser, setImpersonateUser] = useState<UserProfile|null>(null);
+  const [impersonateAssignments, setImpersonateAssignments] = useState<any[]>([]);
+  const [impersonateClasses, setImpersonateClasses] = useState<any[]>([]);
+  const [impersonateChildren, setImpersonateChildren] = useState<UserProfile[]>([]);
   const [analytics, setAnalytics] = useState<{assignments: number, classes: number, materials: number, parentalControls: number}>({assignments: 0, classes: 0, materials: 0, parentalControls: 0});
   // Upload state and handler for admin video/material upload
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -523,6 +526,28 @@ export default function AdminDashboard() {
                       toast({ title: "Password Reset", description: "Password reset email sent.", variant: "success" });
                     }}>Reset Password</Button>
                     <Button size="sm" variant="outline" onClick={() => setEditingUser(impersonateUser)}>Change Plan</Button>
+                    <Button size="sm" variant="outline" onClick={async () => {
+                      await dbHelpers.suspendUser(impersonateUser.id);
+                      toast({ title: "User Suspended", description: "User has been suspended.", variant: "destructive" });
+                      loadData();
+                    }}>Suspend</Button>
+                    <Button size="sm" variant="outline" onClick={async () => {
+                      await dbHelpers.reactivateUser(impersonateUser.id);
+                      toast({ title: "User Reactivated", description: "User has been reactivated.", variant: "success" });
+                      loadData();
+                    }}>Reactivate</Button>
+                    <Button size="sm" variant="outline" onClick={() => {
+                      navigator.clipboard.writeText(impersonateUser.id);
+                      toast({ title: "Copied", description: "User ID copied to clipboard.", variant: "success" });
+                    }}>Copy User ID</Button>
+                    <Button size="sm" variant="outline" onClick={() => {
+                      navigator.clipboard.writeText(impersonateUser.email);
+                      toast({ title: "Copied", description: "Email copied to clipboard.", variant: "success" });
+                    }}>Copy Email</Button>
+                    <Button size="sm" variant="outline" onClick={async () => {
+                      await dbHelpers.sendUserEmail(impersonateUser.id);
+                      toast({ title: "Email Sent", description: "Email sent to user.", variant: "success" });
+                    }}>Send Email</Button>
                   </div>
                   {(() => {
                     switch (impersonateUser.role) {
@@ -533,7 +558,10 @@ export default function AdminDashboard() {
                           <div>Questions Remaining: {impersonateUser.questions_remaining}</div>
                           <div>Email: {impersonateUser.email}</div>
                           <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
-                          <div className="mt-2 text-sm">Assignments: {impersonateUser.assignments_count ?? 'N/A'}</div>
+                          <div className="mt-2 text-sm">Assignments:</div>
+                          <ul className="list-disc ml-6 text-sm">
+                            {impersonateAssignments.length > 0 ? impersonateAssignments.map(a => <li key={a.id}>{a.title}</li>) : <li>No assignments</li>}
+                          </ul>
                         </div>;
                       case 'teacher':
                         return <div>
@@ -541,7 +569,10 @@ export default function AdminDashboard() {
                           <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
                           <div>Email: {impersonateUser.email}</div>
                           <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
-                          <div className="mt-2 text-sm">Classes: {impersonateUser.classes_count ?? 'N/A'}</div>
+                          <div className="mt-2 text-sm">Classes:</div>
+                          <ul className="list-disc ml-6 text-sm">
+                            {impersonateClasses.length > 0 ? impersonateClasses.map(c => <li key={c.id}>{c.name}</li>) : <li>No classes</li>}
+                          </ul>
                         </div>;
                       case 'parent':
                         return <div>
@@ -549,7 +580,10 @@ export default function AdminDashboard() {
                           <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
                           <div>Email: {impersonateUser.email}</div>
                           <div className="mt-2 text-sm text-muted-foreground">Recent Activity: {impersonateUser.last_active ? new Date(impersonateUser.last_active).toLocaleString() : 'N/A'}</div>
-                          <div className="mt-2 text-sm">Children: {parentChild.filter(rel => rel.parent_id === impersonateUser.id).length}</div>
+                          <div className="mt-2 text-sm">Children:</div>
+                          <ul className="list-disc ml-6 text-sm">
+                            {impersonateChildren.length > 0 ? impersonateChildren.map(child => <li key={child.id}>{child.name}</li>) : <li>No children</li>}
+                          </ul>
                         </div>;
                       case 'admin':
                         return <div>
@@ -596,8 +630,43 @@ export default function AdminDashboard() {
                   )}
                 </div>
               )}
+  // Load impersonation preview data when impersonateUser changes
+  useEffect(() => {
+    if (!impersonateUser) {
+      setImpersonateAssignments([]);
+      setImpersonateClasses([]);
+      setImpersonateChildren([]);
+      return;
+    }
+    if (impersonateUser.role === 'student') {
+      dbHelpers.getAssignmentsForStudent?.(impersonateUser.id).then(setImpersonateAssignments);
+    } else if (impersonateUser.role === 'teacher') {
+      dbHelpers.getClassesForTeacher?.(impersonateUser.id).then(setImpersonateClasses);
+    } else if (impersonateUser.role === 'parent') {
+      const children = parentChild.filter(rel => rel.parent_id === impersonateUser.id).map(rel => students.find(s => s.id === rel.student_id)).filter(Boolean) as UserProfile[];
+      setImpersonateChildren(children);
+    }
+  }, [impersonateUser, parentChild, students]);
   // For impersonation quick actions
   const [editingUser, setEditingUser] = useState<UserProfile & { questions_limit?: number } | null>(null);
+
+  // Load impersonation preview data when impersonateUser changes
+  useEffect(() => {
+    if (!impersonateUser) {
+      setImpersonateAssignments([]);
+      setImpersonateClasses([]);
+      setImpersonateChildren([]);
+      return;
+    }
+    if (impersonateUser.role === 'student') {
+      dbHelpers.getAssignmentsForStudent?.(impersonateUser.id).then(setImpersonateAssignments);
+    } else if (impersonateUser.role === 'teacher') {
+      dbHelpers.getClassesForTeacher?.(impersonateUser.id).then(setImpersonateClasses);
+    } else if (impersonateUser.role === 'parent') {
+      const children = parentChild.filter(rel => rel.parent_id === impersonateUser.id).map(rel => students.find(s => s.id === rel.student_id)).filter(Boolean) as UserProfile[];
+      setImpersonateChildren(children);
+    }
+  }, [impersonateUser, parentChild, students]);
             </CardContent>
           </Card>
         )}
