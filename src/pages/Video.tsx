@@ -17,8 +17,48 @@ const videoLibrary = [
 
 // Removed stray top-level return/JSX. All logic and rendering is now inside the Video function below.
 export default function Video() {
-  // Video upload state for admin
   // Video upload state for admin (single instance)
+  // Supported languages
+  const languages = [
+    "English",
+    "Swahili",
+    "Hausa",
+    "Kikuyu",
+    "Kalenjin",
+    "Somali",
+    "Mijikenda"
+  ];
+
+  // Supported curricula
+  const curricula = ["CBC", "WAEC", "NECTA"];
+
+  // Supported grades
+  const grades = [
+    "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
+    "Grade 7", "Grade 8", "Grade 9", "Form 1", "Form 2", "Form 3", "Form 4"
+  ];
+
+  // Supported subjects
+  const subjects = [
+    "Mathematics", "Science", "English", "Kiswahili", "Social Studies",
+    "Physics", "Chemistry", "Biology", "Geography", "History", "Other"
+  ];
+
+  // Curriculum info for badges and popovers
+  const curriculumInfo: Record<string, { icon: string; description: string }> = {
+    CBC: {
+      icon: "🇰🇪",
+      description: "Kenya's Competency Based Curriculum (CBC) focuses on skills, values, and real-world application."
+    },
+    WAEC: {
+      icon: "🇳🇬",
+      description: "West African Examinations Council (WAEC) curriculum, used in Nigeria and West Africa."
+    },
+    NECTA: {
+      icon: "🇹🇿",
+      description: "Tanzania's NECTA curriculum, emphasizing holistic education and national exams."
+    }
+  };
   const [videoUploadFile, setVideoUploadFile] = useState<File | null>(null);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [videoUploadMessage, setVideoUploadMessage] = useState<string | null>(null);
@@ -117,37 +157,7 @@ export default function Video() {
     );
   }
 
-  // Accessibility: text-to-speech for video descriptions
-  const speak = (text: string) => {
-    if (window.speechSynthesis) {
-      if (ttsRef.current) window.speechSynthesis.cancel();
-      const utter = new window.SpeechSynthesisUtterance(text);
-      ttsRef.current = utter;
-      window.speechSynthesis.speak(utter);
-    }
-  };
-
-  const handleGenerateVideo = async () => {
-    if (!input.trim() || isLoading || !user) return;
-    setIsLoading(true);
-    setAiVideoUrl(null);
-    setAiVideoTitle("");
-    try {
-      // Real API call to Gemini AI video generation backend
-      const videoUrl = await geminiService.generateVideo({
-        prompt: input,
-        grade: selectedGrade,
-        subject: selectedSubject
-      });
-      setAiVideoUrl(videoUrl);
-      setAiVideoTitle(input);
-      toast({ title: "Video Generated!", description: "Your AI video is ready to watch." });
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to generate video. Please try again.", variant: "destructive" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // (Removed duplicate declarations of speak and handleGenerateVideo below)
 
   if (!user) {
     return (
