@@ -1,4 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+  // --- Admin feature state ---
+// const [studentSearch, setStudentSearch] = useState("");
+// const [teacherSearch, setTeacherSearch] = useState("");
+// const [parentSearch, setParentSearch] = useState("");
+// const [newParentId, setNewParentId] = useState("");
+// const [newStudentId, setNewStudentId] = useState("");
+// const [newTeacherId, setNewTeacherId] = useState("");
+// const [newClassName, setNewClassName] = useState("");
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -18,6 +26,14 @@ import { Settings, Users, CreditCard, Plus, Edit, Trash2, Shield, UserCheck, Bui
 type Role = 'student' | 'teacher' | 'parent' | 'admin';
 
 export default function AdminDashboard() {
+  // --- Admin feature state ---
+  const [studentSearch, setStudentSearch] = useState("");
+  const [teacherSearch, setTeacherSearch] = useState("");
+  const [parentSearch, setParentSearch] = useState("");
+  const [newParentId, setNewParentId] = useState("");
+  const [newStudentId, setNewStudentId] = useState("");
+  const [newTeacherId, setNewTeacherId] = useState("");
+  const [newClassName, setNewClassName] = useState("");
   // --- Admin tabs and impersonation state ---
   const [students, setStudents] = useState<UserProfile[]>([]);
   const [teachers, setTeachers] = useState<UserProfile[]>([]);
@@ -297,7 +313,7 @@ export default function AdminDashboard() {
             <Button
               key={tab.key}
               variant={activeTab === tab.key ? 'default' : 'outline'}
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key as typeof activeTab)}
             >
               {tab.label}
             </Button>
@@ -323,8 +339,9 @@ export default function AdminDashboard() {
               <CardDescription>Manage all student users</CardDescription>
             </CardHeader>
             <CardContent>
+              <Input className="mb-2 w-64" placeholder="Search students..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} />
               <div className="space-y-4">
-                {students.map((student) => (
+                {students.filter(s => s.name.toLowerCase().includes(studentSearch.toLowerCase())).map((student) => (
                   <div key={student.id} className="border rounded-lg p-4 flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -351,7 +368,11 @@ export default function AdminDashboard() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => {/* TODO: delete user logic */}} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                            <AlertDialogAction onClick={async () => {
+                              await dbHelpers.deleteUser(student.id);
+                              toast({ title: "User Deleted", description: "Student has been deleted.", variant: "success" });
+                              loadData();
+                            }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
@@ -374,8 +395,9 @@ export default function AdminDashboard() {
               <CardDescription>Manage all teacher users</CardDescription>
             </CardHeader>
             <CardContent>
+              <Input className="mb-2 w-64" placeholder="Search teachers..." value={teacherSearch} onChange={e => setTeacherSearch(e.target.value)} />
               <div className="space-y-4">
-                {teachers.map((teacher) => (
+                {teachers.filter(t => t.name.toLowerCase().includes(teacherSearch.toLowerCase())).map((teacher) => (
                   <div key={teacher.id} className="border rounded-lg p-4 flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -402,7 +424,11 @@ export default function AdminDashboard() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => {/* TODO: delete user logic */}} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                            <AlertDialogAction onClick={async () => {
+                              await dbHelpers.deleteUser(teacher.id);
+                              toast({ title: "User Deleted", description: "Teacher has been deleted.", variant: "success" });
+                              loadData();
+                            }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
@@ -425,8 +451,9 @@ export default function AdminDashboard() {
               <CardDescription>Manage all parent users</CardDescription>
             </CardHeader>
             <CardContent>
+              <Input className="mb-2 w-64" placeholder="Search parents..." value={parentSearch} onChange={e => setParentSearch(e.target.value)} />
               <div className="space-y-4">
-                {parents.map((parent) => (
+                {parents.filter(p => p.name.toLowerCase().includes(parentSearch.toLowerCase())).map((parent) => (
                   <div key={parent.id} className="border rounded-lg p-4 flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -453,7 +480,11 @@ export default function AdminDashboard() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => {/* TODO: delete user logic */}} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                            <AlertDialogAction onClick={async () => {
+                              await dbHelpers.deleteUser(parent.id);
+                              toast({ title: "User Deleted", description: "Parent has been deleted.", variant: "success" });
+                              loadData();
+                            }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
@@ -486,8 +517,36 @@ export default function AdminDashboard() {
               {impersonateUser && (
                 <div className="border rounded-lg p-4 mt-4">
                   <h4 className="font-semibold mb-2">Previewing as: {impersonateUser.name} <Badge variant="secondary">{impersonateUser.role}</Badge></h4>
-                  {/* TODO: Render dashboard preview for impersonateUser.role */}
-                  <div className="text-muted-foreground">Dashboard preview for <b>{impersonateUser.role}</b> coming soon.</div>
+                  {(() => {
+                    switch (impersonateUser.role) {
+                      case 'student':
+                        return <div>
+                          <div className="font-semibold mb-1">Student Dashboard</div>
+                          <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
+                          <div>Questions Remaining: {impersonateUser.questions_remaining}</div>
+                          <div>Email: {impersonateUser.email}</div>
+                        </div>;
+                      case 'teacher':
+                        return <div>
+                          <div className="font-semibold mb-1">Teacher Dashboard</div>
+                          <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
+                          <div>Email: {impersonateUser.email}</div>
+                        </div>;
+                      case 'parent':
+                        return <div>
+                          <div className="font-semibold mb-1">Parent Dashboard</div>
+                          <div>Plan: <Badge variant="outline">{impersonateUser.plan}</Badge></div>
+                          <div>Email: {impersonateUser.email}</div>
+                        </div>;
+                      case 'admin':
+                        return <div>
+                          <div className="font-semibold mb-1">Admin Dashboard</div>
+                          <div>Email: {impersonateUser.email}</div>
+                        </div>;
+                      default:
+                        return <div>Unknown role.</div>;
+                    }
+                  })()}
                 </div>
               )}
             </CardContent>
@@ -509,19 +568,60 @@ export default function AdminDashboard() {
                 <h4 className="font-semibold mb-2">Parent-Child Relationships</h4>
                 <ul className="list-disc ml-6">
                   {parentChild.map(rel => (
-                    <li key={rel.id}>{rel.parent_name} <span className="text-xs">(parent)</span> → {rel.student_name} <span className="text-xs">(student)</span></li>
+                    <li key={rel.id} className="flex items-center gap-2">
+                      {rel.parent_name} <span className="text-xs">(parent)</span> → {rel.student_name} <span className="text-xs">(student)</span>
+                      <Button size="xs" variant="outline" onClick={async () => {
+                        await dbHelpers.removeParentStudent(rel.id); loadData();
+                      }}>Remove</Button>
+                    </li>
                   ))}
                 </ul>
-                {/* TODO: Add controls to add/remove parent-child relationships */}
+                <div className="flex gap-2 mt-2">
+                  <Select onValueChange={v => setNewParentId(v)}>
+                    <SelectTrigger className="w-40"><SelectValue placeholder="Select Parent" /></SelectTrigger>
+                    <SelectContent>
+                      {parents.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Select onValueChange={v => setNewStudentId(v)}>
+                    <SelectTrigger className="w-40"><SelectValue placeholder="Select Student" /></SelectTrigger>
+                    <SelectContent>
+                      {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={async () => {
+                    if (newParentId && newStudentId) {
+                      await dbHelpers.addParentStudent(newParentId, newStudentId); loadData();
+                    }
+                  }}>Add</Button>
+                </div>
               </div>
               <div>
                 <h4 className="font-semibold mb-2">Teacher-Class Relationships</h4>
                 <ul className="list-disc ml-6">
                   {teacherClass.map(rel => (
-                    <li key={rel.id}>{rel.teacher_name} <span className="text-xs">(teacher)</span> → {rel.class_name} <span className="text-xs">(class)</span></li>
+                    <li key={rel.id} className="flex items-center gap-2">
+                      {rel.teacher_name} <span className="text-xs">(teacher)</span> → {rel.class_name} <span className="text-xs">(class)</span>
+                      <Button size="xs" variant="outline" onClick={async () => {
+                        await dbHelpers.removeTeacherClass(rel.id); loadData();
+                      }}>Remove</Button>
+                    </li>
                   ))}
                 </ul>
-                {/* TODO: Add controls to add/remove teacher-class relationships */}
+                <div className="flex gap-2 mt-2">
+                  <Select onValueChange={v => setNewTeacherId(v)}>
+                    <SelectTrigger className="w-40"><SelectValue placeholder="Select Teacher" /></SelectTrigger>
+                    <SelectContent>
+                      {teachers.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Input className="w-40" placeholder="Class Name" value={newClassName} onChange={e => setNewClassName(e.target.value)} />
+                  <Button size="sm" onClick={async () => {
+                    if (newTeacherId && newClassName) {
+                      await dbHelpers.addTeacherClass(newTeacherId, newClassName); loadData();
+                    }
+                  }}>Add</Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -538,6 +638,19 @@ export default function AdminDashboard() {
               <CardDescription>Platform-wide stats for assignments, classes, materials, and parental controls</CardDescription>
             </CardHeader>
             <CardContent>
+              <Button className="mb-4" variant="outline" onClick={() => {
+                const csv = [
+                  ['Assignments', 'Classes', 'Materials', 'Parental Controls'],
+                  [analytics.assignments, analytics.classes, analytics.materials, analytics.parentalControls]
+                ].map(row => row.join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'platform-analytics.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+              }}>Download CSV</Button>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="border rounded-lg p-4">
                   <div className="font-semibold">Assignments</div>
