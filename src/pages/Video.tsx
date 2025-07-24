@@ -30,7 +30,21 @@ const languages = [
   "Somali",
   "Mijikenda"
 ];
-const curricula = ["CBC", "WAEC", "NECTA"];
+const curriculumInfo: Record<string, { description: string; icon: string }> = {
+  CBC: {
+    description: "Kenya's Competency Based Curriculum (CBC) focuses on skills and competencies.",
+    icon: "🇰🇪",
+  },
+  WAEC: {
+    description: "West African Examinations Council (WAEC) curriculum for West Africa.",
+    icon: "🌍",
+  },
+  NECTA: {
+    description: "Tanzania's National Examinations Council (NECTA) curriculum.",
+    icon: "🇹🇿",
+  },
+};
+const curricula = Object.keys(curriculumInfo);
 
 export default function Video() {
   const { user } = useAuth();
@@ -44,10 +58,12 @@ export default function Video() {
   const [isLoading, setIsLoading] = useState(false);
   const [aiVideoUrl, setAiVideoUrl] = useState<string | null>(null);
   const [aiVideoTitle, setAiVideoTitle] = useState<string>("");
+  const [showCurriculumInfo, setShowCurriculumInfo] = useState(false);
 
   const filteredVideos = videoLibrary.filter(
     v => (selectedGrade === "All Grades" || v.grade === selectedGrade) &&
          (selectedSubject === "All Subjects" || v.subject === selectedSubject)
+         // Optionally, filter by curriculum if needed in future
   );
 
   const handleGenerateVideo = async () => {
@@ -124,38 +140,62 @@ export default function Video() {
                   className="min-h-[60px] md:min-h-[80px] max-h-32 resize-none w-full border rounded-md p-2 text-sm"
                   disabled={isLoading}
                 />
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <div>
-                    <Label htmlFor="video-language" className="text-xs">Language</Label>
-                    <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                      <SelectTrigger className="w-28 h-8 text-xs">
-                        <SelectValue placeholder="Language" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {languages.map((lang) => (
-                          <SelectItem key={lang} value={lang}>{lang}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="video-curriculum" className="text-xs">Curriculum</Label>
-                    <Select value={selectedCurriculum} onValueChange={setSelectedCurriculum}>
-                      <SelectTrigger className="w-24 h-8 text-xs">
-                        <SelectValue placeholder="Curriculum" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {curricula.map((cur) => (
-                          <SelectItem key={cur} value={cur}>{cur}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center">
-                    <input type="checkbox" id="video-lite-mode" checked={liteMode} onChange={() => setLiteMode(v => !v)} className="mr-1" title="Enable Lite Mode" />
-                    <Label htmlFor="video-lite-mode" className="text-xs">Lite Mode</Label>
-                  </div>
-                </div>
+        <div className="flex flex-wrap gap-2 mt-2 items-end">
+          <div>
+            <Label htmlFor="video-language" className="text-xs">Language</Label>
+            <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+              <SelectTrigger className="w-28 h-8 text-xs">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((lang) => (
+                  <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <div className="flex items-center gap-1">
+              <Label htmlFor="video-curriculum" className="text-xs">Curriculum</Label>
+              <button
+                type="button"
+                className="text-xs text-primary underline hover:no-underline focus:outline-none"
+                onClick={() => setShowCurriculumInfo(v => !v)}
+                aria-label="Show curriculum info"
+              >
+                ?
+              </button>
+            </div>
+            <Select value={selectedCurriculum} onValueChange={setSelectedCurriculum}>
+              <SelectTrigger className="w-24 h-8 text-xs">
+                <SelectValue placeholder="Curriculum" />
+              </SelectTrigger>
+              <SelectContent>
+                {curricula.map((cur) => (
+                  <SelectItem key={cur} value={cur}>
+                    <span className="mr-1">{curriculumInfo[cur].icon}</span>{cur}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {showCurriculumInfo && (
+              <div className="mt-1 p-2 rounded bg-muted text-xs shadow border w-56 z-20 absolute">
+                <div className="font-semibold mb-1">{curriculumInfo[selectedCurriculum].icon} {selectedCurriculum}</div>
+                <div>{curriculumInfo[selectedCurriculum].description}</div>
+                <button
+                  className="mt-2 text-primary underline text-xs"
+                  onClick={() => setShowCurriculumInfo(false)}
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center">
+            <input type="checkbox" id="video-lite-mode" checked={liteMode} onChange={() => setLiteMode(v => !v)} className="mr-1" title="Enable Lite Mode" />
+            <Label htmlFor="video-lite-mode" className="text-xs">Lite Mode</Label>
+          </div>
+        </div>
               </div>
               <Button
                 onClick={handleGenerateVideo}
@@ -169,8 +209,8 @@ export default function Video() {
             {aiVideoUrl && (
               <div className="mt-6">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold">
-                    {selectedCurriculum}
+                  <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold flex items-center gap-1">
+                    <span>{curriculumInfo[selectedCurriculum].icon}</span> {selectedCurriculum}
                   </span>
                 </div>
                 <h3 className="text-base font-semibold mb-2">AI Generated Video: {aiVideoTitle}</h3>
@@ -214,6 +254,21 @@ export default function Video() {
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="curriculum-filter" className="text-sm font-medium">Curriculum</Label>
+            <Select value={selectedCurriculum} onValueChange={setSelectedCurriculum}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select curriculum..." />
+              </SelectTrigger>
+              <SelectContent>
+                {curricula.map((cur) => (
+                  <SelectItem key={cur} value={cur}>
+                    <span className="mr-1">{curriculumInfo[cur].icon}</span>{cur}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredVideos.length === 0 ? (
@@ -223,8 +278,8 @@ export default function Video() {
               <Card key={video.id} className="shadow-soft">
                 <CardHeader>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold">
-                      {selectedCurriculum}
+                    <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold flex items-center gap-1">
+                      <span>{curriculumInfo[selectedCurriculum].icon}</span> {selectedCurriculum}
                     </span>
                   </div>
                   <CardTitle className="text-base md:text-lg">{video.title}</CardTitle>
