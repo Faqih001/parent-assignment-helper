@@ -73,7 +73,6 @@ export default function Header() {
     { name: "Home", path: "/" },
     { name: "How It Works", path: "/how-it-works" },
     { name: "Pricing", path: "/pricing" },
-    { name: "Video Library", path: "/video" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
   ];
@@ -105,11 +104,7 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
-          </nav>
-
-          {/* Desktop CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
-            {user ? (
+            {user && (
               <>
                 <Link to="/chat">
                   <Button variant="outline" size="sm">
@@ -120,9 +115,17 @@ export default function Header() {
                 <Link to="/video">
                   <Button variant="outline" size="sm">
                     <BookOpen className="mr-2 h-4 w-4" />
-                    Video
+                    Video Library
                   </Button>
                 </Link>
+              </>
+            )}
+          </nav>
+
+          {/* Desktop CTA Buttons */}
+          <div className="hidden md:flex items-center space-x-3">
+            {user ? (
+              <>
                 <UserMenu user={user} onLogout={logout} />
               </>
             ) : (
@@ -150,7 +153,7 @@ export default function Header() {
                 <Link to="/video">
                   <Button variant="outline" size="sm">
                     <BookOpen className="h-4 w-4" />
-                    <span className="sr-only">Video</span>
+                    <span className="sr-only">Video Library</span>
                   </Button>
                 </Link>
                 <UserMenu user={user} onLogout={logout} />
@@ -184,6 +187,22 @@ export default function Header() {
                   {item.name}
                 </Link>
               ))}
+              {user && (
+                <>
+                  <Link to="/chat" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full mb-2">
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Chat
+                    </Button>
+                  </Link>
+                  <Link to="/video" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full mb-2">
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Video Library
+                    </Button>
+                  </Link>
+                </>
+              )}
               <div className="pt-4 space-y-2">
                 {user ? (
                   <div className="px-3 py-2 text-sm text-muted-foreground border-b">
