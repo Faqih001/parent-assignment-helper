@@ -10,9 +10,9 @@ import { Upload, PlayCircle } from "lucide-react";
 
 // Dummy data for demonstration
 const videoLibrary = [
-  { id: 1, title: "Photosynthesis Explained", grade: "Grade 5", subject: "Science", url: "https://www.youtube.com/embed/UPBMG5EYydo" },
-  { id: 2, title: "Solving Linear Equations", grade: "Grade 7", subject: "Mathematics", url: "https://www.youtube.com/embed/2ybjYw1gO6A" },
-  { id: 3, title: "The Water Cycle", grade: "Grade 4", subject: "Science", url: "https://www.youtube.com/embed/IO9tT186mZw" },
+  { id: 1, title: "Photosynthesis Explained", grade: "Grade 5", subject: "Science", curriculum: "CBC", url: "https://www.youtube.com/embed/UPBMG5EYydo" },
+  { id: 2, title: "Solving Linear Equations", grade: "Grade 7", subject: "Mathematics", curriculum: "WAEC", url: "https://www.youtube.com/embed/2ybjYw1gO6A" },
+  { id: 3, title: "The Water Cycle", grade: "Grade 4", subject: "Science", curriculum: "NECTA", url: "https://www.youtube.com/embed/IO9tT186mZw" },
 ];
 
 const grades = [
@@ -44,7 +44,7 @@ const curriculumInfo: Record<string, { description: string; icon: string }> = {
     icon: "🇹🇿",
   },
 };
-const curricula = Object.keys(curriculumInfo);
+const curricula = ["All Curricula", ...Object.keys(curriculumInfo)];
 
 export default function Video() {
   const { user } = useAuth();
@@ -52,7 +52,8 @@ export default function Video() {
   const [selectedGrade, setSelectedGrade] = useState("All Grades");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const [selectedLanguage, setSelectedLanguage] = useState("English");
-  const [selectedCurriculum, setSelectedCurriculum] = useState("CBC");
+  // Default to 'All Curricula' for filtering
+  const [selectedCurriculum, setSelectedCurriculum] = useState("All Curricula");
   const [liteMode, setLiteMode] = useState(false);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -60,10 +61,11 @@ export default function Video() {
   const [aiVideoTitle, setAiVideoTitle] = useState<string>("");
   const [showCurriculumInfo, setShowCurriculumInfo] = useState(false);
 
+  // Add curriculum-specific filtering
   const filteredVideos = videoLibrary.filter(
     v => (selectedGrade === "All Grades" || v.grade === selectedGrade) &&
-         (selectedSubject === "All Subjects" || v.subject === selectedSubject)
-         // Optionally, filter by curriculum if needed in future
+         (selectedSubject === "All Subjects" || v.subject === selectedSubject) &&
+         (selectedCurriculum === "All Curricula" || v.curriculum === selectedCurriculum)
   );
 
   const handleGenerateVideo = async () => {
@@ -76,10 +78,7 @@ export default function Video() {
       const videoUrl = await geminiService.generateVideo({
         prompt: input,
         grade: selectedGrade,
-        subject: selectedSubject,
-        language: selectedLanguage,
-        curriculum: selectedCurriculum,
-        liteMode
+        subject: selectedSubject
       });
       setAiVideoUrl(videoUrl);
       setAiVideoTitle(input);
