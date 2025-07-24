@@ -12,7 +12,7 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLogin: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
-  onRegister: (name: string, email: string, password: string) => Promise<void>;
+  onRegister: (name: string, email: string, password: string, role: string) => Promise<void>;
   onForgotPassword: (email: string) => Promise<void>;
   isLoginLoading?: boolean;
   isRegisterLoading?: boolean;
@@ -31,7 +31,7 @@ export default function AuthModal({
 }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: "", password: "", rememberMe: false });
-  const [registerForm, setRegisterForm] = useState({ name: "", email: "", password: "" });
+  const [registerForm, setRegisterForm] = useState({ name: "", email: "", password: "", role: "student" });
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
@@ -52,7 +52,7 @@ export default function AuthModal({
         // Reset forms when modal opens
         setLoginForm({ email: "", password: "", rememberMe: false });
       }
-      setRegisterForm({ name: "", email: "", password: "" });
+        setRegisterForm({ name: "", email: "", password: "", role: "student" });
       setShowForgotPassword(false);
       setForgotPasswordEmail("");
       setShowPassword(false);
@@ -105,7 +105,6 @@ export default function AuthModal({
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setValidationErrors({});
-    
     // Client-side validation
     const errors: {[key: string]: string} = {};
     if (!validateName(registerForm.name)) {
@@ -117,17 +116,15 @@ export default function AuthModal({
     if (!validatePassword(registerForm.password)) {
       errors.password = "Password must be at least 6 characters";
     }
-    
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
     }
-    
     if (!isRegisterLoading && registerForm.name && registerForm.email && registerForm.password) {
       try {
-        await onRegister(registerForm.name, registerForm.email, registerForm.password);
+        await onRegister(registerForm.name, registerForm.email, registerForm.password, registerForm.role);
         // Clear form on successful registration
-        setRegisterForm({ name: "", email: "", password: "" });
+        setRegisterForm({ name: "", email: "", password: "", role: "student" });
       } catch (error) {
         console.error('Register form error:', error);
       }
@@ -354,6 +351,21 @@ export default function AuthModal({
                     {validationErrors.password && (
                       <p className="text-sm text-destructive">{validationErrors.password}</p>
                     )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-role" className="text-sm">Register as</Label>
+                    <select
+                      id="register-role"
+                      aria-label="Register as role"
+                      value={registerForm.role}
+                      onChange={e => setRegisterForm({ ...registerForm, role: e.target.value })}
+                      className="w-full border rounded px-2 py-1 text-sm"
+                      required
+                    >
+                      <option value="student">Student</option>
+                      <option value="teacher">Teacher</option>
+                      <option value="parent">Parent</option>
+                    </select>
                   </div>
                   <Button 
                     type="submit" 

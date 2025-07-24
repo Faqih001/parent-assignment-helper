@@ -22,6 +22,7 @@ interface Message {
   image?: string;
 }
 
+function Chat() {
   // Accessibility: high-contrast mode
   const [highContrast, setHighContrast] = useState(false);
   // Accessibility: text-to-speech
@@ -705,5 +706,8 @@ Let's start learning together! 📚✨`,
         </Card>
       </div>
     </div>
+
   );
 }
+
+export default Chat;
