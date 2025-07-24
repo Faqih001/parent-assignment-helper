@@ -30,7 +30,7 @@ export const parentalControlHelpers = {
         show_assignments: updates.show_assignments,
         allow_downloads: updates.allow_downloads,
         updated_at: new Date().toISOString(),
-      }, { onConflict: ['parent_id', 'student_id'] });
+      }, { onConflict: 'parent_id,student_id' });
     return !error;
   }
 };
@@ -189,7 +189,7 @@ export const studentHelpers = {
         assignment_id: assignmentId,
         status: 'completed',
         completed_at: new Date().toISOString()
-      }, { onConflict: ['student_id', 'assignment_id'] });
+      }, { onConflict: 'student_id,assignment_id' });
     return !error;
   },
 
@@ -405,6 +405,26 @@ export interface AuthError {
 
 // Database helper functions
 export const dbHelpers = {
+  // Dashboard stats for AdminDashboard page
+  async getDashboardStats(): Promise<{
+    assignments: number;
+    classes: number;
+    materials: number;
+    parentalControls: number;
+  }> {
+    const [assignments, classes, materials, parentalControls] = await Promise.all([
+      supabase.from('assignments').select('id', { count: 'exact', head: true }),
+      supabase.from('classes').select('id', { count: 'exact', head: true }),
+      supabase.from('learning_materials').select('id', { count: 'exact', head: true }),
+      supabase.from('parental_controls').select('id', { count: 'exact', head: true })
+    ]);
+    return {
+      assignments: assignments.count ?? 0,
+      classes: classes.count ?? 0,
+      materials: materials.count ?? 0,
+      parentalControls: parentalControls.count ?? 0
+    };
+  },
   // --- ADMIN DASHBOARD BACKEND HELPERS ---
 
   // Suspend a user (set a suspended flag or change plan/role)
@@ -546,7 +566,14 @@ export const dbHelpers = {
   },
 
   // Get admin analytics (site-wide stats)
-  async getAdminAnalytics(): Promise<any> {
+  async getAdminAnalytics(): Promise<{
+    totalUsers: number;
+    totalParents: number;
+    totalStudents: number;
+    totalTeachers: number;
+    totalAssignments: number;
+    totalClasses: number;
+  }> {
     // Example: count users, parents, students, teachers, assignments, classes
     const [users, parents, students, teachers, assignments, classes] = await Promise.all([
       supabase.from('user_profiles').select('id', { count: 'exact', head: true }),
