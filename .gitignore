@@ -1,5 +1,7 @@
 # Ignore all SQL migration files
 *.sql
+# Ignore all SQL migration files
+*.sql
 # Logs
 logs
 *.log
