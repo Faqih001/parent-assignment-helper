@@ -328,6 +328,7 @@ CREATE POLICY "Users can view own profile" ON user_profiles
   FOR SELECT USING (auth.uid() = id);
 
 -- Users can update their own profile (except plan, questions, role)
+DROP POLICY IF EXISTS "Users can update own profile" ON user_profiles;
 CREATE POLICY "Users can update own profile" ON user_profiles
   FOR UPDATE USING (auth.uid() = id);
 
@@ -342,6 +343,7 @@ CREATE POLICY "Allow profile creation on signup" ON user_profiles
   FOR INSERT WITH CHECK (true);
 
 -- Admins can view all profiles
+DROP POLICY IF EXISTS "Admins can view all profiles" ON user_profiles;
 CREATE POLICY "Admins can view all profiles" ON user_profiles
   FOR SELECT USING (
     EXISTS (
@@ -351,6 +353,7 @@ CREATE POLICY "Admins can view all profiles" ON user_profiles
   );
 
 -- Admins can update any profile
+DROP POLICY IF EXISTS "Admins can update any profile" ON user_profiles;
 CREATE POLICY "Admins can update any profile" ON user_profiles
   FOR UPDATE USING (
     EXISTS (
@@ -364,10 +367,12 @@ CREATE POLICY "Admins can update any profile" ON user_profiles
 -- =====================================================
 
 -- Anyone can submit a contact form (public access)
+DROP POLICY IF EXISTS "Anyone can submit contact form" ON contact_forms;
 CREATE POLICY "Anyone can submit contact form" ON contact_forms
   FOR INSERT WITH CHECK (true);
 
 -- Admins can view all contact forms
+DROP POLICY IF EXISTS "Admins can view contact forms" ON contact_forms;
 CREATE POLICY "Admins can view contact forms" ON contact_forms
   FOR SELECT USING (
     EXISTS (
@@ -377,6 +382,7 @@ CREATE POLICY "Admins can view contact forms" ON contact_forms
   );
 
 -- Admins can update contact forms
+DROP POLICY IF EXISTS "Admins can update contact forms" ON contact_forms;
 CREATE POLICY "Admins can update contact forms" ON contact_forms
   FOR UPDATE USING (
     EXISTS (
@@ -390,14 +396,17 @@ CREATE POLICY "Admins can update contact forms" ON contact_forms
 -- =====================================================
 
 -- Users can view their own payments
+DROP POLICY IF EXISTS "Users can view own payments" ON payments;
 CREATE POLICY "Users can view own payments" ON payments
   FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can create their own payments
+DROP POLICY IF EXISTS "Users can create own payments" ON payments;
 CREATE POLICY "Users can create own payments" ON payments
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Admins can view all payments
+DROP POLICY IF EXISTS "Admins can view all payments" ON payments;
 CREATE POLICY "Admins can view all payments" ON payments
   FOR SELECT USING (
     EXISTS (
@@ -407,6 +416,7 @@ CREATE POLICY "Admins can view all payments" ON payments
   );
 
 -- Admins can update any payment
+DROP POLICY IF EXISTS "Admins can update payments" ON payments;
 CREATE POLICY "Admins can update payments" ON payments
   FOR UPDATE USING (
     EXISTS (
@@ -420,22 +430,27 @@ CREATE POLICY "Admins can update payments" ON payments
 -- =====================================================
 
 -- Users can view their own chat sessions
+DROP POLICY IF EXISTS "Users can view own chat sessions" ON chat_sessions;
 CREATE POLICY "Users can view own chat sessions" ON chat_sessions
   FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can create their own chat sessions
+DROP POLICY IF EXISTS "Users can create own chat sessions" ON chat_sessions;
 CREATE POLICY "Users can create own chat sessions" ON chat_sessions
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Users can update their own chat sessions
+DROP POLICY IF EXISTS "Users can update own chat sessions" ON chat_sessions;
 CREATE POLICY "Users can update own chat sessions" ON chat_sessions
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- Users can view their own chat messages
+DROP POLICY IF EXISTS "Users can view own chat messages" ON chat_messages;
 CREATE POLICY "Users can view own chat messages" ON chat_messages
   FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can create their own chat messages
+DROP POLICY IF EXISTS "Users can create own chat messages" ON chat_messages;
 CREATE POLICY "Users can create own chat messages" ON chat_messages
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
@@ -444,14 +459,17 @@ CREATE POLICY "Users can create own chat messages" ON chat_messages
 -- =====================================================
 
 -- Users can view their own settings
+DROP POLICY IF EXISTS "Users can view own settings" ON user_settings;
 CREATE POLICY "Users can view own settings" ON user_settings
   FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can insert their own settings
+DROP POLICY IF EXISTS "Users can insert own settings" ON user_settings;
 CREATE POLICY "Users can insert own settings" ON user_settings
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Users can update their own settings
+DROP POLICY IF EXISTS "Users can update own settings" ON user_settings;
 CREATE POLICY "Users can update own settings" ON user_settings
   FOR UPDATE USING (auth.uid() = user_id);
 
@@ -460,14 +478,17 @@ CREATE POLICY "Users can update own settings" ON user_settings
 -- =====================================================
 
 -- Users can view their own billing info
+DROP POLICY IF EXISTS "Users can view own billing info" ON billing_info;
 CREATE POLICY "Users can view own billing info" ON billing_info
   FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can insert their own billing info
+DROP POLICY IF EXISTS "Users can insert own billing info" ON billing_info;
 CREATE POLICY "Users can insert own billing info" ON billing_info
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Users can update their own billing info
+DROP POLICY IF EXISTS "Users can update own billing info" ON billing_info;
 CREATE POLICY "Users can update own billing info" ON billing_info
   FOR UPDATE USING (auth.uid() = user_id);
 
@@ -476,14 +497,17 @@ CREATE POLICY "Users can update own billing info" ON billing_info
 -- =====================================================
 
 -- Users can view their own subscription history
+DROP POLICY IF EXISTS "Users can view own subscription history" ON subscription_history;
 CREATE POLICY "Users can view own subscription history" ON subscription_history
   FOR SELECT USING (auth.uid() = user_id);
 
 -- System can insert subscription history
+DROP POLICY IF EXISTS "System can insert subscription history" ON subscription_history;
 CREATE POLICY "System can insert subscription history" ON subscription_history
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Admins can view all subscription history
+DROP POLICY IF EXISTS "Admins can view all subscription history" ON subscription_history;
 CREATE POLICY "Admins can view all subscription history" ON subscription_history
   FOR SELECT USING (
     EXISTS (
@@ -497,14 +521,17 @@ CREATE POLICY "Admins can view all subscription history" ON subscription_history
 -- =====================================================
 
 -- Users can view their own analytics
+DROP POLICY IF EXISTS "Users can view own analytics" ON usage_analytics;
 CREATE POLICY "Users can view own analytics" ON usage_analytics
   FOR SELECT USING (auth.uid() = user_id);
 
 -- System can insert analytics
+DROP POLICY IF EXISTS "System can insert analytics" ON usage_analytics;
 CREATE POLICY "System can insert analytics" ON usage_analytics
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Admins can view all analytics
+DROP POLICY IF EXISTS "Admins can view all analytics" ON usage_analytics;
 CREATE POLICY "Admins can view all analytics" ON usage_analytics
   FOR SELECT USING (
     EXISTS (
@@ -518,10 +545,12 @@ CREATE POLICY "Admins can view all analytics" ON usage_analytics
 -- =====================================================
 
 -- Anyone can view active custom plans
+DROP POLICY IF EXISTS "Anyone can view active custom plans" ON custom_plans;
 CREATE POLICY "Anyone can view active custom plans" ON custom_plans
   FOR SELECT USING (is_active = true);
 
 -- Admins can view all custom plans
+DROP POLICY IF EXISTS "Admins can view all custom plans" ON custom_plans;
 CREATE POLICY "Admins can view all custom plans" ON custom_plans
   FOR SELECT USING (
     EXISTS (
@@ -531,6 +560,7 @@ CREATE POLICY "Admins can view all custom plans" ON custom_plans
   );
 
 -- Admins can create custom plans
+DROP POLICY IF EXISTS "Admins can create custom plans" ON custom_plans;
 CREATE POLICY "Admins can create custom plans" ON custom_plans
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -540,6 +570,7 @@ CREATE POLICY "Admins can create custom plans" ON custom_plans
   );
 
 -- Admins can update custom plans
+DROP POLICY IF EXISTS "Admins can update custom plans" ON custom_plans;
 CREATE POLICY "Admins can update custom plans" ON custom_plans
   FOR UPDATE USING (
     EXISTS (
@@ -549,6 +580,7 @@ CREATE POLICY "Admins can update custom plans" ON custom_plans
   );
 
 -- Admins can delete custom plans
+DROP POLICY IF EXISTS "Admins can delete custom plans" ON custom_plans;
 CREATE POLICY "Admins can delete custom plans" ON custom_plans
   FOR DELETE USING (
     EXISTS (
@@ -562,6 +594,7 @@ CREATE POLICY "Admins can delete custom plans" ON custom_plans
 -- =====================================================
 
 -- Teachers can view their own classes
+DROP POLICY IF EXISTS "Teachers can view own classes" ON classes;
 CREATE POLICY "Teachers can view own classes" ON classes
   FOR SELECT USING (
     auth.uid() = teacher_id OR
@@ -572,6 +605,7 @@ CREATE POLICY "Teachers can view own classes" ON classes
   );
 
 -- Teachers can create classes
+DROP POLICY IF EXISTS "Teachers can create classes" ON classes;
 CREATE POLICY "Teachers can create classes" ON classes
   FOR INSERT WITH CHECK (
     auth.uid() = teacher_id AND
@@ -582,6 +616,7 @@ CREATE POLICY "Teachers can create classes" ON classes
   );
 
 -- Teachers can update their own classes
+DROP POLICY IF EXISTS "Teachers can update own classes" ON classes;
 CREATE POLICY "Teachers can update own classes" ON classes
   FOR UPDATE USING (
     auth.uid() = teacher_id OR
@@ -592,6 +627,7 @@ CREATE POLICY "Teachers can update own classes" ON classes
   );
 
 -- Students can view their enrolled classes
+DROP POLICY IF EXISTS "Students can view enrolled classes" ON classes;
 CREATE POLICY "Students can view enrolled classes" ON classes
   FOR SELECT USING (
     EXISTS (
@@ -601,6 +637,7 @@ CREATE POLICY "Students can view enrolled classes" ON classes
   );
 
 -- Admins can view all classes
+DROP POLICY IF EXISTS "Admins can view all classes" ON classes;
 CREATE POLICY "Admins can view all classes" ON classes
   FOR SELECT USING (
     EXISTS (
@@ -614,6 +651,7 @@ CREATE POLICY "Admins can view all classes" ON classes
 -- =====================================================
 
 -- Teachers can view assignments for their classes
+DROP POLICY IF EXISTS "Teachers can view assignments for their classes" ON assignments;
 CREATE POLICY "Teachers can view assignments for their classes" ON assignments
   FOR SELECT USING (
     EXISTS (
@@ -627,6 +665,7 @@ CREATE POLICY "Teachers can view assignments for their classes" ON assignments
   );
 
 -- Teachers can create assignments for their classes
+DROP POLICY IF EXISTS "Teachers can create assignments" ON assignments;
 CREATE POLICY "Teachers can create assignments" ON assignments
   FOR INSERT WITH CHECK (
     auth.uid() = created_by AND
@@ -637,6 +676,7 @@ CREATE POLICY "Teachers can create assignments" ON assignments
   );
 
 -- Students can view assignments for their classes
+DROP POLICY IF EXISTS "Students can view assignments for enrolled classes" ON assignments;
 CREATE POLICY "Students can view assignments for enrolled classes" ON assignments
   FOR SELECT USING (
     EXISTS (
@@ -646,6 +686,7 @@ CREATE POLICY "Students can view assignments for enrolled classes" ON assignment
   );
 
 -- Admins can view all assignments
+DROP POLICY IF EXISTS "Admins can view all assignments" ON assignments;
 CREATE POLICY "Admins can view all assignments" ON assignments
   FOR SELECT USING (
     EXISTS (
@@ -659,10 +700,12 @@ CREATE POLICY "Admins can view all assignments" ON assignments
 -- =====================================================
 
 -- Users can view public learning materials
+DROP POLICY IF EXISTS "Users can view public materials" ON learning_materials;
 CREATE POLICY "Users can view public materials" ON learning_materials
   FOR SELECT USING (is_public = true);
 
 -- Students can view materials for their classes
+DROP POLICY IF EXISTS "Students can view class materials" ON learning_materials;
 CREATE POLICY "Students can view class materials" ON learning_materials
   FOR SELECT USING (
     EXISTS (
@@ -672,6 +715,7 @@ CREATE POLICY "Students can view class materials" ON learning_materials
   );
 
 -- Teachers can view and create materials for their classes
+DROP POLICY IF EXISTS "Teachers can view materials for their classes" ON learning_materials;
 CREATE POLICY "Teachers can view materials for their classes" ON learning_materials
   FOR SELECT USING (
     EXISTS (
@@ -681,6 +725,7 @@ CREATE POLICY "Teachers can view materials for their classes" ON learning_materi
     auth.uid() = uploaded_by
   );
 
+DROP POLICY IF EXISTS "Teachers can create materials" ON learning_materials;
 CREATE POLICY "Teachers can create materials" ON learning_materials
   FOR INSERT WITH CHECK (
     auth.uid() = uploaded_by AND
@@ -691,6 +736,7 @@ CREATE POLICY "Teachers can create materials" ON learning_materials
   );
 
 -- Admins can view all materials
+DROP POLICY IF EXISTS "Admins can view all materials" ON learning_materials;
 CREATE POLICY "Admins can view all materials" ON learning_materials
   FOR SELECT USING (
     EXISTS (
@@ -704,10 +750,12 @@ CREATE POLICY "Admins can view all materials" ON learning_materials
 -- =====================================================
 
 -- Users can view their own badges
+DROP POLICY IF EXISTS "Users can view own badges" ON achievement_badges;
 CREATE POLICY "Users can view own badges" ON achievement_badges
   FOR SELECT USING (auth.uid() = user_id);
 
 -- System can insert badges
+DROP POLICY IF EXISTS "System can insert badges" ON achievement_badges;
 CREATE POLICY "System can insert badges" ON achievement_badges
   FOR INSERT WITH CHECK (true);
 
@@ -716,12 +764,15 @@ CREATE POLICY "System can insert badges" ON achievement_badges
 -- =====================================================
 
 -- Parent-Student Relationships
+DROP POLICY IF EXISTS "Parents can view their students" ON parent_students;
 CREATE POLICY "Parents can view their students" ON parent_students
   FOR SELECT USING (auth.uid() = parent_id);
 
+DROP POLICY IF EXISTS "Students can view their parents" ON parent_students;
 CREATE POLICY "Students can view their parents" ON parent_students
   FOR SELECT USING (auth.uid() = student_id);
 
+DROP POLICY IF EXISTS "Admins can manage parent-student relationships" ON parent_students;
 CREATE POLICY "Admins can manage parent-student relationships" ON parent_students
   FOR ALL USING (
     EXISTS (
@@ -731,9 +782,11 @@ CREATE POLICY "Admins can manage parent-student relationships" ON parent_student
   );
 
 -- Class-Student Relationships
+DROP POLICY IF EXISTS "Students can view their class enrollments" ON class_students;
 CREATE POLICY "Students can view their class enrollments" ON class_students
   FOR SELECT USING (auth.uid() = student_id);
 
+DROP POLICY IF EXISTS "Teachers can view their class students" ON class_students;
 CREATE POLICY "Teachers can view their class students" ON class_students
   FOR SELECT USING (
     EXISTS (
@@ -742,6 +795,7 @@ CREATE POLICY "Teachers can view their class students" ON class_students
     )
   );
 
+DROP POLICY IF EXISTS "Teachers can enroll students in their classes" ON class_students;
 CREATE POLICY "Teachers can enroll students in their classes" ON class_students
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -751,9 +805,11 @@ CREATE POLICY "Teachers can enroll students in their classes" ON class_students
   );
 
 -- Class-Teacher Relationships
+DROP POLICY IF EXISTS "Teachers can view their class assignments" ON class_teachers;
 CREATE POLICY "Teachers can view their class assignments" ON class_teachers
   FOR SELECT USING (auth.uid() = teacher_id);
 
+DROP POLICY IF EXISTS "Admins can manage class teachers" ON class_teachers;
 CREATE POLICY "Admins can manage class teachers" ON class_teachers
   FOR ALL USING (
     EXISTS (
@@ -763,12 +819,15 @@ CREATE POLICY "Admins can manage class teachers" ON class_teachers
   );
 
 -- Student Assignment Status
+DROP POLICY IF EXISTS "Students can view their assignment status" ON class_students_assignments;
 CREATE POLICY "Students can view their assignment status" ON class_students_assignments
   FOR SELECT USING (auth.uid() = student_id);
 
+DROP POLICY IF EXISTS "Students can update their assignment status" ON class_students_assignments;
 CREATE POLICY "Students can update their assignment status" ON class_students_assignments
   FOR ALL USING (auth.uid() = student_id);
 
+DROP POLICY IF EXISTS "Teachers can view student assignment status" ON class_students_assignments;
 CREATE POLICY "Teachers can view student assignment status" ON class_students_assignments
   FOR SELECT USING (
     EXISTS (
@@ -780,9 +839,11 @@ CREATE POLICY "Teachers can view student assignment status" ON class_students_as
   );
 
 -- Parental Controls
+DROP POLICY IF EXISTS "Parents can manage their controls" ON parental_controls;
 CREATE POLICY "Parents can manage their controls" ON parental_controls
   FOR ALL USING (auth.uid() = parent_id);
 
+DROP POLICY IF EXISTS "Admins can view all parental controls" ON parental_controls;
 CREATE POLICY "Admins can view all parental controls" ON parental_controls
   FOR SELECT USING (
     EXISTS (
