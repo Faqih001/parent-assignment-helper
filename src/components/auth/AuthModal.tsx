@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -354,18 +355,19 @@ export default function AuthModal({
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-role" className="text-sm">Register as</Label>
-                    <select
-                      id="register-role"
-                      aria-label="Register as role"
+                    <Select
                       value={registerForm.role}
-                      onChange={e => setRegisterForm({ ...registerForm, role: e.target.value })}
-                      className="w-full border rounded px-2 py-1 text-sm"
-                      required
+                      onValueChange={(val) => setRegisterForm({ ...registerForm, role: val })}
                     >
-                      <option value="student">Student</option>
-                      <option value="teacher">Teacher</option>
-                      <option value="parent">Parent</option>
-                    </select>
+                      <SelectTrigger id="register-role" aria-label="Register as role" className="text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent side="bottom" className="rounded-md border">
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="teacher">Teacher</SelectItem>
+                        <SelectItem value="parent">Parent</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <Button 
                     type="submit" 
