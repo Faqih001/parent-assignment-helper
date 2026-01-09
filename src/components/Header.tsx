@@ -79,23 +79,23 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <div className="flex h-14 sm:h-16 items-center justify-between gap-2 sm:gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <img src={logo} alt="HomeworkHelper" className="h-8 w-8" />
-            <span className="font-bold text-xl bg-gradient-primary bg-clip-text text-transparent">
+          <Link to="/" className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
+            <img src={logo} alt="HomeworkHelper" className="h-7 w-7 sm:h-8 sm:w-8" />
+            <span className="font-bold text-base sm:text-lg lg:text-xl bg-gradient-primary bg-clip-text text-transparent whitespace-nowrap">
               HomeworkHelper
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          {/* Tablet/Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-1 flex-1 justify-center">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-2 xl:px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                   isActive(item.path)
                     ? "bg-primary text-primary-foreground"
                     : "text-foreground hover:bg-accent hover:text-accent-foreground"
@@ -104,80 +104,78 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
-            {user && (
+          </nav>
+
+          {/* Desktop/Tablet User Actions */}
+          <div className="hidden lg:flex items-center space-x-2 xl:space-x-3 flex-shrink-0">
+            {user ? (
               <>
                 <Link to="/chat">
-                  <Button variant="outline" size="sm">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Chat
+                  <Button variant="outline" size="sm" className="whitespace-nowrap">
+                    <MessageCircle className="mr-1.5 h-4 w-4" />
+                    <span className="hidden xl:inline">Chat</span>
                   </Button>
                 </Link>
                 <Link to="/video">
-                  <Button variant="outline" size="sm">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Video Library
+                  <Button variant="outline" size="sm" className="whitespace-nowrap">
+                    <BookOpen className="mr-1.5 h-4 w-4" />
+                    <span className="hidden xl:inline">Video</span>
                   </Button>
                 </Link>
-              </>
-            )}
-          </nav>
-
-          {/* Desktop CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
-            {user ? (
-              <>
                 <UserMenu user={user} onLogout={logout} />
               </>
             ) : (
               <>
-                <Button variant="outline" size="sm" onClick={openAuthModal}>
+                <Button variant="outline" size="sm" onClick={openAuthModal} className="whitespace-nowrap">
                   Login
                 </Button>
-                <Button variant="hero" size="sm" onClick={openAuthModal}>
+                <Button variant="hero" size="sm" onClick={openAuthModal} className="whitespace-nowrap">
                   Get Started
                 </Button>
               </>
             )}
           </div>
 
-          {/* Mobile Menu Button and User Controls */}
-          <div className="md:hidden flex items-center space-x-3">
+          {/* Mobile/Tablet Menu Button and Quick Actions */}
+          <div className="flex lg:hidden items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {user && (
               <>
-                <Link to="/chat">
-                  <Button variant="outline" size="sm">
+                <Link to="/chat" className="hidden sm:block">
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                     <MessageCircle className="h-4 w-4" />
                     <span className="sr-only">Chat</span>
                   </Button>
                 </Link>
-                <Link to="/video">
-                  <Button variant="outline" size="sm">
+                <Link to="/video" className="hidden sm:block">
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                     <BookOpen className="h-4 w-4" />
                     <span className="sr-only">Video Library</span>
                   </Button>
                 </Link>
-                <UserMenu user={user} onLogout={logout} />
+                <div className="hidden sm:block">
+                  <UserMenu user={user} onLogout={logout} />
+                </div>
               </>
             )}
             <button
-              className="p-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+              className="p-1.5 sm:p-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors flex-shrink-0"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Toggle menu"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile/Tablet Navigation Menu */}
         {isMenuOpen && (
-          <div className="md:hidden border-t bg-background/95 backdrop-blur">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="lg:hidden border-t bg-background/95 backdrop-blur animate-in slide-in-from-top-2 duration-200">
+            <div className="px-2 sm:px-3 pt-2 pb-3 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  className={`block px-3 py-2.5 rounded-md text-sm sm:text-base font-medium transition-colors ${
                     isActive(item.path)
                       ? "bg-primary text-primary-foreground"
                       : "text-foreground hover:bg-accent hover:text-accent-foreground"
@@ -187,38 +185,47 @@ export default function Header() {
                   {item.name}
                 </Link>
               ))}
+              
               {user && (
-                <>
+                <div className="pt-2 space-y-2 border-t mt-2">
                   <Link to="/chat" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full mb-2">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Chat
                     </Button>
                   </Link>
                   <Link to="/video" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full mb-2">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
                       <BookOpen className="h-4 w-4 mr-2" />
                       Video Library
                     </Button>
                   </Link>
-                </>
-              )}
-              <div className="pt-4 space-y-2">
-                {user ? (
-                  <div className="px-3 py-2 text-sm text-muted-foreground border-b">
-                    Signed in as {user.name}
+                  <div className="sm:hidden pt-2">
+                    <UserMenu user={user} onLogout={logout} />
                   </div>
-                ) : (
-                  <>
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => { openAuthModal(); setIsMenuOpen(false); }}>
-                      Login
-                    </Button>
-                    <Button variant="hero" size="sm" className="w-full" onClick={() => { openAuthModal(); setIsMenuOpen(false); }}>
-                      Get Started
-                    </Button>
-                  </>
-                )}
-              </div>
+                </div>
+              )}
+              
+              {!user && (
+                <div className="pt-4 space-y-2 border-t mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full" 
+                    onClick={() => { openAuthModal(); setIsMenuOpen(false); }}
+                  >
+                    Login
+                  </Button>
+                  <Button 
+                    variant="hero" 
+                    size="sm" 
+                    className="w-full" 
+                    onClick={() => { openAuthModal(); setIsMenuOpen(false); }}
+                  >
+                    Get Started
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}

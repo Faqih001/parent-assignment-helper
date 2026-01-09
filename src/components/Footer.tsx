@@ -5,15 +5,15 @@ import logo from "@/assets/logo.png";
 export default function Footer() {
   return (
     <footer className="bg-gradient-to-r from-primary to-primary-dark text-primary-foreground">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-10 md:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Company Info */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center space-x-2">
-              <img src={logo} alt="HomeworkHelper" className="h-8 w-8" />
-              <span className="font-bold text-xl">HomeworkHelper</span>
+              <img src={logo} alt="HomeworkHelper" className="h-7 w-7 sm:h-8 sm:w-8" />
+              <span className="font-bold text-lg sm:text-xl">HomeworkHelper</span>
             </div>
-            <p className="text-primary-foreground/80 text-sm">
+            <p className="text-primary-foreground/80 text-sm leading-relaxed">
               Empowering parents to support their children's education with AI-powered homework assistance.
             </p>
             <div className="flex space-x-4">
@@ -33,9 +33,9 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="font-semibold text-base sm:text-lg">Quick Links</h3>
+            <ul className="space-y-2 text-xs sm:text-sm">
               <li>
                 <Link to="/" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
                   Home
@@ -111,8 +111,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center">
-          <p className="text-primary-foreground/60 text-sm">
+        <div className="border-t border-primary-foreground/20 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center">
+          <p className="text-primary-foreground/60 text-xs sm:text-sm px-2">
             © {new Date().getFullYear()} HomeworkHelper. All rights reserved. Made with ❤️ for Kenyan families.
           </p>
         </div>

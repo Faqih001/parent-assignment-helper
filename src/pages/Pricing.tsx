@@ -140,14 +140,14 @@ export default function Pricing() {
     <div className="flex flex-col">
       {/* Hero Section */}
       <section 
-        className="relative py-20 bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 overflow-hidden pricing-hero-section"
+        className="relative py-12 sm:py-16 md:py-20 bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 overflow-hidden pricing-hero-section"
       >
         {/* Decorative elements */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
         <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
         <div className="absolute bottom-10 right-10 w-32 h-32 bg-indigo-300/20 rounded-full blur-2xl"></div>
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 relative z-10">
           <div className="text-center space-y-6">
             <h1 className="text-4xl lg:text-5xl font-bold text-white">
               Simple, <span className="text-yellow-300">Transparent</span> Pricing

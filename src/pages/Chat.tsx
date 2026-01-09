@@ -413,13 +413,13 @@ Let's start learning together! 📚✨`,
 
   return (
     <div className={
-      `min-h-screen-mobile bg-gradient-to-br from-background to-accent ${highContrast ? 'contrast-150 bg-black text-yellow-200' : ''}`
+      `min-h-screen bg-gradient-to-br from-background to-accent ${highContrast ? 'contrast-150 bg-black text-yellow-200' : ''}`
     }>
-      <div className="container mx-auto px-4 py-4 md:py-8 min-h-screen-safe flex flex-col max-w-4xl min-h-[calc(100vh-4rem)]">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-8 min-h-screen flex flex-col max-w-5xl">
         {/* Accessibility: High Contrast Toggle */}
         <div className="flex justify-end mb-2">
           <button
-            className={`px-3 py-1 rounded text-xs font-semibold border ${highContrast ? 'bg-yellow-300 text-black' : 'bg-muted text-foreground'}`}
+            className={`px-2 sm:px-3 py-1 rounded text-xs font-semibold border ${highContrast ? 'bg-yellow-300 text-black' : 'bg-muted text-foreground'}`}
             onClick={() => setHighContrast(v => !v)}
             aria-label="Toggle high contrast mode"
           >
@@ -427,22 +427,22 @@ Let's start learning together! 📚✨`,
           </button>
         </div>
         {/* Header */}
-        <div className="mb-4 md:mb-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="mb-3 sm:mb-4 md:mb-6">
+          <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
             <div>
-              <h1 className="text-xl md:text-2xl font-bold">AI Homework Assistant</h1>
-              <p className="text-sm md:text-base text-muted-foreground">Get instant help with any homework question</p>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold">AI Homework Assistant</h1>
+              <p className="text-xs sm:text-sm md:text-base text-muted-foreground">Get instant help with any homework question</p>
             </div>
             <div className="text-right">
-              <Badge variant={(user.questionsRemaining || 0) > 0 ? "default" : "destructive"} className="mb-2 text-xs">
+              <Badge variant={(user.questionsRemaining || 0) > 0 ? "default" : "destructive"} className="mb-1 sm:mb-2 text-[10px] sm:text-xs px-2 py-0.5">
                 {(user.questionsRemaining || 0) > 0 
-                  ? `${user.questionsRemaining} Questions Left (${user.plan.charAt(0).toUpperCase() + user.plan.slice(1)} Plan)` 
-                  : "No Questions Remaining"
+                  ? `${user.questionsRemaining} Questions (${user.plan.charAt(0).toUpperCase() + user.plan.slice(1)})` 
+                  : "No Questions"
                 }
               </Badge>
               {(user.questionsRemaining || 0) === 0 && (
-                <p className="text-xs text-muted-foreground">
-                  <a href="/pricing" className="text-primary hover:underline">Upgrade Your Plan</a>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
+                  <a href="/pricing" className="text-primary hover:underline">Upgrade Plan</a>
                 </p>
               )}
             </div>
@@ -450,51 +450,53 @@ Let's start learning together! 📚✨`,
         </div>
 
         {/* Language, Curriculum, Subject and Grade Selection */}
-        <div className="mb-4 md:mb-6 grid grid-cols-1 sm:grid-cols-4 gap-3 md:gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="language" className="flex items-center text-sm font-medium">
-              <BookOpen className="h-4 w-4 mr-1" />
-              Language
+        <div className="mb-3 sm:mb-4 md:mb-6 grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          <div className="space-y-1 sm:space-y-2">
+            <Label htmlFor="language" className="flex items-center text-xs sm:text-sm font-medium">
+              <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">Language</span>
+              <span className="sm:hidden">Lang</span>
             </Label>
             <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select language..." />
+              <SelectTrigger className="text-xs sm:text-sm h-8 sm:h-9">
+                <SelectValue placeholder="Language..." />
               </SelectTrigger>
               <SelectContent>
                 {languages.map((lang) => (
-                  <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                  <SelectItem key={lang} value={lang} className="text-xs sm:text-sm">{lang}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="curriculum" className="flex items-center text-sm font-medium">
-              <BookOpen className="h-4 w-4 mr-1" />
-              Curriculum
+          <div className="space-y-1 sm:space-y-2">
+            <Label htmlFor="curriculum" className="flex items-center text-xs sm:text-sm font-medium">
+              <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">Curriculum</span>
+              <span className="sm:hidden">Curr</span>
             </Label>
             <Select value={curriculum} onValueChange={setCurriculum}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select curriculum..." />
+              <SelectTrigger className="text-xs sm:text-sm h-8 sm:h-9">
+                <SelectValue placeholder="Curriculum..." />
               </SelectTrigger>
               <SelectContent>
                 {curricula.map((cur) => (
-                  <SelectItem key={cur} value={cur}>{cur}</SelectItem>
+                  <SelectItem key={cur} value={cur} className="text-xs sm:text-sm">{cur}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="subject" className="flex items-center text-sm font-medium">
-              <BookOpen className="h-4 w-4 mr-1" />
-              Subject (Optional)
+          <div className="space-y-1 sm:space-y-2">
+            <Label htmlFor="subject" className="flex items-center text-xs sm:text-sm font-medium">
+              <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              Subject
             </Label>
             <Select value={subject} onValueChange={setSubject}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select subject..." />
+              <SelectTrigger className="text-xs sm:text-sm h-8 sm:h-9">
+                <SelectValue placeholder="Subject..." />
               </SelectTrigger>
               <SelectContent>
                 {subjects.map((subj) => (
-                  <SelectItem key={subj} value={subj}>{subj}</SelectItem>
+                  <SelectItem key={subj} value={subj} className="text-xs sm:text-sm">{subj}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
