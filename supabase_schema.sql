@@ -936,7 +936,7 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
     'free',
     5,
-    'user'
+    COALESCE(NEW.raw_user_meta_data->>'role', 'user')
   );
   
   -- Create default user settings

@@ -9,7 +9,7 @@ interface AuthContextType {
   isLoginLoading: boolean;
   isRegisterLoading: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string, role: string) => Promise<boolean>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   forgotPassword: (email: string) => Promise<boolean>;
@@ -256,7 +256,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
+  const register = async (name: string, email: string, password: string, role: string): Promise<boolean> => {
     setIsRegisterLoading(true);
     try {
       // Always use production URL for email confirmations
@@ -268,6 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         options: {
           data: {
             name: name,
+            role: role,
           },
           emailRedirectTo: redirectUrl
         }
