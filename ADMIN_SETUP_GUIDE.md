@@ -13,6 +13,7 @@ This guide explains how to set up and use the admin system for managing custom p
 2. **Create Your First Admin User**
    - Register normally through the app with your admin email
    - In Supabase SQL Editor, run:
+
    ```sql
    UPDATE user_profiles SET role = 'admin' WHERE email = 'your-admin-email@example.com';
    ```
@@ -20,12 +21,14 @@ This guide explains how to set up and use the admin system for managing custom p
 ## Admin Features
 
 ### Custom Plans Management
+
 - **Create Plans**: Define custom pricing plans with specific question limits
 - **Edit Plans**: Modify existing plans (price, questions, features)
 - **Activate/Deactivate**: Control plan visibility
 - **Delete Plans**: Remove plans permanently
 
 ### User Management
+
 - **View All Users**: See all registered users and their details
 - **Change User Plans**: Assign users to different plans
 - **Grant Admin Access**: Promote users to admin role
@@ -34,6 +37,7 @@ This guide explains how to set up and use the admin system for managing custom p
 ## Admin Dashboard Access
 
 Once you're an admin user:
+
 1. Log in to your account
 2. Click on your avatar in the top right
 3. Select "Admin Dashboard" from the dropdown
@@ -42,12 +46,15 @@ Once you're an admin user:
 ## Plan Types
 
 ### Default Plans
+
 - **Free Plan**: 5 questions daily, renewable
 - **Family Plan**: 50 questions daily, KES 999/month
 - **School Partnership**: Custom enterprise solution
 
 ### Custom Plans
+
 Admins can create unlimited custom plans with:
+
 - Custom pricing (in KES)
 - Custom question limits
 - Flexible billing periods
@@ -57,11 +64,13 @@ Admins can create unlimited custom plans with:
 ## User Roles
 
 ### User (Default)
+
 - Access to chat functionality
 - Plan-based question limits
 - Standard features
 
 ### Admin
+
 - All user features
 - Admin dashboard access
 - Custom plan management
@@ -86,6 +95,7 @@ Admins can create unlimited custom plans with:
 ## API Endpoints
 
 The system uses these database helper functions:
+
 - `createCustomPlan()` - Create new custom plans
 - `updateCustomPlan()` - Modify existing plans
 - `deleteCustomPlan()` - Remove plans
@@ -122,6 +132,7 @@ The system uses these database helper functions:
 ### Support
 
 For technical issues:
+
 1. Check browser console for errors
 2. Verify database connectivity
 3. Review Supabase logs
@@ -130,6 +141,7 @@ For technical issues:
 ## Future Enhancements
 
 Potential additions:
+
 - Plan analytics and reporting
 - Automated billing integration
 - Multi-tenant organization support

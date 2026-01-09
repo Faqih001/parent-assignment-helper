@@ -15,7 +15,8 @@
 3. **Update Environment Variables**
    - Copy your project URL and anon key from Supabase settings
    - Update your `.env` file with the correct values:
-   ```
+
+   ```bash
    VITE_SUPABASE_URL=your_project_url
    VITE_SUPABASE_ANON_KEY=your_anon_key
    ```
@@ -50,6 +51,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ## Features Implemented
 
 ### Authentication
+
 - ✅ Real Supabase authentication
 - ✅ User registration and login
 - ✅ Automatic user profile creation
@@ -57,6 +59,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 - ✅ Protected routes
 
 ### Database
+
 - ✅ User profiles with plan management
 - ✅ Contact forms storage
 - ✅ Chat messages history
@@ -64,6 +67,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 - ✅ Question limits by plan
 
 ### Chat System
+
 - ✅ Real-time homework assistance (for logged-in users)
 - ✅ Image upload and analysis
 - ✅ Chat history persistence
@@ -71,16 +75,19 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 - ✅ Plan-based restrictions
 
 ### Website Chatbot
+
 - ✅ Limited to website information only
 - ✅ No homework assistance in floating chatbot
 - ✅ Guides users to sign up for real homework help
 
 ### Contact System
+
 - ✅ Contact forms saved to database
 - ✅ Email notifications (optional)
 - ✅ Admin can track contact status
 
 ### Responsive Design
+
 - ✅ Mobile-friendly chat interface
 - ✅ Responsive authentication modals
 - ✅ Adaptive layouts for all screen sizes
@@ -94,11 +101,13 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ## Running the Application
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Start the development server:
+
    ```bash
    npm run dev
    ```
