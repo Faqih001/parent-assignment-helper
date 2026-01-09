@@ -323,6 +323,7 @@ ALTER TABLE parental_controls ENABLE ROW LEVEL SECURITY;
 -- =====================================================
 
 -- Users can view their own profile
+DROP POLICY IF EXISTS "Users can view own profile" ON user_profiles;
 CREATE POLICY "Users can view own profile" ON user_profiles
   FOR SELECT USING (auth.uid() = id);
 
