@@ -464,9 +464,10 @@ CREATE POLICY "Users can view own settings" ON user_settings
   FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can insert their own settings
+-- Allow trigger to create settings during signup
 DROP POLICY IF EXISTS "Users can insert own settings" ON user_settings;
 CREATE POLICY "Users can insert own settings" ON user_settings
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK (true);
 
 -- Users can update their own settings
 DROP POLICY IF EXISTS "Users can update own settings" ON user_settings;
