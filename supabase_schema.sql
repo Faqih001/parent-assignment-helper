@@ -928,15 +928,26 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Function to automatically create user profile on signup
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  user_role TEXT;
 BEGIN
+  -- Get role from metadata, default to 'user' if not provided or invalid
+  user_role := COALESCE(NEW.raw_user_meta_data->>'role', 'user');
+  
+  -- Validate role against allowed values
+  IF user_role NOT IN ('user', 'admin', 'parent', 'student', 'teacher') THEN
+    user_role := 'user';
+  END IF;
+  
+  -- Insert user profile
   INSERT INTO user_profiles (id, email, name, plan, questions_remaining, role)
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
+    COALESCE(NEW.raw_user_meta_data->>'name', SPLIT_PART(NEW.email, '@', 1)),
     'free',
     5,
-    COALESCE(NEW.raw_user_meta_data->>'role', 'user')
+    user_role
   );
   
   -- Create default user settings
@@ -944,6 +955,12 @@ BEGIN
   VALUES (NEW.id);
   
   RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Log the error (it will appear in Supabase logs)
+    RAISE WARNING 'Error in handle_new_user trigger: % %', SQLERRM, SQLSTATE;
+    -- Re-raise to prevent user creation
+    RAISE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
